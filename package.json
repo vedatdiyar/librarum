@@ -9,12 +9,24 @@
   ],
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev --parallel",
+    "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck"
+    "typecheck": "turbo run typecheck",
+    "check:full": "turbo run lint typecheck"
+  },
+  "overrides": {
+    "drizzle-kit": {
+      "@esbuild-kit/esm-loader": {
+        "@esbuild-kit/core-utils": {
+          "esbuild": "0.25.12"
+        }
+      }
+    }
   },
   "devDependencies": {
     "@types/node": "^22.15.17",
+    "drizzle-kit": "^0.31.10",
+    "drizzle-orm": "^0.45.2",
     "turbo": "^2.5.0",
     "typescript": "^5.8.3"
   }

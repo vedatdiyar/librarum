@@ -1,0 +1,52 @@
+export const CSV_BOOK_COLUMNS = [
+  "title",
+  "authors",
+  "isbn",
+  "publisher",
+  "publicationYear",
+  "pageCount",
+  "status",
+  "rating",
+  "copyCount",
+  "donatable",
+  "readMonth",
+  "readYear",
+  "loanedTo",
+  "loanedAt",
+  "category",
+  "tags",
+  "series",
+  "seriesOrder",
+  "locationName",
+  "shelfRow",
+  "shelfColumn",
+  "personalNote"
+] as const;
+
+export const CSV_BOOK_COLUMN_DESCRIPTIONS: Record<
+  (typeof CSV_BOOK_COLUMNS)[number],
+  string
+> = {
+  title: "Kitap basligi. Zorunlu.",
+  authors: "Noktali virgulle ayrilmis yazar listesi. Zorunlu.",
+  isbn: "ISBN-10 veya ISBN-13.",
+  publisher: "Yayinci.",
+  publicationYear: "Yayin yili.",
+  pageCount: "Sayfa sayisi.",
+  status: "owned, completed, abandoned, loaned veya lost. Bos birakilirsa owned olur.",
+  rating: "0.5 adimlarla 0.5-5.0 arasi puan.",
+  copyCount: "Kopya sayisi. Bos birakilirsa 1 olur.",
+  donatable: "true veya false.",
+  readMonth: "1-12 arasi ay.",
+  readYear: "Okuma yili.",
+  loanedTo: "Odunc verilen kisi.",
+  loanedAt: "ISO tarih-zaman.",
+  category: "Kategori adi.",
+  tags: "Noktali virgulle ayrilmis etiket listesi.",
+  series: "Seri adi.",
+  seriesOrder: "Serideki cilt numarasi.",
+  locationName: "Konum/oda adi.",
+  shelfRow: "Raf harfi.",
+  shelfColumn: "Sutun numarasi.",
+  personalNote: "Kitap notu."
+};

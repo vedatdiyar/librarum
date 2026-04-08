@@ -20,7 +20,7 @@ ExLibris is a single-user, modern web-based personal book archive and library ma
 - Generate AI-powered monthly reading recommendations
 - Enable data backup and portability via import/export
 
-_ExLibris is not offline-first, but supports partial offline browsing of cached data._
+_ExLibris is a real-time system requiring an internet connection._
 
 # **2\. Target User Model**
 
@@ -380,18 +380,6 @@ _No streak tracking. No page-count tracking._
 | **Import error handling**        | Invalid rows are skipped. A summary report is shown after import listing skipped rows and reasons. |
 | **Duplicate handling on import** | Duplicate detection engine runs on each imported record                                            |
 
-# **15\. Offline Support**
-
-| **Technology**    | next-pwa (Service Worker + Cache API, Next.js App Router compatible) |
-| ----------------- | -------------------------------------------------------------------- |
-| **Configuration** | Minimal - next-pwa handles SW registration automatically             |
-
-| **Available offline**       | **Requires connection**                      |
-| --------------------------- | -------------------------------------------- |
-| Book list browsing (cached) | Metadata fetch (Open Library / Google Books) |
-| Book detail viewing         | AI suggestions                               |
-| Categories & tags           | Sync operations                              |
-| Favorites                   | ISBN lookup                                  |
 
 # **16\. UI Architecture**
 
@@ -587,7 +575,7 @@ Complete log of all design decisions for ExLibris v1.0.
 | **Search language**         | Turkish only. Deterministic rule engine on frontend. No AI dependency.                                                                                                                                           |
 | **Search results UI**       | Inline dropdown. No separate results page.                                                                                                                                                                       |
 | **CSV import**              | Standard column names documented in Settings → Import. No mapping wizard. Invalid rows skipped with post-import report.                                                                                          |
-| **Offline support**         | next-pwa (Service Worker + Cache API).                                                                                                                                                                           |
+| **Offline support**         | Removed.                                                                                                                                                                         |
 | **Theme**                   | Dark mode only. Dark academic / editorial aesthetic. Design system in Section 18.                                                                                                                                |
 | **AI chat context size**    | Collection summary (~500 tokens) + filtered subset (≤1500 tokens). Full collection never sent to AI.                                                                                                             |
 | **Cron timeout**            | Collection summarized to ≤2000 tokens before AI call. Expected < 10s, within Vercel free-tier limit.                                                                                                             |
