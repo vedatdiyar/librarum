@@ -1,0 +1,48 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2022"
+    ],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "types": [
+      "node"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "apps/web/*"
+      ],
+      "@exlibris/ui": [
+        "packages/ui/src/index.ts"
+      ],
+      "@exlibris/types": [
+        "packages/types/src/index.ts"
+      ],
+      "@exlibris/lib": [
+        "packages/lib/src/index.ts"
+      ],
+      "@exlibris/ai": [
+        "packages/ai/src/index.ts"
+      ],
+      "@exlibris/db": [
+        "packages/db/src/index.ts"
+      ],
+      "@exlibris/db/*": [
+        "packages/db/src/*"
+      ]
+    }
+  }
+}
