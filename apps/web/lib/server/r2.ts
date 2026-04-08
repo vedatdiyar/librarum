@@ -5,11 +5,11 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_CONTENT_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 function getR2Config() {
-  const accountId = process.env.EXLIBRIS_R2_ACCOUNT_ID;
-  const accessKeyId = process.env.EXLIBRIS_R2_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.EXLIBRIS_R2_SECRET_ACCESS_KEY;
-  const bucket = process.env.EXLIBRIS_R2_BUCKET;
-  const publicUrl = process.env.EXLIBRIS_R2_PUBLIC_URL;
+  const accountId = process.env.LIBRARUM_R2_ACCOUNT_ID;
+  const accessKeyId = process.env.LIBRARUM_R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.LIBRARUM_R2_SECRET_ACCESS_KEY;
+  const bucket = process.env.LIBRARUM_R2_BUCKET;
+  const publicUrl = process.env.LIBRARUM_R2_PUBLIC_URL;
 
   if (!accountId || !accessKeyId || !secretAccessKey || !bucket || !publicUrl) {
     throw new ApiError(500, "R2 configuration is missing.");

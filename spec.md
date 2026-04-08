@@ -1,4 +1,4 @@
-**EXLIBRIS**
+**LIBRARUM**
 
 Personal Book Archive & Library Management System
 
@@ -8,7 +8,7 @@ Version 1.0 - Final Stack & Feature Decisions
 
 # **1\. Product Overview**
 
-ExLibris is a single-user, modern web-based personal book archive and library management system.
+Librarum is a single-user, modern web-based personal book archive and library management system.
 
 ### **Goals**
 
@@ -20,7 +20,7 @@ ExLibris is a single-user, modern web-based personal book archive and library ma
 - Generate AI-powered monthly reading recommendations
 - Enable data backup and portability via import/export
 
-_ExLibris is a real-time system requiring an internet connection._
+_Librarum is a real-time system requiring an internet connection._
 
 # **2\. Target User Model**
 
@@ -548,11 +548,11 @@ _Password reset via email intentionally omitted for simplicity. This is a single
 
 # **Appendix: Resolved Design Decisions**
 
-Complete log of all design decisions for ExLibris v1.0.
+Complete log of all design decisions for Librarum v1.0.
 
 | **Decision**                | **Resolution**                                                                                                                                                                                                   |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Project name**            | Renamed from Archivum to ExLibris.                                                                                                                                                                               |
+| **Project name**            | Renamed from Archivum to Librarum.                                                                                                                                                                               |
 | **Stack**                   | Supabase fully replaced: DB → Neon + Drizzle, Auth → NextAuth.js v5, Storage → Cloudflare R2, Functions → Vercel API Routes, pg_cron → Vercel Cron.                                                              |
 | **ISBN lookup trigger**     | Auto-fetches on blur (300ms debounce) or instantly on barcode scan. No manual button. Falls through to manual entry if no result.                                                                                |
 | **Barcode scanning**        | Mobile only (html5-qrcode). Scan button hidden on desktop via md: breakpoint.                                                                                                                                    |

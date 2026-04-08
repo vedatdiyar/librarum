@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, cn } from "@exlibris/ui";
+import { Card, CardContent, cn } from "@librarum/ui";
 
 type PageHeroProps = {
   kicker: string;

@@ -5,8 +5,8 @@ import * as schema from "./schema";
 type DbInstance = ReturnType<typeof drizzle<typeof schema>>;
 
 declare global {
-  var __exlibrisDbCache: Map<string, DbInstance> | undefined;
-  var __exlibrisPoolCache: Map<string, Pool> | undefined;
+  var __librarumDbCache: Map<string, DbInstance> | undefined;
+  var __librarumPoolCache: Map<string, Pool> | undefined;
 }
 
 if (typeof WebSocket !== "undefined") {
@@ -14,10 +14,10 @@ if (typeof WebSocket !== "undefined") {
 }
 
 function getPool(connectionString: string) {
-  const poolCache = globalThis.__exlibrisPoolCache ?? new Map<string, Pool>();
+  const poolCache = globalThis.__librarumPoolCache ?? new Map<string, Pool>();
 
-  if (!globalThis.__exlibrisPoolCache) {
-    globalThis.__exlibrisPoolCache = poolCache;
+  if (!globalThis.__librarumPoolCache) {
+    globalThis.__librarumPoolCache = poolCache;
   }
 
   const cachedPool = poolCache.get(connectionString);
@@ -32,15 +32,15 @@ function getPool(connectionString: string) {
   return pool;
 }
 
-export function createDb(connectionString = process.env.EXLIBRIS_DATABASE_URL) {
+export function createDb(connectionString = process.env.LIBRARUM_DATABASE_URL) {
   if (!connectionString) {
-    throw new Error("EXLIBRIS_DATABASE_URL is not set.");
+    throw new Error("LIBRARUM_DATABASE_URL is not set.");
   }
 
-  const dbCache = globalThis.__exlibrisDbCache ?? new Map<string, DbInstance>();
+  const dbCache = globalThis.__librarumDbCache ?? new Map<string, DbInstance>();
 
-  if (!globalThis.__exlibrisDbCache) {
-    globalThis.__exlibrisDbCache = dbCache;
+  if (!globalThis.__librarumDbCache) {
+    globalThis.__librarumDbCache = dbCache;
   }
 
   const cachedDb = dbCache.get(connectionString);

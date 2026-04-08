@@ -12,7 +12,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle
-} from "@exlibris/ui";
+} from "@librarum/ui";
 import { useIsMobile } from "@/lib/client/use-is-mobile";
 
 type BookFormShellProps = {

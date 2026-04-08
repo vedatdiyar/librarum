@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, LoaderCircle, UserRound } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@exlibris/ui";
-import type { AuthorListItem } from "@exlibris/types";
-import { readJsonResponse } from "@exlibris/lib";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@librarum/ui";
+import type { AuthorListItem } from "@librarum/types";
+import { readJsonResponse } from "@librarum/lib";
 import { PageHero } from "@/components/page-hero";
 
 async function fetchAuthors() {

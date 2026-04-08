@@ -3,8 +3,8 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { readJsonResponse } from "@exlibris/lib";
-import type { BookDetail } from "@exlibris/types";
+import { readJsonResponse } from "@librarum/lib";
+import type { BookDetail } from "@librarum/types";
 
 export function useBookDetailData(bookId: string) {
   const router = useRouter();

@@ -23,7 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
   cn
-} from "@exlibris/ui";
+} from "@librarum/ui";
 import type {
   AuthorOption,
   BookDetail,
@@ -31,8 +31,8 @@ import type {
   CategoryOption,
   SeriesOption,
   TagOption
-} from "@exlibris/types";
-import { readJsonResponse } from "@exlibris/lib";
+} from "@librarum/types";
+import { readJsonResponse } from "@librarum/lib";
 
 import { useBookForm, buildBookPayload, type BookFormValues } from "./use-book-form";
 import { useIsbnMetadata } from "./use-isbn-metadata";

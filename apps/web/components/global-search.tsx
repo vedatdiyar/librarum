@@ -12,10 +12,10 @@ import {
   CommandInput,
   CommandItem,
   CommandList
-} from "@exlibris/ui";
-import { cn } from "@exlibris/ui";
-import type { SearchResultItem } from "@exlibris/types";
-import { readJsonResponse } from "@exlibris/lib";
+} from "@librarum/ui";
+import { cn } from "@librarum/ui";
+import type { SearchResultItem } from "@librarum/types";
+import { readJsonResponse } from "@librarum/lib";
 
 async function fetchSearchResults(query: string) {
   return readJsonResponse<SearchResultItem[]>(

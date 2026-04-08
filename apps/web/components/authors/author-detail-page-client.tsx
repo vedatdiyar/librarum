@@ -22,10 +22,10 @@ const ResponsiveContainer = dynamic(() => import("recharts").then((mod) => mod.R
 const Tooltip = dynamic(() => import("recharts").then((mod) => mod.Tooltip), { ssr: false });
 const XAxis = dynamic(() => import("recharts").then((mod) => mod.XAxis), { ssr: false });
 const YAxis = dynamic(() => import("recharts").then((mod) => mod.YAxis), { ssr: false });
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from "@exlibris/ui";
-import { cn } from "@exlibris/ui";
-import type { AuthorDetail } from "@exlibris/types";
-import { readJsonResponse } from "@exlibris/lib";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from "@librarum/ui";
+import { cn } from "@librarum/ui";
+import type { AuthorDetail } from "@librarum/types";
+import { readJsonResponse } from "@librarum/lib";
 import { PageHero } from "@/components/page-hero";
 
 const CHART_COLORS = ["#7ea596", "#5f8074", "#8ea49c", "#6a7771", "#4d635c", "#a4bbb1"];

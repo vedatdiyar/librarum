@@ -1,8 +1,8 @@
 import type { Config } from "drizzle-kit";
 
 const databaseUrl =
-  process.env.EXLIBRIS_DATABASE_URL ??
-  "postgresql://placeholder:placeholder@localhost:5432/exlibris";
+  process.env.LIBRARUM_DATABASE_URL ??
+  "postgresql://placeholder:placeholder@localhost:5432/librarum";
 
 export default {
   schema: "./src/schema.ts",

@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Button, Input } from "@exlibris/ui";
+import { Button, Input } from "@librarum/ui";
 import { authenticate } from "./actions";
 import type { LoginInput } from "@/lib/auth-schema";
 import { loginSchema } from "@/lib/auth-schema";

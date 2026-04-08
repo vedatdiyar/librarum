@@ -5,9 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpenText } from "lucide-react";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@exlibris/ui";
-import type { BookListResponse } from "@exlibris/types";
-import { readJsonResponse } from "@exlibris/lib";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@librarum/ui";
+import type { BookListResponse } from "@librarum/types";
+import { readJsonResponse } from "@librarum/lib";
 import { BookReturnDialog } from "@/components/books/book-return-dialog";
 import { PageHero } from "@/components/page-hero";
 

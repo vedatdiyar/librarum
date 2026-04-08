@@ -1,8 +1,8 @@
 import "server-only";
 
-export const EXLIBRIS_GEMINI_MODEL = "gemini-3-flash-preview";
-export const EXLIBRIS_GEMINI_TEMPERATURE = 1;
-export const EXLIBRIS_GEMINI_THINKING_LEVEL = "high";
+export const LIBRARUM_GEMINI_MODEL = "gemini-3-flash-preview";
+export const LIBRARUM_GEMINI_TEMPERATURE = 1;
+export const LIBRARUM_GEMINI_THINKING_LEVEL = "high";
 
 type BlocklistContext = {
   authors: string[];

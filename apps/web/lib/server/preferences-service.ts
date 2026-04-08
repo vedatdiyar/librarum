@@ -1,5 +1,5 @@
 import { eq, sql } from "drizzle-orm";
-import { createDb, recommendationPreferences } from "@exlibris/db";
+import { createDb, recommendationPreferences } from "@librarum/db";
 
 export async function listPreferences() {
   const db = createDb();

@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { readJsonResponse } from "@exlibris/lib";
+import { readJsonResponse } from "@librarum/lib";
 import type {
   ApiBookListItem,
   AuthorListItem,
@@ -14,7 +14,7 @@ import type {
   CategoryOption,
   SeriesListItem,
   TagOption
-} from "@exlibris/types";
+} from "@librarum/types";
 
 export type BooksPageFilterState = Record<keyof BooksListFilters, string>;
 

@@ -2,12 +2,12 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@exlibris/ui";
-import type { ButtonProps } from "@exlibris/ui";
-import type { BookDetail } from "@exlibris/types";
+import { Button } from "@librarum/ui";
+import type { ButtonProps } from "@librarum/ui";
+import type { BookDetail } from "@librarum/types";
 import { BookForm } from "@/components/books/book-form";
 import { BookFormShell } from "@/components/books/book-form-shell";
-import { readJsonResponse } from "@exlibris/lib";
+import { readJsonResponse } from "@librarum/lib";
 
 
 type EditBookFormTriggerProps = {

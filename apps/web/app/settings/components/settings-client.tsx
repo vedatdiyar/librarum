@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Tabs, TabsList, TabsTrigger } from "@exlibris/ui";
+import { Tabs, TabsList, TabsTrigger } from "@librarum/ui";
 import { 
   Library, 
   Tag, 

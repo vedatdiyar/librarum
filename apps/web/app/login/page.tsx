@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@exlibris/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@librarum/ui";
 import { auth } from "@/auth";
-import { getSafeRedirectTarget } from "@exlibris/lib";
+import { getSafeRedirectTarget } from "@librarum/lib";
 import { LoginForm } from "./login-form";
 
 type LoginPageProps = {
@@ -25,7 +25,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <Card className="w-full max-w-md border-border/80 bg-surface">
         <CardHeader className="pb-8">
           <p className="page-kicker">
-            ExLibris
+            Librarum
           </p>
           <CardTitle className="text-balance text-3xl">
             Kişisel kütüphanene giriş yap

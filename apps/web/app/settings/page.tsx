@@ -3,7 +3,7 @@ import { SettingsClient } from "./components/settings-client";
 import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
-  title: "Ayarlar | ExLibris",
+  title: "Ayarlar | Librarum",
   description: "Kütüphane ayarları, kategori, etiket ve seri yönetimi."
 };
 

@@ -24,7 +24,7 @@ import {
   SheetHeader,
   SheetTitle,
   cn
-} from "@exlibris/ui";
+} from "@librarum/ui";
 import type {
   AiChatRequest,
   AiFavoriteAuthorItem,
@@ -32,8 +32,8 @@ import type {
   AiRecommendationItem,
   AiSuggestionPayload,
   AiSuggestionsResponse
-} from "@exlibris/types";
-import { readJsonResponse } from "@exlibris/lib";
+} from "@librarum/types";
+import { readJsonResponse } from "@librarum/lib";
 import { useIsMobile } from "@/lib/client/use-is-mobile";
 import { PageHero } from "@/components/page-hero";
 

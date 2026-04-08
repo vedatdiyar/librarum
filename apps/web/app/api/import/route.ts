@@ -1,4 +1,4 @@
-import type { DuplicateResolution } from "@exlibris/types";
+import type { DuplicateResolution } from "@librarum/types";
 import { ApiError, apiSuccess, withApiHandler } from "@/lib/server/api";
 import { requireSession } from "@/lib/server/auth";
 import { createBookSchema, type CreateBookInput } from "@/lib/server/books-schemas";

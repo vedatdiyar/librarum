@@ -26,22 +26,22 @@
       "@/*": [
         "apps/web/*"
       ],
-      "@exlibris/ui": [
+      "@librarum/ui": [
         "packages/ui/src/index.ts"
       ],
-      "@exlibris/types": [
+      "@librarum/types": [
         "packages/types/src/index.ts"
       ],
-      "@exlibris/lib": [
+      "@librarum/lib": [
         "packages/lib/src/index.ts"
       ],
-      "@exlibris/ai": [
+      "@librarum/ai": [
         "packages/ai/src/index.ts"
       ],
-      "@exlibris/db": [
+      "@librarum/db": [
         "packages/db/src/index.ts"
       ],
-      "@exlibris/db/*": [
+      "@librarum/db/*": [
         "packages/db/src/*"
       ]
     }

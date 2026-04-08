@@ -11,9 +11,9 @@ import type {
   CreateBookResponse,
   DuplicateCheckResponse,
   DuplicateResolution
-} from "@exlibris/types";
-import { normalizeIsbn } from "@exlibris/lib";
-import { readJsonResponse } from "@exlibris/lib";
+} from "@librarum/types";
+import { normalizeIsbn } from "@librarum/lib";
+import { readJsonResponse } from "@librarum/lib";
 
 export const BOOK_FORM_SCHEMA = z
   .object({

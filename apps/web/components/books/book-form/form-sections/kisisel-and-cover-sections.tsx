@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { useFormContext } from "react-hook-form";
-import { Button, Input } from "@exlibris/ui";
+import { Button, Input } from "@librarum/ui";
 import { Upload, LoaderCircle } from "lucide-react";
 import { RatingInput } from "../rating-input";
 import { Field } from "./kunye-section";

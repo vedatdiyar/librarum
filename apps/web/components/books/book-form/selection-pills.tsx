@@ -1,6 +1,6 @@
 import * as React from "react";
 import { X } from "lucide-react";
-import { Badge } from "@exlibris/ui";
+import { Badge } from "@librarum/ui";
 
 export function SelectionPills({
   items,

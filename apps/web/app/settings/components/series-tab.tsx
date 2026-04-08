@@ -21,7 +21,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter
-} from "@exlibris/ui";
+} from "@librarum/ui";
 
 interface Series {
   id: string;

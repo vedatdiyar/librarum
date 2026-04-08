@@ -16,7 +16,7 @@ import {
   Input, 
   Card,
   Badge
-} from "@exlibris/ui";
+} from "@librarum/ui";
 
 interface Preference {
   id: string;

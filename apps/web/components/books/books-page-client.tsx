@@ -8,7 +8,7 @@ import {
   Tabs,
   TabsList,
   TabsTrigger
-} from "@exlibris/ui";
+} from "@librarum/ui";
 import { useBooksViewStore } from "@/lib/stores/books-view-store";
 import { PageHero } from "@/components/page-hero";
 import { useBooksPageData, useSelection } from "./use-books-page-data";

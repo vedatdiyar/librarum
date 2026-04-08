@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextAuthConfig } from "next-auth";
-import { getSafeRedirectTarget } from "@exlibris/lib";
+import { getSafeRedirectTarget } from "@librarum/lib";
 
 
 const authConfig = {
-  secret: process.env.EXLIBRIS_AUTH_SECRET,
+  secret: process.env.LIBRARUM_AUTH_SECRET,
   pages: {
     signIn: "/login"
   },

@@ -3,10 +3,10 @@
 import * as React from "react";
 import { useFormContext } from "react-hook-form";
 import { LoaderCircle, Search } from "lucide-react";
-import { Button, Input, cn } from "@exlibris/ui";
+import { Button, Input, cn } from "@librarum/ui";
 import { MobileBarcodeScanner } from "@/components/books/mobile-barcode-scanner";
 import { SelectionPills } from "../selection-pills";
-import type { AuthorOption } from "@exlibris/types";
+import type { AuthorOption } from "@librarum/types";
 
 const FIELD_CLASS_NAME =
   "flex h-11 w-full rounded-xl border border-border/80 bg-surface px-4 py-2 text-sm text-text-primary outline-none transition placeholder:text-text-secondary/70 focus:border-accent/80 focus:ring-2 focus:ring-accent/15 disabled:cursor-not-allowed disabled:opacity-50";

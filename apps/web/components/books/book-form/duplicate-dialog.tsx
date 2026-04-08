@@ -8,8 +8,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle
-} from "@exlibris/ui";
-import type { DuplicateCheckResponse } from "@exlibris/types";
+} from "@librarum/ui";
+import type { DuplicateCheckResponse } from "@librarum/types";
 
 interface DuplicateDialogProps {
   duplicateResult: Extract<DuplicateCheckResponse, { isDuplicate: true }> | null;

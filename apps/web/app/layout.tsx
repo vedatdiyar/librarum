@@ -8,7 +8,7 @@ import { Providers } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ExLibris",
+  title: "Librarum",
   description: "Kişisel kitap arşivi ve kütüphane yönetim sistemi",
 };
 
@@ -26,7 +26,7 @@ export default async function RootLayout({
   return (
     <html lang="tr">
       <head>
-        <meta name="apple-mobile-web-app-title" content="Ex Libris" />
+        <meta name="apple-mobile-web-app-title" content="Librarum" />
       </head>
       <body>
         <Providers session={session}>

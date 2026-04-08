@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, inArray, ne, sql } from "drizzle-orm";
-import { authors, bookAuthors, books, createDb } from "@exlibris/db";
-import { normalizeIsbn } from "@exlibris/lib";
+import { authors, bookAuthors, books, createDb } from "@librarum/db";
+import { normalizeIsbn } from "@librarum/lib";
 export { normalizeIsbn };
 import type {
   CreateBookResponse,
@@ -11,7 +11,7 @@ import type {
   DuplicateSuggestion,
   IsbnMetadata,
   IsbnMetadataResponse
-} from "@exlibris/types";
+} from "@librarum/types";
 import { ApiError } from "@/lib/server/api";
 
 const DUPLICATE_SUGGESTIONS: DuplicateSuggestion[] = [

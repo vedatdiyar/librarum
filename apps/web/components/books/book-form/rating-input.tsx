@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Star } from "lucide-react";
-import { cn } from "@exlibris/ui";
+import { cn } from "@librarum/ui";
 
 export function RatingInput({
   value,

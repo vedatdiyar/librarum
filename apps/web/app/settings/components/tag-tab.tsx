@@ -18,7 +18,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter
-} from "@exlibris/ui";
+} from "@librarum/ui";
 
 interface Tag {
   id: string;

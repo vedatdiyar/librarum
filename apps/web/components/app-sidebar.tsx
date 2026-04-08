@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
-import { Badge, Button, Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, cn } from "@exlibris/ui";
+import { Badge, Button, Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, cn } from "@librarum/ui";
 import { GlobalSearch } from "@/components/global-search";
 import { navigationItems } from "@/lib/navigation";
 
@@ -15,10 +15,10 @@ function NavContent() {
     <div className="flex h-full flex-col">
       <div className="border-b border-border/80 pb-6">
         <Link className="inline-flex flex-col gap-4" href="/">
-          <Image alt="ExLibris Logo" height={40} src="/logo.svg" width={40} />
+          <Image alt="Librarum Logo" height={40} src="/logo.svg" width={40} />
           <div className="flex flex-col gap-1">
             <span className="font-display text-[2rem] font-semibold tracking-tight text-text-primary">
-              ExLibris
+              Librarum
             </span>
             <span className="text-[11px] uppercase tracking-[0.26em] text-text-secondary">
               Personal Library OS

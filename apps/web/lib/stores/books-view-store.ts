@@ -15,7 +15,7 @@ export const useBooksViewStore = create<BooksViewState>()(
       setView: (view) => set({ view })
     }),
     {
-      name: "exlibris-books-view"
+      name: "librarum-books-view"
     }
   )
 );

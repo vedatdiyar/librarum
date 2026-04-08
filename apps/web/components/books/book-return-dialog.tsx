@@ -3,9 +3,9 @@
 import * as React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LoaderCircle } from "lucide-react";
-import { Button, Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, cn } from "@exlibris/ui";
-import type { BookDetail, BookStatus } from "@exlibris/types";
-import { readJsonResponse } from "@exlibris/lib";
+import { Button, Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, cn } from "@librarum/ui";
+import type { BookDetail, BookStatus } from "@librarum/types";
+import { readJsonResponse } from "@librarum/lib";
 
 const RETURN_STATUS_OPTIONS: Array<{ value: Exclude<BookStatus, "loaned" | "lost">; label: string }> = [
   { value: "owned", label: "Sahibim" },

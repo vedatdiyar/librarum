@@ -12,8 +12,8 @@ import {
   CardHeader,
   CardTitle,
   cn
-} from "@exlibris/ui";
-import type { BookDetail, BookStatus } from "@exlibris/types";
+} from "@librarum/ui";
+import type { BookDetail, BookStatus } from "@librarum/types";
 import { EditBookFormTrigger } from "@/components/books/edit-book-form-trigger";
 
 const NOTE_CLASS_NAME =

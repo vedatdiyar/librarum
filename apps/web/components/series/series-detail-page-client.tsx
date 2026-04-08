@@ -4,9 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, BookMarked, CircleDashed } from "lucide-react";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@exlibris/ui";
-import type { SeriesDetail } from "@exlibris/types";
-import { readJsonResponse } from "@exlibris/lib";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@librarum/ui";
+import type { SeriesDetail } from "@librarum/types";
+import { readJsonResponse } from "@librarum/lib";
 import { PageHero } from "@/components/page-hero";
 
 async function fetchSeriesDetail(seriesId: string) {

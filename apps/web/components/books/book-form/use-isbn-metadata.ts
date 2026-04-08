@@ -1,7 +1,7 @@
 import * as React from "react";
-import { normalizeIsbn } from "@exlibris/lib";
-import type { IsbnMetadata, IsbnMetadataResponse } from "@exlibris/types";
-import { readJsonResponse } from "@exlibris/lib";
+import { normalizeIsbn } from "@librarum/lib";
+import type { IsbnMetadata, IsbnMetadataResponse } from "@librarum/types";
+import { readJsonResponse } from "@librarum/lib";
 
 export type MetadataState = {
   status: "idle" | "loading" | "success" | "not_found" | "error";

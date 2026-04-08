@@ -12,7 +12,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle
-} from "@exlibris/ui";
+} from "@librarum/ui";
 import { useBookDetailData } from "./use-book-detail-data";
 import { BookMetaSection, BookStatusAndNotesSection } from "./detail-sections";
 

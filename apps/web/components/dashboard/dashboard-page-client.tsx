@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Button, Card, CardDescription, CardHeader, CardTitle } from "@exlibris/ui";
+import { Button, Card, CardDescription, CardHeader, CardTitle } from "@librarum/ui";
 import { PageHero } from "@/components/page-hero";
 import { useDashboardData } from "./use-dashboard-data";
 import {
@@ -83,7 +83,7 @@ function EmptyCollectionState() {
             </p>
           </div>
         }
-        description="ExLibris ilk kitabını bekliyor. Koleksiyon oluşmaya başladığında bekleyenler, özet, favori yazarlar ve kategori dağılımı burada canlanacak."
+        description="Librarum ilk kitabını bekliyor. Koleksiyon oluşmaya başladığında bekleyenler, özet, favori yazarlar ve kategori dağılımı burada canlanacak."
         kicker="Genel Bakış"
         title="Kütüphaneniz boş"
       />

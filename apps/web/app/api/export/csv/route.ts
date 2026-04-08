@@ -53,7 +53,7 @@ export const GET = withApiHandler(async () => {
     status: 200,
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": 'attachment; filename="exlibris_export.csv"'
+      "Content-Disposition": 'attachment; filename="librarum_export.csv"'
     }
   });
 });

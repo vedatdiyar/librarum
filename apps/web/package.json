@@ -1,5 +1,5 @@
 {
-  "name": "@exlibris/web",
+  "name": "@librarum/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,11 +10,11 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1026.0",
-    "@exlibris/ai": "*",
-    "@exlibris/db": "*",
-    "@exlibris/lib": "*",
-    "@exlibris/types": "*",
-    "@exlibris/ui": "*",
+    "@librarum/ai": "*",
+    "@librarum/db": "*",
+    "@librarum/lib": "*",
+    "@librarum/types": "*",
+    "@librarum/ui": "*",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/jetbrains-mono": "^5.2.8",
     "@fontsource/playfair-display": "^5.2.8",

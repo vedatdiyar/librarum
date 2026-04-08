@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Barcode, CameraOff, X } from "lucide-react";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@exlibris/ui";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@librarum/ui";
 
 type MobileBarcodeScannerProps = {
   disabled?: boolean;

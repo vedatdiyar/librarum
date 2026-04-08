@@ -12,7 +12,7 @@ export const GET = withApiHandler(async () => {
     status: 200,
     headers: {
       "Content-Type": "application/json",
-      "Content-Disposition": 'attachment; filename="exlibris_export.json"'
+      "Content-Disposition": 'attachment; filename="librarum_export.json"'
     }
   });
 });

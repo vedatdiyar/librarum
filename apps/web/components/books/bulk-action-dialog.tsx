@@ -11,13 +11,13 @@ import {
   DialogHeader,
   DialogTitle,
   Input
-} from "@exlibris/ui";
+} from "@librarum/ui";
 import { LoaderCircle } from "lucide-react";
 import type {
   BulkBooksPatchInput,
   CategoryOption,
   SeriesListItem
-} from "@exlibris/types";
+} from "@librarum/types";
 
 export type BulkAction = "category" | "tags" | "location" | "status" | "donatable" | "series";
 

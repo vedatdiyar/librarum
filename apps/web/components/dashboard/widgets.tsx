@@ -28,13 +28,13 @@ import {
   CardHeader,
   CardTitle,
   cn
-} from "@exlibris/ui";
+} from "@librarum/ui";
 import type {
   BookListResponse,
   CategoryDistributionPoint,
   FavoriteAuthor,
   StatsSnapshot
-} from "@exlibris/types";
+} from "@librarum/types";
 
 const CHART_COLORS = [
   "#7ea596",

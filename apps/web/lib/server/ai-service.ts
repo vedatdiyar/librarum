@@ -1,11 +1,11 @@
 import { desc, eq, inArray, ne, sql } from "drizzle-orm";
 import {
-  EXLIBRIS_GEMINI_MODEL,
-  EXLIBRIS_GEMINI_TEMPERATURE,
+  LIBRARUM_GEMINI_MODEL,
+  LIBRARUM_GEMINI_TEMPERATURE,
   buildManualChatPrompt,
   buildMonthlySuggestionsPrompt,
   monthlySuggestionsResponseSchema
-} from "@exlibris/ai";
+} from "@librarum/ai";
 import {
   aiSuggestions,
   authors,
@@ -18,16 +18,16 @@ import {
   series,
   tags,
   bookTags
-} from "@exlibris/db";
+} from "@librarum/db";
 import type {
   AiSuggestionPayload,
   AiSuggestionRecord
-} from "@exlibris/types";
+} from "@librarum/types";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { ApiError } from "@/lib/server/api";
 import { monthlySuggestionModelSchema } from "@/lib/server/ai-schemas";
 import { searchBooks } from "@/lib/server/search-service";
-import { normalizeText } from "@exlibris/lib";
+import { normalizeText } from "@librarum/lib";
 
 type Blocklist = {
   authors: string[];
@@ -93,10 +93,10 @@ const STOPWORDS = new Set([
 let cachedClient: GoogleGenAI | null = null;
 
 function getAiClient() {
-  const apiKey = process.env.EXLIBRIS_GEMINI_API_KEY;
+  const apiKey = process.env.LIBRARUM_GEMINI_API_KEY;
 
   if (!apiKey) {
-    throw new Error("EXLIBRIS_GEMINI_API_KEY is not set.");
+    throw new Error("LIBRARUM_GEMINI_API_KEY is not set.");
   }
 
   cachedClient ??= new GoogleGenAI({ apiKey });
@@ -556,7 +556,7 @@ function normalizeMonthlyPayload(payload: unknown): AiSuggestionPayload {
 
   return {
     version: 1,
-    model: EXLIBRIS_GEMINI_MODEL,
+    model: LIBRARUM_GEMINI_MODEL,
     generatedAt: new Date().toISOString(),
     summary: parsed.summary,
     sections: parsed.sections
@@ -600,10 +600,10 @@ export async function regenerateMonthlyAiSuggestion() {
   });
   const ai = getAiClient();
   const response = await ai.models.generateContent({
-    model: EXLIBRIS_GEMINI_MODEL,
+    model: LIBRARUM_GEMINI_MODEL,
     contents: prompt,
     config: {
-      temperature: EXLIBRIS_GEMINI_TEMPERATURE,
+      temperature: LIBRARUM_GEMINI_TEMPERATURE,
       thinkingConfig: {
         thinkingLevel: ThinkingLevel.HIGH
       },
@@ -664,10 +664,10 @@ export async function createManualChatStream(message: string) {
     async start(controller) {
       try {
         const response = await ai.models.generateContentStream({
-          model: EXLIBRIS_GEMINI_MODEL,
+          model: LIBRARUM_GEMINI_MODEL,
           contents: prompt,
           config: {
-            temperature: EXLIBRIS_GEMINI_TEMPERATURE,
+            temperature: LIBRARUM_GEMINI_TEMPERATURE,
             thinkingConfig: {
               thinkingLevel: ThinkingLevel.HIGH
             }

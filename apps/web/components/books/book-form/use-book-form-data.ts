@@ -1,13 +1,13 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { readJsonResponse } from "@exlibris/lib";
+import { readJsonResponse } from "@librarum/lib";
 import type {
   AuthorOption,
   BookDetail,
   CategoryOption,
   SeriesOption,
   TagOption
-} from "@exlibris/types";
+} from "@librarum/types";
 import { toOptionalInteger } from "./use-book-form";
 
 interface UseBookFormDataOptions {

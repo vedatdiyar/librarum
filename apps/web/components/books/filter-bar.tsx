@@ -2,13 +2,13 @@
 
 import * as React from "react";
 import { Search } from "lucide-react";
-import { Input } from "@exlibris/ui";
+import { Input } from "@librarum/ui";
 import type {
   AuthorListItem,
   CategoryOption,
   SeriesListItem,
   TagOption
-} from "@exlibris/types";
+} from "@librarum/types";
 import type { BooksPageFilterState } from "./use-books-page-data";
 
 function FilterSelect({
@@ -148,4 +148,4 @@ export function BooksFilterBar({
   );
 }
 
-import { Card } from "@exlibris/ui";
+import { Card } from "@librarum/ui";

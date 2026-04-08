@@ -1,13 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { readJsonResponse } from "@exlibris/lib";
+import { readJsonResponse } from "@librarum/lib";
 import type {
   BookListResponse,
   CategoryDistributionPoint,
   FavoriteAuthor,
   StatsSnapshot
-} from "@exlibris/types";
+} from "@librarum/types";
 
 async function fetchStats() {
   return readJsonResponse<StatsSnapshot>(await fetch("/api/stats"));

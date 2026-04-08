@@ -18,7 +18,7 @@ import {
   createDb,
   series,
   tags
-} from "@exlibris/db";
+} from "@librarum/db";
 import type {
   ApiBookListItem,
   AuthorOption,
@@ -32,7 +32,7 @@ import type {
   EntityReferenceInput,
   SeriesReferenceInput,
   TagOption
-} from "@exlibris/types";
+} from "@librarum/types";
 import { ApiError, assertFound } from "@/lib/server/api";
 import {
   checkDuplicateBook,

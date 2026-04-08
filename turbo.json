@@ -7,7 +7,7 @@
       ],
       "outputs": []
     },
-    "@exlibris/web#build": {
+    "@librarum/web#build": {
       "outputs": [
         ".next/**",
         "!.next/cache/**"

@@ -2,7 +2,7 @@
 
 import { AuthError } from "next-auth";
 import { signIn } from "@/auth";
-import { getSafeRedirectTarget } from "@exlibris/lib";
+import { getSafeRedirectTarget } from "@librarum/lib";
 import { loginSchema } from "@/lib/auth-schema";
 
 

@@ -20,8 +20,8 @@ import {
   DialogHeader,
   DialogTitle,
   Input
-} from "@exlibris/ui";
-import { readJsonResponse } from "@exlibris/lib";
+} from "@librarum/ui";
+import { readJsonResponse } from "@librarum/lib";
 import {
   CSV_BOOK_COLUMNS,
   CSV_BOOK_COLUMN_DESCRIPTIONS
@@ -54,7 +54,7 @@ export function ImportExportTab() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `exlibris-export-${new Date().toISOString().split("T")[0]}.${format}`;
+      a.download = `librarum-export-${new Date().toISOString().split("T")[0]}.${format}`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -129,7 +129,7 @@ export function ImportExportTab() {
                 <p className="font-medium">CSV Formati</p>
                 <p className="text-sm text-text-secondary">
                   Excel veya Google Sheets icin tablosal cikti. Ayni kolon sozlesmesiyle
-                  tekrar ExLibris icine alinabilir.
+                  tekrar Librarum icine alinabilir.
                 </p>
               </div>
             </div>

@@ -14,8 +14,8 @@ import {
   TableHeader,
   TableRow,
   cn
-} from "@exlibris/ui";
-import type { ApiBookListItem } from "@exlibris/types";
+} from "@librarum/ui";
+import type { ApiBookListItem } from "@librarum/types";
 
 const STATUS_LABELS: Record<string, string> = {
   owned: "Sahibim",

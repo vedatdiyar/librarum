@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { sql } from "drizzle-orm";
-import { createDb, users } from "@exlibris/db";
+import { createDb, users } from "@librarum/db";
 import { loginSchema } from "@/lib/auth-schema";
 import authConfig from "./auth.config";
 

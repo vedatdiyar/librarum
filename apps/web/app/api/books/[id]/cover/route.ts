@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { eq } from "drizzle-orm";
-import { books, createDb } from "@exlibris/db";
+import { books, createDb } from "@librarum/db";
 import { apiSuccess, parseJsonBody, withApiHandler, ApiError } from "@/lib/server/api";
 import { requireSession } from "@/lib/server/auth";
 import { uuidSchema } from "@/lib/server/books-schemas";

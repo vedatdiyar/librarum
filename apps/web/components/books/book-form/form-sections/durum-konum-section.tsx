@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { useFormContext } from "react-hook-form";
-import { Checkbox, Input } from "@exlibris/ui";
+import { Checkbox, Input } from "@librarum/ui";
 import { Field } from "./kunye-section";
-import type { BookStatus } from "@exlibris/types";
+import type { BookStatus } from "@librarum/types";
 
 const FIELD_CLASS_NAME =
   "flex h-11 w-full rounded-xl border border-border/80 bg-surface px-4 py-2 text-sm text-text-primary outline-none transition placeholder:text-text-secondary/70 focus:border-accent/80 focus:ring-2 focus:ring-accent/15 disabled:cursor-not-allowed disabled:opacity-50";

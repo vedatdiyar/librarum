@@ -9,7 +9,7 @@ import {
   series,
   tags,
   bookTags
-} from "@exlibris/db";
+} from "@librarum/db";
 import type {
   AuthorDetail,
   AuthorDetailBook,
@@ -23,9 +23,9 @@ import type {
   SeriesOwnedVolume,
   SeriesOption,
   TagOption
-} from "@exlibris/types";
+} from "@librarum/types";
 import { ApiError, assertFound } from "@/lib/server/api";
-import { normalizeCount, normalizeFloat } from "@exlibris/lib";
+import { normalizeCount, normalizeFloat } from "@librarum/lib";
 
 async function assertNameAvailable(
   table: typeof authors | typeof categories | typeof tags | typeof series,

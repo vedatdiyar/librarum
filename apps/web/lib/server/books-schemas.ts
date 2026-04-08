@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { BookStatus, DuplicateResolution } from "@exlibris/types";
+import type { BookStatus, DuplicateResolution } from "@librarum/types";
 
 const UUID_MESSAGE = "Must be a valid UUID.";
 

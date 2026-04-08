@@ -1,6 +1,6 @@
 import * as React from "react";
-import type { BookFormMode, BookDetail, CoverUploadResponse } from "@exlibris/types";
-import { readJsonResponse } from "@exlibris/lib";
+import type { BookFormMode, BookDetail, CoverUploadResponse } from "@librarum/types";
+import { readJsonResponse } from "@librarum/lib";
 
 export function useCoverUpload(options: {
   mode: BookFormMode;

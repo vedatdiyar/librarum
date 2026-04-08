@@ -7,9 +7,9 @@ import {
   categories,
   createDb,
   series
-} from "@exlibris/db";
-import type { BookStatus, SearchResultItem } from "@exlibris/types";
-import { normalizeText } from "@exlibris/lib";
+} from "@librarum/db";
+import type { BookStatus, SearchResultItem } from "@librarum/types";
+import { normalizeText } from "@librarum/lib";
 
 type ParsedSearchQuery = {
   status?: BookStatus;

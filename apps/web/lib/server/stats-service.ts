@@ -1,5 +1,5 @@
 import { asc, countDistinct, eq, sql } from "drizzle-orm";
-import { authors, bookAuthors, books, categories, createDb } from "@exlibris/db";
+import { authors, bookAuthors, books, categories, createDb } from "@librarum/db";
 import type {
   AuthorDistributionPoint,
   CategoryDistributionPoint,
@@ -7,9 +7,9 @@ import type {
   StatsSnapshot,
   StatusBreakdownPoint,
   TimeSeriesPoint
-} from "@exlibris/types";
+} from "@librarum/types";
 import { listRecentBooks } from "@/lib/server/books-service";
-import { normalizeCount, normalizeFloat } from "@exlibris/lib";
+import { normalizeCount, normalizeFloat } from "@librarum/lib";
 
 const STATUS_ORDER: StatusBreakdownPoint["status"][] = [
   "owned",

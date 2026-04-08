@@ -34,10 +34,10 @@ function requireEnv(name: string) {
 }
 
 async function seedUser() {
-  const databaseUrl = requireEnv("EXLIBRIS_DATABASE_URL");
-  const email = requireEnv("EXLIBRIS_SEED_ADMIN_EMAIL").toLowerCase();
-  const password = requireEnv("EXLIBRIS_SEED_ADMIN_PASSWORD");
-  const displayName = requireEnv("EXLIBRIS_SEED_ADMIN_NAME");
+  const databaseUrl = requireEnv("LIBRARUM_DATABASE_URL");
+  const email = requireEnv("LIBRARUM_SEED_ADMIN_EMAIL").toLowerCase();
+  const password = requireEnv("LIBRARUM_SEED_ADMIN_PASSWORD");
+  const displayName = requireEnv("LIBRARUM_SEED_ADMIN_NAME");
 
   const db = createDb(databaseUrl);
   const passwordHash = await hash(password, 12);
