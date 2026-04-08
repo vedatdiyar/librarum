@@ -4,7 +4,7 @@
   "installCommand": "npm install",
   "buildCommand": "npm exec --workspace=@exlibris/web next build -- --webpack",
   "devCommand": "npm run dev --workspace=@exlibris/web",
-  "outputDirectory": "apps/web/.next",
+  "outputDirectory": ".next",
   "crons": [
     {
       "path": "/api/cron/ai-suggestions",
