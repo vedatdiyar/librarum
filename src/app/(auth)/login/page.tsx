@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import { auth } from "@/auth";
-import { getSafeRedirectTarget } from "@/lib/shared";
+import { getSafeRedirectTarget, hasAuthenticatedUser } from "@/lib/shared";
 import { LoginForm } from "./login-form";
 
 type LoginPageProps = {
@@ -16,7 +16,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const callbackUrl = getSafeRedirectTarget(resolvedSearchParams?.callbackUrl);
 
-  if (session) {
+  if (hasAuthenticatedUser(session)) {
     redirect(callbackUrl);
   }
 

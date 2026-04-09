@@ -2,9 +2,14 @@ import { NextResponse } from "next/server";
 import type { NextAuthConfig } from "next-auth";
 import { getSafeRedirectTarget } from "@/lib/shared";
 
+const authSecret =
+  process.env.LIBRARUM_AUTH_SECRET ??
+  process.env.AUTH_SECRET ??
+  process.env.NEXTAUTH_SECRET;
 
 const authConfig = {
-  secret: process.env.LIBRARUM_AUTH_SECRET,
+  secret: authSecret,
+  trustHost: true,
   pages: {
     signIn: "/login"
   },

@@ -76,7 +76,10 @@ export function useSelection(items: ApiBookListItem[]) {
   const visibleIds = React.useMemo(() => items.map((item) => item.id), [items]);
 
   React.useEffect(() => {
-    setSelectedIds((current) => current.filter((id) => visibleIds.includes(id)));
+    setSelectedIds((current) => {
+      const nextSelectedIds = current.filter((id) => visibleIds.includes(id));
+      return nextSelectedIds.length === current.length ? current : nextSelectedIds;
+    });
   }, [visibleIds]);
 
   const allVisibleSelected =

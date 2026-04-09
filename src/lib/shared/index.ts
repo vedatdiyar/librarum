@@ -44,6 +44,20 @@ export function getSafeRedirectTarget(callbackUrl?: string | string[] | null): s
   return callbackUrl;
 }
 
+export function hasAuthenticatedUser(
+  session:
+    | {
+        user?: {
+          id?: string | null;
+          email?: string | null;
+        } | null;
+      }
+    | null
+    | undefined
+): boolean {
+  return Boolean(session?.user?.id || session?.user?.email);
+}
+
 export function normalizeCount(value: number | string | null | undefined): number {
   return Number(value ?? 0);
 }
