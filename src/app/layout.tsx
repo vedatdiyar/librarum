@@ -23,7 +23,7 @@ export default async function RootLayout({
   const session = await auth();
 
   return (
-    <html lang="tr">
+    <html lang="tr" data-scroll-behavior="smooth">
       <head>
         <meta name="apple-mobile-web-app-title" content="Librarum" />
       </head>
