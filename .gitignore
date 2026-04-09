@@ -8,3 +8,4 @@ npm-debug.log*
 .env.*.local
 coverage
 .vercel
+*.tsbuildinfo

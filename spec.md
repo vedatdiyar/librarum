@@ -63,17 +63,19 @@ _Librarum is a real-time system requiring an internet connection._
 | **Environments** | Development, Production                 |
 | **Env prefix**   | ARCHIVUM\_                              |
 
-## **3.4 Monorepo Layout**
+## **3.4 Project Layout**
 
-_apps/web is the sole Vercel deployment target. packages/ai code runs exclusively inside Vercel API Routes - never in the browser bundle. No Supabase dependency anywhere in the stack._
+_The root project is the sole Vercel deployment target. AI prompt code runs exclusively inside Vercel API Routes - never in the browser bundle. No Supabase dependency anywhere in the stack._
 
-| **apps/web**       | Next.js application (Vercel deploy target)               |
-| ------------------ | -------------------------------------------------------- |
-| **packages/ui**    | Shared UI component library                              |
-| **packages/types** | Shared TypeScript types                                  |
-| **packages/lib**   | Shared utilities                                         |
-| **packages/ai**    | AI prompt templates - consumed by Vercel API Routes only |
-| **packages/db**    | Drizzle schema, migrations, Neon client                  |
+| **root app/**            | Next.js application (Vercel deploy target)                 |
+| ------------------------ | ---------------------------------------------------------- |
+| **root components/**     | App-specific UI components                                 |
+| **root lib/**            | App-specific utilities, API helpers, and stores            |
+| **root src/lib/ui**      | Shared UI primitives                                       |
+| **root src/lib/types**   | Shared TypeScript types                                    |
+| **root src/lib/shared**  | Shared utilities                                           |
+| **root src/lib/ai**      | AI prompt templates - consumed by Vercel API Routes only   |
+| **root src/lib/db**      | Drizzle schema, migrations, seed logic, and Neon client    |
 
 # **4\. Book Entity Model**
 
@@ -581,4 +583,4 @@ Complete log of all design decisions for Librarum v1.0.
 | **Cron timeout**            | Collection summarized to ≤2000 tokens before AI call. Expected < 10s, within Vercel free-tier limit.                                                                                                             |
 | **Password reset**          | No email flow. Recovery = manual DB update via Neon console.                                                                                                                                                     |
 | **Stats granularity**       | read_month + read_year. No day-level precision.                                                                                                                                                                  |
-| **Monorepo deploy**         | apps/web → Vercel. packages/ai → Vercel API Routes only. packages/db → Drizzle schema + Neon client.                                                                                                             |
+| **Deployment layout**       | Single root Next.js app on Vercel. `src/lib/ai` runs only in Vercel API Routes, and `src/lib/db` contains the Drizzle schema plus Neon client.                                                                  |
