@@ -3,7 +3,7 @@ import { jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid } from "driz
 
 export const recommendationPreferenceTypeEnum = pgEnum(
   "recommendation_preference_type",
-  ["author", "category", "tag"]
+  ["author", "category"]
 );
 
 export const aiSuggestions = pgTable("ai_suggestions", {

@@ -1,14 +1,40 @@
 import { sql } from "drizzle-orm";
-import { integer, pgTable, text, uniqueIndex, uuid, check } from "drizzle-orm/pg-core";
+import {
+  check,
+  integer,
+  pgTable,
+  text,
+  uniqueIndex,
+  uuid
+} from "drizzle-orm/pg-core";
 
 export const authors = pgTable(
   "authors",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    name: text("name").notNull()
+    name: text("name").notNull(),
+    slug: text("slug").notNull()
   },
   (table) => [
-    uniqueIndex("authors_name_ci_unique").on(sql`lower(${table.name})`)
+    uniqueIndex("authors_name_ci_unique").on(sql`lower(${table.name})`),
+    uniqueIndex("authors_slug_unique").on(table.slug)
+  ]
+);
+
+export const authorAliases = pgTable(
+  "author_aliases",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    authorId: uuid("author_id")
+      .notNull()
+      .references(() => authors.id, {
+        onDelete: "cascade"
+      }),
+    name: text("name").notNull(),
+    normalizedName: text("normalized_name").notNull()
+  },
+  (table) => [
+    uniqueIndex("author_aliases_normalized_name_unique").on(table.normalizedName)
   ]
 );
 
@@ -21,15 +47,6 @@ export const categories = pgTable(
   (table) => [
     uniqueIndex("categories_name_ci_unique").on(sql`lower(${table.name})`)
   ]
-);
-
-export const tags = pgTable(
-  "tags",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    name: text("name").notNull()
-  },
-  (table) => [uniqueIndex("tags_name_ci_unique").on(sql`lower(${table.name})`)]
 );
 
 export const series = pgTable(
@@ -50,9 +67,9 @@ export const series = pgTable(
 
 export type Author = typeof authors.$inferSelect;
 export type NewAuthor = typeof authors.$inferInsert;
+export type AuthorAlias = typeof authorAliases.$inferSelect;
+export type NewAuthorAlias = typeof authorAliases.$inferInsert;
 export type Category = typeof categories.$inferSelect;
 export type NewCategory = typeof categories.$inferInsert;
-export type Tag = typeof tags.$inferSelect;
-export type NewTag = typeof tags.$inferInsert;
 export type Series = typeof series.$inferSelect;
 export type NewSeries = typeof series.$inferInsert;

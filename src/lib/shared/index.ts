@@ -78,6 +78,37 @@ export function normalizeText(value: string): string {
     .trim();
 }
 
+export function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value
+  );
+}
+
+export function toSlugPart(value: string, fallback: string): string {
+  const normalized = normalizeText(value)
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return normalized || fallback;
+}
+
+export function buildUniqueSlug(
+  value: string,
+  id: string,
+  fallback: string,
+  hasConflict: (slug: string) => boolean
+): string {
+  const baseSlug = toSlugPart(value, fallback);
+
+  if (!hasConflict(baseSlug)) {
+    return baseSlug;
+  }
+
+  const shortId = id.replace(/-/g, "").slice(0, 6).toLowerCase();
+  return `${baseSlug}-${shortId}`;
+}
+
 export async function readJsonResponse<T>(response: Response): Promise<T> {
   const json = (await response.json()) as unknown;
 

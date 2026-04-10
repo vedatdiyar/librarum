@@ -1,3 +1,5 @@
+import type { CuratorMonthlyReport } from "@/types/curator";
+
 export type AiRecommendationItem = {
   title: string;
   author: string;
@@ -45,7 +47,7 @@ export type AiSuggestionRecord = {
 };
 
 export type AiSuggestionsResponse = {
-  suggestion: AiSuggestionRecord | null;
+  report: CuratorMonthlyReport | null;
 };
 
 export type AiChatRequest = {

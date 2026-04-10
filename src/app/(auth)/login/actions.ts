@@ -14,7 +14,7 @@ export async function authenticate(formData: FormData) {
 
   if (!parsedCredentials.success) {
     return {
-      error: "E-posta veya sifre gecersiz."
+      error: "E-posta veya şifre geçersiz."
     };
   }
 
@@ -29,7 +29,7 @@ export async function authenticate(formData: FormData) {
   } catch (error) {
     if (error instanceof AuthError) {
       return {
-        error: "E-posta veya sifre hatali."
+        error: "E-posta veya şifre hatalı."
       };
     }
 

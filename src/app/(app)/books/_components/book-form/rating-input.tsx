@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Star } from "lucide-react";
+import { Star, X } from "lucide-react";
 import { cn } from "@/components/ui";
 
 export function RatingInput({
@@ -14,55 +14,111 @@ export function RatingInput({
   const [hoveredValue, setHoveredValue] = React.useState<number | null>(null);
   const activeValue = hoveredValue ?? value ?? 0;
 
+  const stars = [1, 2, 3, 4, 5];
+
+  const RATING_LABELS: Record<number, string> = {
+    1: "Berbat",
+    2: "Kötü",
+    3: "Eh işte",
+    4: "İyi",
+    5: "Harika"
+  };
+
+  const handleRating = (val: number) => {
+    if (value === val) {
+      onChange(null);
+    } else {
+      onChange(val);
+    }
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="relative flex flex-col gap-8 select-none">
       <div
-        aria-label="Puan seçin"
-        className="flex flex-wrap gap-2"
+        aria-label="Kitap puanı seçici"
+        className="flex items-center gap-2"
         onMouseLeave={() => setHoveredValue(null)}
         role="group"
       >
-        {Array.from({ length: 10 }, (_, index) => (index + 1) / 2).map((starValue) => {
-          const isSelected = value === starValue;
-          const isHighlighted = activeValue >= starValue;
+        {stars.map((index) => {
+          const isFull = activeValue >= index;
+          const fillPercentage = isFull ? 100 : 0;
           
           return (
             <button
-              key={starValue}
-              className={cn(
-                "group relative flex h-10 w-16 items-center justify-center rounded-xl border transition-all duration-200",
-                isSelected
-                  ? "border-primary/50 bg-primary/10 text-primary shadow-[0_0_15px_-5px_var(--primary)]"
-                  : isHighlighted
-                    ? "border-primary/30 bg-primary/5 text-primary/80"
-                    : "border-border/60 bg-surface/40 text-text-secondary hover:border-border hover:bg-surface/80 hover:text-text-primary"
-              )}
-              onClick={() => onChange(isSelected ? null : starValue)}
-              onMouseEnter={() => setHoveredValue(starValue)}
+              aria-pressed={value === index}
+              aria-label={`Puan: ${index}`}
+              key={index}
+              className="group relative h-12 w-12 transition-all duration-300 hover:scale-110 active:scale-95"
+              onBlur={() => setHoveredValue(null)}
+              onClick={() => handleRating(index)}
+              onFocus={() => setHoveredValue(index)}
+              onMouseEnter={() => setHoveredValue(index)}
               type="button"
             >
-              <div className="flex flex-col items-center">
-                <Star 
-                  className={cn(
-                    "h-3.5 w-3.5 transition-transform duration-200 group-hover:scale-110", 
-                    isHighlighted ? "fill-primary" : "fill-transparent"
-                  )} 
+              {/* Star Background (Empty State) */}
+              <Star
+                className={cn(
+                  "h-full w-full stroke-[1px] transition-colors duration-300",
+                  activeValue >= index 
+                    ? "text-transparent" 
+                    : "text-white/10 group-hover:text-white/20"
+                )}
+                fill="currentColor"
+              />
+
+              {/* Star Fill (Letterboxd Orange/Gold) */}
+              <div
+                className="absolute inset-0 overflow-hidden text-[#ff8000] transition-all duration-300 ease-out"
+                style={{ width: `${fillPercentage}%` }}
+              >
+                <Star
+                  className="h-12 w-12 stroke-[1px]"
+                  fill="currentColor"
                 />
-                <span className="mt-0.5 text-[11px] font-medium">{starValue.toFixed(1)}</span>
               </div>
-              
-              {isSelected && (
-                <div className="absolute -inset-pxunded-xl border border-primary/20 bg-primary/5 pointer-events-none" />
+
+              {/* Visual "Pulse" or subtle glow for the hovered value */}
+              {hoveredValue !== null && hoveredValue >= index && (
+                <div className="absolute inset-0 -z-10 rounded-full bg-[#ff8000]/5" />
               )}
             </button>
           );
         })}
+
+        {/* Clear Button */}
+        <div 
+            className={cn(
+                "ml-4 transition-all duration-500",
+                value !== null ? "translate-x-0 opacity-100" : "pointer-events-none translate-x-4 opacity-0"
+            )}
+        >
+            <button
+                onClick={() => onChange(null)}
+                className="group flex h-10 w-10 items-center justify-center rounded-2xl border border-white/5 bg-white/2 text-white/20 transition-all hover:border-white/10 hover:bg-white/5 hover:text-white"
+                title="Puanı Sıfırla"
+                type="button"
+            >
+                <X className="h-4 w-4 transition-transform group-hover:rotate-90" />
+            </button>
+        </div>
       </div>
-      <div className="flex items-center gap-2">
-        <div className="h-px flex-1 bg-linear-to-r from-border/50 to-transparent" />
-        <p className="font-meta text-[10px] font-bold uppercase tracking-wider text-text-secondary/70">
-          Skor: <span className="text-text-primary">{value ? value.toFixed(1) : "—"}</span>
-        </p>
+
+      {/* Info Footer */}
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3">
+            <div className={cn(
+                "flex h-8 items-center gap-2 rounded-full border px-4 transition-all duration-500",
+                value 
+                    ? "border-[#ff8000]/20 bg-[#ff8000]/5 text-[#ff8000]" 
+                    : "border-white/5 bg-white/2 text-white/20"
+            )}>
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase">
+                    {value ? RATING_LABELS[value] || "ÖZEL PUAN" : "PUANLANMADI"}
+                </span>
+            </div>
+        </div>
+        <div className="h-px flex-1 bg-linear-to-r from-white/5 via-white/2 to-transparent" />
       </div>
     </div>
   );

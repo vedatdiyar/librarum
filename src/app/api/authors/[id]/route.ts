@@ -1,7 +1,11 @@
 import { apiSuccess, parseJsonBody, withApiHandler } from "@/server/api";
 import { requireSession } from "@/server/auth";
-import { updateAuthorSchema, uuidSchema } from "@/server/books-schemas";
-import { getAuthorDetail, updateAuthor } from "@/server/catalog-service";
+import { updateAuthorSchema } from "@/server/books-schemas";
+import {
+  getAuthorDetail,
+  resolveAuthorIdentifier,
+  updateAuthor
+} from "@/server/catalog-service";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +18,7 @@ type AuthorRouteContext = {
 export const GET = withApiHandler(async (_request: Request, context: AuthorRouteContext) => {
   await requireSession();
   const { id } = await context.params;
-  const authorId = uuidSchema.parse(id);
+  const authorId = (await resolveAuthorIdentifier(id)).id;
   const author = await getAuthorDetail(authorId);
 
   return apiSuccess(author);
@@ -23,7 +27,7 @@ export const GET = withApiHandler(async (_request: Request, context: AuthorRoute
 export const PATCH = withApiHandler(async (request: Request, context: AuthorRouteContext) => {
   await requireSession();
   const { id } = await context.params;
-  const authorId = uuidSchema.parse(id);
+  const authorId = (await resolveAuthorIdentifier(id)).id;
   const payload = await parseJsonBody(request, updateAuthorSchema);
   const author = await updateAuthor(authorId, payload.name);
 

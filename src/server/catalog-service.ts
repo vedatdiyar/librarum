@@ -1,38 +1,47 @@
-import { asc, countDistinct, eq, ilike, sql } from "drizzle-orm";
+import { asc, countDistinct, eq, sql } from "drizzle-orm";
 import {
+  authorAliases,
   authors,
   bookAuthors,
   bookSeries,
   books,
   categories,
   createDb,
-  series,
-  tags,
-  bookTags
+  series
 } from "@/db";
 import type {
   AuthorDetail,
   AuthorDetailBook,
   AuthorListItem,
   AuthorOption,
+  AuthorResolutionDecision,
+  AuthorResolutionResponse,
   AuthorRelatedSeries,
   CategoryOption,
   CategoryDistributionPoint,
   SeriesDetail,
   SeriesListItem,
   SeriesOwnedVolume,
-  SeriesOption,
-  TagOption
+  SeriesOption
 } from "@/types";
 import { ApiError, assertFound } from "@/server/api";
-import { normalizeCount, normalizeFloat } from "@/lib/shared";
+import {
+  buildUniqueSlug,
+  isUuid,
+  normalizeCount,
+  normalizeFloat
+} from "@/lib/shared";
+import {
+  isAuthorNameAvailable,
+  resolveAuthorIdentity,
+  resolveOrCreateAuthor,
+  syncAuthorAliases
+} from "@/server/author-identity";
 
 async function assertNameAvailable(
-  table: typeof authors | typeof categories | typeof tags | typeof series,
+  table: typeof categories | typeof series,
   nameColumn:
-    | typeof authors.name
     | typeof categories.name
-    | typeof tags.name
     | typeof series.name,
   name: string,
   excludedId?: string
@@ -55,6 +64,60 @@ async function assertNameAvailable(
   if (existing[0]) {
     throw new ApiError(409, "Resource already exists.");
   }
+}
+
+async function assertAuthorNameAvailable(name: string, excludedId?: string) {
+  const db = createDb();
+  const isAvailable = await isAuthorNameAvailable(db, name, excludedId);
+
+  if (!isAvailable) {
+    throw new ApiError(409, "Resource already exists.");
+  }
+}
+
+async function authorSlugExists(slug: string, excludedId?: string) {
+  const db = createDb();
+  const rows = await db
+    .select({
+      id: authors.id
+    })
+    .from(authors)
+    .where(
+      excludedId
+        ? sql`${authors.slug} = ${slug} and ${authors.id} <> ${excludedId}`
+        : eq(authors.slug, slug)
+    )
+    .limit(1);
+
+  return Boolean(rows[0]);
+}
+
+async function computeAuthorSlug(name: string, authorId: string) {
+  const baseSlug = buildUniqueSlug(name, authorId, "author", () => false);
+
+  if (!(await authorSlugExists(baseSlug, authorId))) {
+    return baseSlug;
+  }
+
+  return buildUniqueSlug(name, authorId, "author", () => true);
+}
+
+export async function resolveAuthorIdentifier(identifier: string) {
+  const db = createDb();
+  const rows = await db
+    .select({
+      id: authors.id,
+      slug: authors.slug
+    })
+    .from(authors)
+    .where(
+      isUuid(identifier)
+        ? sql`${authors.id} = ${identifier} or ${authors.slug} = ${identifier}`
+        : eq(authors.slug, identifier)
+    )
+    .limit(1);
+
+  return assertFound(rows[0], "Author not found.");
 }
 
 
@@ -81,21 +144,31 @@ function computeCompletionPercentage(
 export async function listAuthors(query: string | null | undefined): Promise<AuthorListItem[]> {
   const db = createDb();
   const normalizedQuery = query?.trim() ?? "";
+  const likePattern = `%${normalizedQuery}%`;
   const likeClause = normalizedQuery
-    ? sql`where ${authors.name} ilike ${`%${normalizedQuery}%`}`
+    ? sql`where (
+        ${authors.name} ilike ${likePattern}
+        or exists (
+          select 1
+          from ${authorAliases}
+          where ${authorAliases.authorId} = ${authors.id}
+            and ${authorAliases.name} ilike ${likePattern}
+        )
+      )`
     : sql``;
   const limitClause = normalizedQuery ? sql`limit 20` : sql``;
   const result = await db.execute(sql`
     select
       ${authors.id} as id,
       ${authors.name} as name,
+      ${authors.slug} as slug,
       count(distinct ${bookAuthors.bookId}) as book_count,
       round((avg(${books.rating}) filter (where ${books.rating} is not null))::numeric, 2) as average_rating
     from ${authors}
     left join ${bookAuthors} on ${bookAuthors.authorId} = ${authors.id}
     left join ${books} on ${books.id} = ${bookAuthors.bookId}
     ${likeClause}
-    group by ${authors.id}, ${authors.name}
+    group by ${authors.id}, ${authors.name}, ${authors.slug}
     order by ${authors.name} asc
     ${limitClause}
   `);
@@ -103,25 +176,32 @@ export async function listAuthors(query: string | null | undefined): Promise<Aut
   return result.rows.map((row) => ({
     id: String(row.id),
     name: String(row.name),
+    slug: String(row.slug),
     bookCount: normalizeCount(row.book_count as number | string),
     averageRating: toNullableFloat(row.average_rating as number | string | null)
   }));
 }
 
 export async function createAuthor(name: string): Promise<AuthorOption> {
-  await assertNameAvailable(authors, authors.name, name);
+  await assertAuthorNameAvailable(name);
 
   const db = createDb();
+  const authorId = crypto.randomUUID();
+  const slug = await computeAuthorSlug(name, authorId);
   const created = await db
     .insert(authors)
     .values({
-      name
+      id: authorId,
+      name,
+      slug
     })
     .returning({
       id: authors.id,
-      name: authors.name
+      name: authors.name,
+      slug: authors.slug
     });
 
+  await syncAuthorAliases(db, created[0].id, created[0].name);
   return created[0];
 }
 
@@ -136,20 +216,56 @@ export async function updateAuthor(authorId: string, name: string): Promise<Auth
     .limit(1);
 
   assertFound(existing[0], "Author not found.");
-  await assertNameAvailable(authors, authors.name, name, authorId);
+  await assertAuthorNameAvailable(name, authorId);
+
+  const resolution = await resolveAuthorIdentity(db, name);
+
+  if (
+    resolution &&
+    resolution.status === "auto-merge" &&
+    resolution.author.id !== authorId
+  ) {
+    throw new ApiError(409, "Resource already exists.");
+  }
+
+  const previousAliases = await db
+    .select({
+      name: authorAliases.name
+    })
+    .from(authorAliases)
+    .where(eq(authorAliases.authorId, authorId));
 
   const updated = await db
     .update(authors)
     .set({
-      name
+      name,
+      slug: await computeAuthorSlug(name, authorId)
     })
     .where(eq(authors.id, authorId))
     .returning({
       id: authors.id,
-      name: authors.name
+      name: authors.name,
+      slug: authors.slug
     });
 
+  await syncAuthorAliases(
+    db,
+    updated[0].id,
+    updated[0].name,
+    previousAliases.map((alias) => alias.name)
+  );
   return updated[0];
+}
+
+export async function resolveAuthorName(
+  name: string,
+  input?: {
+    decision?: AuthorResolutionDecision;
+    suggestedAuthorId?: string;
+  }
+): Promise<AuthorResolutionResponse> {
+  const db = createDb();
+  return resolveOrCreateAuthor(db, name, input);
 }
 
 export async function getAuthorDetail(authorId: string): Promise<AuthorDetail> {
@@ -158,13 +274,14 @@ export async function getAuthorDetail(authorId: string): Promise<AuthorDetail> {
     select
       ${authors.id} as id,
       ${authors.name} as name,
+      ${authors.slug} as slug,
       count(distinct ${bookAuthors.bookId}) as book_count,
       round((avg(${books.rating}) filter (where ${books.rating} is not null))::numeric, 2) as average_rating
     from ${authors}
     left join ${bookAuthors} on ${bookAuthors.authorId} = ${authors.id}
     left join ${books} on ${books.id} = ${bookAuthors.bookId}
     where ${authors.id} = ${authorId}
-    group by ${authors.id}, ${authors.name}
+    group by ${authors.id}, ${authors.name}, ${authors.slug}
     limit 1
   `);
   const authorRow = assertFound(authorSummaryResult.rows[0], "Author not found.");
@@ -174,6 +291,7 @@ export async function getAuthorDetail(authorId: string): Promise<AuthorDetail> {
       select
         ${books.id} as id,
         ${books.title} as title,
+        ${books.slug} as slug,
         ${books.status} as status,
         ${books.rating} as rating,
         coalesce(${books.coverCustomUrl}, ${books.coverMetadataUrl}) as cover_url,
@@ -218,6 +336,7 @@ export async function getAuthorDetail(authorId: string): Promise<AuthorDetail> {
   const booksByAuthor: AuthorDetailBook[] = bookRows.rows.map((row) => ({
     id: String(row.id),
     title: String(row.title),
+    slug: String(row.slug),
     coverUrl: row.cover_url ? String(row.cover_url) : null,
     status: String(row.status) as AuthorDetailBook["status"],
     rating: row.rating == null ? null : normalizeFloat(row.rating as number | string),
@@ -254,6 +373,7 @@ export async function getAuthorDetail(authorId: string): Promise<AuthorDetail> {
   return {
     id: String(authorRow.id),
     name: String(authorRow.name),
+    slug: String(authorRow.slug),
     bookCount: normalizeCount(authorRow.book_count as number | string),
     averageRating: toNullableFloat(authorRow.average_rating as number | string | null),
     books: booksByAuthor,
@@ -308,51 +428,7 @@ export async function deleteCategory(categoryId: string) {
   await db.delete(categories).where(eq(categories.id, categoryId));
 }
 
-export async function listTags(): Promise<TagOption[]> {
-  const db = createDb();
 
-  return db
-    .select({
-      id: tags.id,
-      name: tags.name,
-      bookCount: countDistinct(bookTags.bookId)
-    })
-    .from(tags)
-    .leftJoin(bookTags, eq(bookTags.tagId, tags.id))
-    .groupBy(tags.id)
-    .orderBy(asc(tags.name));
-}
-
-export async function createTag(name: string): Promise<TagOption> {
-  await assertNameAvailable(tags, tags.name, name);
-
-  const db = createDb();
-  const created = await db
-    .insert(tags)
-    .values({
-      name
-    })
-    .returning({
-      id: tags.id,
-      name: tags.name
-    });
-
-  return created[0];
-}
-
-export async function deleteTag(tagId: string) {
-  const db = createDb();
-  const existing = await db
-    .select({
-      id: tags.id
-    })
-    .from(tags)
-    .where(eq(tags.id, tagId))
-    .limit(1);
-
-  assertFound(existing[0], "Tag not found.");
-  await db.delete(tags).where(eq(tags.id, tagId));
-}
 
 export async function listSeries(): Promise<SeriesOption[]> {
   const db = createDb();
@@ -486,6 +562,7 @@ export async function getSeriesDetail(seriesId: string): Promise<SeriesDetail> {
   const ownedResult = await db.execute(sql`
     select
       ${books.id} as book_id,
+      ${books.slug} as slug,
       ${books.title} as title,
       ${books.status} as status,
       coalesce(${books.coverCustomUrl}, ${books.coverMetadataUrl}) as cover_url,
@@ -501,6 +578,7 @@ export async function getSeriesDetail(seriesId: string): Promise<SeriesDetail> {
 
   const ownedVolumes: SeriesOwnedVolume[] = ownedResult.rows.map((row) => ({
     bookId: String(row.book_id),
+    slug: String(row.slug),
     title: String(row.title),
     coverUrl: row.cover_url ? String(row.cover_url) : null,
     seriesOrder:

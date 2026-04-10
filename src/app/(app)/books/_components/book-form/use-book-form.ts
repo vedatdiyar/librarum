@@ -20,21 +20,22 @@ import { readJsonResponse } from "@/lib/shared";
 export const BOOK_FORM_SCHEMA = z
   .object({
     isbn: z.string().trim().optional(),
-    title: z.string().trim().min(1, "Baslik zorunlu."),
-    authorIds: z.array(z.string().uuid()).min(1, "En az bir yazar secilmeli."),
+    title: z.string().trim().min(1, "Başlık zorunlu."),
+    subtitle: z.string().trim().optional(),
+    authorIds: z.array(z.string().uuid()).default([]),
+    authorNames: z.array(z.string().trim().min(1)).default([]),
     publisher: z.string().trim().optional(),
     publicationYear: z
       .string()
       .trim()
       .optional()
-      .refine((value) => !value || /^\d{1,4}$/.test(value), "Yayin yili sayi olmali."),
+      .refine((value) => !value || /^\d{1,4}$/.test(value), "Yayın yılı sayı olmalı."),
     pageCount: z
       .string()
       .trim()
       .optional()
-      .refine((value) => !value || /^\d+$/.test(value), "Sayfa sayisi sayi olmali."),
+      .refine((value) => !value || /^\d+$/.test(value), "Sayfa sayısı sayı olmalı."),
     categoryId: z.string().trim().optional(),
-    tagIds: z.array(z.string().uuid()).default([]),
     isSeries: z.boolean().default(false),
     seriesId: z.string().trim().optional(),
     seriesName: z.string().trim().optional(),
@@ -42,29 +43,24 @@ export const BOOK_FORM_SCHEMA = z
       .string()
       .trim()
       .optional()
-      .refine((value) => !value || /^\d+$/.test(value), "Toplam cilt sayisi sayi olmali."),
+      .refine((value) => !value || /^\d+$/.test(value), "Toplam cilt sayısı sayı olmalı."),
     seriesOrder: z
       .string()
       .trim()
       .optional()
-      .refine((value) => !value || /^\d+$/.test(value), "Cilt numarasi sayi olmali."),
+      .refine((value) => !value || /^\d+$/.test(value), "Cilt numarası sayı olmalı."),
     status: z.enum(["owned", "completed", "abandoned", "loaned", "lost"]),
     locationName: z.string().trim().optional(),
     shelfRow: z
       .string()
       .trim()
       .optional()
-      .refine((value) => !value || /^[A-Za-z]$/.test(value), "Raf tek harf olmali."),
-    shelfColumn: z
-      .string()
-      .trim()
-      .optional()
-      .refine((value) => !value || /^\d+$/.test(value), "Sutun sayi olmali."),
+      .refine((value) => !value || /^[A-Za-z]$/.test(value), "Raf tek harf olmalı."),
     copyCount: z
       .string()
       .trim()
       .default("1")
-      .refine((value) => /^\d+$/.test(value) && Number(value) >= 1, "Kopya sayisi en az 1 olmali."),
+      .refine((value) => /^\d+$/.test(value) && Number(value) >= 1, "Kopya sayısı en az 1 olmalı."),
     donatable: z.boolean().default(false),
     rating: z.number().min(0.5).max(5).nullable(),
     readMonth: z.string().trim().optional(),
@@ -72,7 +68,7 @@ export const BOOK_FORM_SCHEMA = z
       .string()
       .trim()
       .optional()
-      .refine((value) => !value || /^\d{4}$/.test(value), "Yil 4 haneli olmali."),
+      .refine((value) => !value || /^\d{4}$/.test(value), "Yıl 4 haneli olmalı."),
     personalNote: z.string().trim().optional(),
     loanedTo: z.string().trim().optional(),
     coverMetadataUrl: z.string().trim().url().optional().or(z.literal("")),
@@ -80,10 +76,18 @@ export const BOOK_FORM_SCHEMA = z
     coverUploadKey: z.string().trim().optional()
   })
   .superRefine((value, context) => {
+    if ((value.authorIds?.length ?? 0) + (value.authorNames?.length ?? 0) < 1) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "En az bir yazar seçilmeli.",
+        path: ["authorIds"]
+      });
+    }
+
     if (value.status === "loaned" && !value.loanedTo) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Odunc verilen kisi zorunlu.",
+        message: "Ödünç verilen kişi zorunlu.",
         path: ["loanedTo"]
       });
     }
@@ -91,7 +95,7 @@ export const BOOK_FORM_SCHEMA = z
     if (value.readMonth && !value.readYear) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Ay secildiyse yil da girilmeli.",
+        message: "Ay seçildiyse yıl da girilmeli.",
         path: ["readYear"]
       });
     }
@@ -99,7 +103,7 @@ export const BOOK_FORM_SCHEMA = z
     if (value.isSeries && !value.seriesId && !value.seriesName) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Seri secin veya olusturun.",
+        message: "Seri seçin veya oluşturun.",
         path: ["seriesName"]
       });
     }
@@ -107,7 +111,7 @@ export const BOOK_FORM_SCHEMA = z
     if (!value.isSeries && value.seriesOrder) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Cilt numarasi icin once seri acilmali.",
+        message: "Cilt numarası için önce seri açılmalı.",
         path: ["seriesOrder"]
       });
     }
@@ -116,31 +120,33 @@ export const BOOK_FORM_SCHEMA = z
 export type BookFormValues = z.input<typeof BOOK_FORM_SCHEMA>;
 
 export function toOptionalInteger(value: string | undefined) {
-  if (!value?.trim()) {
+  if (!value?.trim() || value === "0") {
     return null;
   }
   return Number.parseInt(value, 10);
 }
 
 export function defaultValuesFromBook(book?: BookDetail | null): BookFormValues {
+  const isLoaned = book?.status === "loaned";
+  
   return {
     isbn: book?.isbn ?? "",
     title: book?.title ?? "",
+    subtitle: book?.subtitle ?? "",
     authorIds: book?.authors.map((author) => author.id) ?? [],
+    authorNames: [],
     publisher: book?.publisher ?? "",
     publicationYear: book?.publicationYear?.toString() ?? "",
     pageCount: book?.pageCount?.toString() ?? "",
     categoryId: book?.category?.id ?? "",
-    tagIds: book?.tags.map((tag) => tag.id) ?? [],
     isSeries: Boolean(book?.series),
     seriesId: book?.series?.id ?? "",
     seriesName: book?.series?.name ?? "",
     seriesTotalVolumes: book?.series?.totalVolumes?.toString() ?? "",
     seriesOrder: book?.series?.seriesOrder?.toString() ?? "",
     status: book?.status ?? "owned",
-    locationName: book?.location?.locationName ?? "",
-    shelfRow: book?.location?.shelfRow ?? "",
-    shelfColumn: book?.location?.shelfColumn?.toString() ?? "",
+    locationName: isLoaned ? "" : (book?.location?.locationName ?? ""),
+    shelfRow: isLoaned ? "" : (book?.location?.shelfRow ?? ""),
     copyCount: book?.copyCount?.toString() ?? "1",
     donatable: book?.donatable ?? false,
     rating: book?.rating ?? null,
@@ -156,35 +162,39 @@ export function defaultValuesFromBook(book?: BookDetail | null): BookFormValues 
 
 export function buildBookPayload(values: BookFormValues): BookWriteInput {
   const isbn = values.isbn ?? "";
+  const subtitle = values.subtitle ?? "";
   const publisher = values.publisher ?? "";
   const locationName = values.locationName ?? "";
   const shelfRow = values.shelfRow ?? "";
-  const shelfColumn = values.shelfColumn ?? "";
   const personalNote = values.personalNote ?? "";
   const loanedTo = values.loanedTo ?? "";
   const coverCustomUrl = values.coverCustomUrl ?? "";
   const coverMetadataUrl = values.coverMetadataUrl ?? "";
-  const tagIds = values.tagIds ?? [];
   const seriesName = values.seriesName ?? "";
   const isSeriesEnabled = values.isSeries ?? false;
   const copyCount = values.copyCount ?? "1";
 
   return {
     title: values.title.trim(),
-    authors: (values.authorIds ?? []).map((id) => ({ id })),
+    subtitle: subtitle.trim() || null,
+    authors: [
+      ...(values.authorIds ?? []).map((id) => ({ id })),
+      ...(values.authorNames ?? []).map((name) => ({ name }))
+    ],
     isbn: isbn.trim() || null,
     publisher: publisher.trim() || null,
     publicationYear: toOptionalInteger(values.publicationYear),
     pageCount: toOptionalInteger(values.pageCount),
     status: values.status,
     location:
-      locationName.trim() || shelfRow.trim() || shelfColumn.trim()
-        ? {
-            locationName: locationName.trim() || null,
-            shelfRow: shelfRow.trim().toUpperCase() || null,
-            shelfColumn: toOptionalInteger(shelfColumn)
-          }
-        : null,
+      values.status === "loaned"
+        ? null
+        : locationName.trim() || shelfRow.trim()
+          ? {
+              locationName: locationName.trim() || null,
+              shelfRow: shelfRow.trim().toUpperCase() || null
+            }
+          : null,
     copyCount: Number.parseInt(copyCount, 10),
     donatable: values.donatable ?? false,
     rating: values.rating,
@@ -195,7 +205,6 @@ export function buildBookPayload(values: BookFormValues): BookWriteInput {
     coverCustomUrl: coverCustomUrl.trim() || null,
     coverMetadataUrl: coverMetadataUrl.trim() || null,
     category: values.categoryId ? { id: values.categoryId } : null,
-    tags: tagIds.map((id) => ({ id })),
     series: isSeriesEnabled
       ? values.seriesId
         ? { id: values.seriesId }
@@ -223,10 +232,17 @@ export function isDuplicateRelevantChange(
   const initialIsbn = normalizeIsbn(initialBook.isbn ?? "") ?? "";
   const nextTitle = values.title.trim().toLocaleLowerCase("tr-TR");
   const initialTitle = initialBook.title.trim().toLocaleLowerCase("tr-TR");
+  const nextSubtitle = (values.subtitle ?? "").trim().toLocaleLowerCase("tr-TR");
+  const initialSubtitle = (initialBook.subtitle ?? "").trim().toLocaleLowerCase("tr-TR");
   const nextAuthors = [...(values.authorIds ?? [])].sort().join("|");
   const initialAuthors = [...initialBook.authors.map((author) => author.id)].sort().join("|");
 
-  return nextIsbn !== initialIsbn || nextTitle !== initialTitle || nextAuthors !== initialAuthors;
+  return (
+    nextIsbn !== initialIsbn ||
+    nextTitle !== initialTitle ||
+    nextSubtitle !== initialSubtitle ||
+    nextAuthors !== initialAuthors
+  );
 }
 
 export function useBookForm(options: {
@@ -234,6 +250,7 @@ export function useBookForm(options: {
   initialBook?: BookDetail | null;
   onSuccess?: (book: BookDetail, action?: "created" | "increase_copy" | "updated") => void;
   onOpenChange?: (open: boolean) => void;
+  onCancel?: () => void;
   onError?: (error: string) => void;
 }) {
   const router = useRouter();
@@ -285,7 +302,7 @@ export function useBookForm(options: {
           const result = await readJsonResponse<CreateBookResponse>(response);
           invalidateCollections();
           options.onSuccess?.(result.book, result.action);
-          options.onOpenChange?.(false);
+          options.onCancel ? options.onCancel() : options.onOpenChange?.(false);
           React.startTransition(() => {
             router.refresh();
           });
@@ -295,13 +312,13 @@ export function useBookForm(options: {
         const book = await readJsonResponse<BookDetail>(response);
         invalidateCollections();
         options.onSuccess?.(book, "updated");
-        options.onOpenChange?.(false);
+        options.onCancel ? options.onCancel() : options.onOpenChange?.(false);
         React.startTransition(() => {
           router.refresh();
         });
       } catch (error) {
         if (options.onError) {
-           options.onError(error instanceof Error ? error.message : "Kayit tamamlanamadi.");
+           options.onError(error instanceof Error ? error.message : "Kayıt tamamlanamadı.");
         }
       } finally {
         setIsSubmitting(false);
@@ -325,6 +342,7 @@ export function useBookForm(options: {
         body: JSON.stringify({
           isbn: (valuesToSubmit.isbn ?? "").trim() || null,
           title: valuesToSubmit.title,
+          subtitle: (valuesToSubmit.subtitle ?? "").trim() || null,
           authorIds: valuesToSubmit.authorIds ?? [],
           excludeBookId: options.mode === "edit" ? options.initialBook?.id : undefined
         })

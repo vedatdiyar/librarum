@@ -35,7 +35,7 @@ const sheetVariants = cva(
         left: "inset-y-4 left-4 w-[calc(100%-2rem)] max-w-[320px] rounded-[28px] p-6",
         right: "inset-y-4 right-4 w-[calc(100%-2rem)] max-w-[560px] rounded-[28px] p-6",
         bottom:
-          "bottom-4 left-4 right-4 max-h-[88vh] rounded-[28px] p-5 pt-3"
+          "right-4 bottom-4 left-4 max-h-[88vh] rounded-[28px] p-5 pt-3"
       }
     },
     defaultVariants: {
@@ -58,12 +58,13 @@ const SheetContent = React.forwardRef<
       )}
       {...props}
       ref={ref}
+      aria-describedby={props["aria-describedby"] || undefined}
     >
       {side === "bottom" ? (
         <div className="mx-auto mb-3 h-1.5 w-14 rounded-full bg-border" />
       ) : null}
       {children}
-      <Dialog.Close className="absolute right-4 top-4 rounded-full border border-transparent p-2 text-text-secondary transition hover:border-border/70 hover:bg-muted hover:text-text-primary">
+      <Dialog.Close className="absolute top-4 right-4 rounded-full border border-transparent p-2 text-text-secondary transition hover:border-border/70 hover:bg-muted hover:text-text-primary">
         <X className="h-5 w-5" />
         <span className="sr-only">Kapat</span>
       </Dialog.Close>
@@ -96,11 +97,25 @@ const SheetTitle = React.forwardRef<
 
 SheetTitle.displayName = Dialog.Title.displayName;
 
+const SheetDescription = React.forwardRef<
+  React.ElementRef<typeof Dialog.Description>,
+  React.ComponentPropsWithoutRef<typeof Dialog.Description>
+>(({ className, ...props }, ref) => (
+  <Dialog.Description
+    className={cn("text-sm text-text-secondary", className)}
+    {...props}
+    ref={ref}
+  />
+));
+
+SheetDescription.displayName = Dialog.Description.displayName;
+
 export {
   Sheet,
   SheetTrigger,
   SheetClose,
   SheetContent,
   SheetHeader,
-  SheetTitle
+  SheetTitle,
+  SheetDescription
 };

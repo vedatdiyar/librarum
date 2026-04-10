@@ -19,14 +19,16 @@ import type {
   SeriesListItem
 } from "@/types";
 
-export type BulkAction = "category" | "tags" | "location" | "status" | "donatable" | "series";
+export type BulkAction = "category" | "location" | "status" | "donatable" | "series";
 
 function FilterSelect({
+  id,
   value,
   onChange,
   children,
   ariaLabel
 }: {
+  id?: string;
   value: string;
   onChange: (value: string) => void;
   children: React.ReactNode;
@@ -35,7 +37,9 @@ function FilterSelect({
   return (
     <select
       aria-label={ariaLabel}
-      className="h-11 w-full rounded-xl border border-border/80 bg-surface px-3 text-sm text-text-primary outline-none transition focus:border-accent/50 focus:ring-2 focus:ring-accent/15"
+      className="h-11 w-full rounded-xl border border-border/80 bg-surface px-3 text-sm text-text-primary transition outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/15"
+      id={id}
+      name={id}
       onChange={(event) => onChange(event.target.value)}
       value={value}
     >
@@ -44,11 +48,13 @@ function FilterSelect({
   );
 }
 
+import { BOOK_STATUS_LABELS } from "@/lib/constants/books";
+
 const BULK_STATUS_OPTIONS = [
-  { value: "owned", label: "Sahibim" },
-  { value: "completed", label: "Okudum" },
-  { value: "abandoned", label: "Yarım Bıraktım" },
-  { value: "lost", label: "Kayıp" }
+  { value: "owned", label: BOOK_STATUS_LABELS.owned },
+  { value: "completed", label: BOOK_STATUS_LABELS.completed },
+  { value: "abandoned", label: BOOK_STATUS_LABELS.abandoned },
+  { value: "lost", label: BOOK_STATUS_LABELS.lost }
 ] as const;
 
 function parseTagInput(value: string) {
@@ -82,10 +88,8 @@ export function BulkActionDialog({
 }) {
   const [formState, setFormState] = React.useState({
     categoryId: "",
-    tagsText: "",
     locationName: "",
     shelfRow: "",
-    shelfColumn: "",
     status: "owned",
     donatable: "true",
     seriesId: "",
@@ -100,10 +104,8 @@ export function BulkActionDialog({
     if (!open) {
       setFormState({
         categoryId: "",
-        tagsText: "",
         locationName: "",
         shelfRow: "",
-        shelfColumn: "",
         status: "owned",
         donatable: "true",
         seriesId: "",
@@ -126,24 +128,15 @@ export function BulkActionDialog({
                 : null
         });
         return;
-      case "tags":
-        onSubmit({
-          tags: parseTagInput(formState.tagsText)
-        });
-        return;
-      case "location":
+            case "location":
         onSubmit({
           location:
             !formState.locationName.trim() &&
-            !formState.shelfRow.trim() &&
-            !formState.shelfColumn.trim()
+            !formState.shelfRow.trim()
               ? null
               : {
                   locationName: formState.locationName.trim() || null,
-                  shelfRow: formState.shelfRow.trim().toUpperCase() || null,
-                  shelfColumn: formState.shelfColumn.trim()
-                    ? Number.parseInt(formState.shelfColumn.trim(), 10)
-                    : null
+                  shelfRow: formState.shelfRow.trim().toUpperCase() || null
                 }
         });
         return;
@@ -174,7 +167,6 @@ export function BulkActionDialog({
 
   const titleMap: Record<BulkAction, string> = {
     category: "Toplu kategori güncelle",
-    tags: "Toplu etiket güncelle",
     location: "Toplu konum güncelle",
     status: "Toplu durum güncelle",
     donatable: "Toplu bağış durumu",
@@ -193,7 +185,8 @@ export function BulkActionDialog({
         <DialogBody className="space-y-4">
           {action === "category" ? (
             <FilterSelect
-              ariaLabel="Bulk category"
+              ariaLabel="Toplu kategori"
+              id="bulk-category"
               onChange={(val) => updateField("categoryId", val)}
               value={formState.categoryId}
             >
@@ -207,48 +200,38 @@ export function BulkActionDialog({
             </FilterSelect>
           ) : null}
 
-          {action === "tags" ? (
-            <div className="space-y-2">
-              <Input
-                aria-label="Etiketler"
-                onChange={(event) => updateField("tagsText", event.target.value)}
-                placeholder="etiket1; etiket2; etiket3"
-                value={formState.tagsText}
-              />
-              <p className="text-sm text-text-secondary">
-                Boş gönderirsen seçili kitaplardaki etiketler temizlenir.
-              </p>
-            </div>
-          ) : null}
-
           {action === "location" ? (
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Input
-                aria-label="Alan adı"
-                onChange={(event) => updateField("locationName", event.target.value)}
-                placeholder="Alan adı"
-                value={formState.locationName}
-              />
-              <Input
-                aria-label="Raf"
-                maxLength={1}
-                onChange={(event) => updateField("shelfRow", event.target.value)}
-                placeholder="Raf"
-                value={formState.shelfRow}
-              />
-              <Input
-                aria-label="Sütun"
-                inputMode="numeric"
-                onChange={(event) => updateField("shelfColumn", event.target.value)}
-                placeholder="Sütun"
-                value={formState.shelfColumn}
-              />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold tracking-[0.3em] text-foreground uppercase" htmlFor="bulk-location-name">Alan Adı</label>
+                <Input
+                    aria-label="Alan adı"
+                    id="bulk-location-name"
+                    name="locationName"
+                    onChange={(event) => updateField("locationName", event.target.value)}
+                    placeholder="Alan adı"
+                    value={formState.locationName}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold tracking-[0.3em] text-foreground uppercase" htmlFor="bulk-shelf-row">Raf</label>
+                <Input
+                    aria-label="Raf"
+                    id="bulk-shelf-row"
+                    maxLength={1}
+                    name="shelfRow"
+                    onChange={(event) => updateField("shelfRow", event.target.value)}
+                    placeholder="Raf"
+                    value={formState.shelfRow}
+                />
+              </div>
             </div>
           ) : null}
 
           {action === "status" ? (
             <FilterSelect
-              ariaLabel="Bulk status"
+              ariaLabel="Toplu durum"
+              id="bulk-status"
               onChange={(val) => updateField("status", val)}
               value={formState.status}
             >
@@ -262,7 +245,8 @@ export function BulkActionDialog({
 
           {action === "donatable" ? (
             <FilterSelect
-              ariaLabel="Bulk donatable"
+              ariaLabel="Toplu bağışlanabilirlik"
+              id="bulk-donatable"
               onChange={(val) => updateField("donatable", val)}
               value={formState.donatable}
             >
@@ -274,7 +258,8 @@ export function BulkActionDialog({
           {action === "series" ? (
             <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_140px]">
               <FilterSelect
-                ariaLabel="Bulk series"
+                ariaLabel="Toplu seri"
+                id="bulk-series"
                 onChange={(val) => updateField("seriesId", val)}
                 value={formState.seriesId}
               >
@@ -288,7 +273,9 @@ export function BulkActionDialog({
               </FilterSelect>
               <Input
                 aria-label="Cilt numarası"
+                id="bulk-series-order"
                 inputMode="numeric"
+                name="seriesOrder"
                 onChange={(event) => updateField("seriesOrder", event.target.value)}
                 placeholder="Cilt no"
                 value={formState.seriesOrder}

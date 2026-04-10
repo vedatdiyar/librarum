@@ -8,40 +8,51 @@ import {
   Users
 } from "lucide-react";
 
+export const appPageTitles = {
+  home: "Ana Sayfa",
+  books: "Kitaplar",
+  newBook: "Yeni Kitap",
+  authors: "Yazarlar",
+  series: "Seriler",
+  loans: "Ödünçler",
+  aiSuggestions: "Akıllı Öneriler",
+  settings: "Ayarlar"
+} as const;
+
 export const navigationItems = [
   {
     href: "/",
-    label: "Genel Bakış",
+    label: appPageTitles.home,
     icon: Gauge
   },
   {
     href: "/books",
-    label: "Kitaplar",
+    label: appPageTitles.books,
     icon: BookOpen
   },
   {
     href: "/authors",
-    label: "Yazarlar",
+    label: appPageTitles.authors,
     icon: Users
   },
   {
     href: "/series",
-    label: "Seriler",
+    label: appPageTitles.series,
     icon: LibraryBig
   },
   {
     href: "/loans",
-    label: "Ödünç İşlemleri",
+    label: appPageTitles.loans,
     icon: Boxes
   },
   {
     href: "/ai-suggestions",
-    label: "AI Önerileri",
+    label: appPageTitles.aiSuggestions,
     icon: BrainCircuit
   },
   {
     href: "/settings",
-    label: "Ayarlar",
+    label: appPageTitles.settings,
     icon: Settings
   }
 ] as const;

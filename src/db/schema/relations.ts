@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
-import { users } from "./users";
-import { authors, categories, tags, series } from "./catalog";
-import { books, bookAuthors, bookTags, bookSeries } from "./books";
+import { users } from "./users.ts";
+import { authorAliases, authors, categories, series } from "./catalog.ts";
+import { books, bookAuthors, bookSeries } from "./books.ts";
 
 export const booksRelations = relations(books, ({ many, one }) => ({
   category: one(categories, {
@@ -9,22 +9,25 @@ export const booksRelations = relations(books, ({ many, one }) => ({
     references: [categories.id]
   }),
   authors: many(bookAuthors),
-  tags: many(bookTags),
   series: one(bookSeries)
 }));
 
 export const usersRelations = relations(users, () => ({}));
 
 export const authorsRelations = relations(authors, ({ many }) => ({
-  books: many(bookAuthors)
+  books: many(bookAuthors),
+  aliases: many(authorAliases)
+}));
+
+export const authorAliasesRelations = relations(authorAliases, ({ one }) => ({
+  author: one(authors, {
+    fields: [authorAliases.authorId],
+    references: [authors.id]
+  })
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
   books: many(books)
-}));
-
-export const tagsRelations = relations(tags, ({ many }) => ({
-  books: many(bookTags)
 }));
 
 export const seriesRelations = relations(series, ({ many }) => ({
@@ -39,17 +42,6 @@ export const bookAuthorsRelations = relations(bookAuthors, ({ one }) => ({
   author: one(authors, {
     fields: [bookAuthors.authorId],
     references: [authors.id]
-  })
-}));
-
-export const bookTagsRelations = relations(bookTags, ({ one }) => ({
-  book: one(books, {
-    fields: [bookTags.bookId],
-    references: [books.id]
-  }),
-  tag: one(tags, {
-    fields: [bookTags.tagId],
-    references: [tags.id]
   })
 }));
 

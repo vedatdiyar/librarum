@@ -9,14 +9,12 @@ export type BookListItem = {
   rating: number | null;
   location: string | null;
   series: string | null;
-  tags: string[];
   coverUrl: string | null;
 };
 
 export type BooksFilters = {
   status: string;
   category: string;
-  tag: string;
   location: string;
   author: string;
   series: string;
@@ -37,15 +35,31 @@ export type EntityOption = {
 };
 
 export type AuthorOption = EntityOption & {
+  slug: string;
   bookCount?: number;
   averageRating?: number | null;
 };
 
-export type CategoryOption = EntityOption & {
-  bookCount?: number;
-};
+export type AuthorResolutionDecision = "same_author" | "new_author";
 
-export type TagOption = EntityOption & {
+export type AuthorResolutionStatus =
+  | "auto-merge"
+  | "suggested-merge"
+  | "created";
+
+export type AuthorResolutionResponse =
+  | {
+      status: "auto-merge" | "created";
+      inputName: string;
+      author: AuthorOption;
+    }
+  | {
+      status: "suggested-merge";
+      inputName: string;
+      suggestedAuthor: AuthorOption;
+    };
+
+export type CategoryOption = EntityOption & {
   bookCount?: number;
 };
 
@@ -57,6 +71,7 @@ export type SeriesOption = EntityOption & {
 };
 
 export type AuthorListItem = EntityOption & {
+  slug: string;
   bookCount: number;
   averageRating: number | null;
 };
@@ -64,6 +79,7 @@ export type AuthorListItem = EntityOption & {
 export type AuthorDetailBook = {
   id: string;
   title: string;
+  slug: string;
   coverUrl: string | null;
   status: BookStatus;
   rating: number | null;
@@ -80,6 +96,7 @@ export type AuthorRelatedSeries = {
 export type AuthorDetail = {
   id: string;
   name: string;
+  slug: string;
   bookCount: number;
   averageRating: number | null;
   books: AuthorDetailBook[];
@@ -95,6 +112,7 @@ export type SeriesListItem = EntityOption & {
 
 export type SeriesOwnedVolume = {
   bookId: string;
+  slug: string;
   title: string;
   coverUrl: string | null;
   seriesOrder: number | null;
@@ -112,6 +130,7 @@ export type SeriesDetail = {
 
 export type SearchResultItem = {
   id: string;
+  slug: string;
   title: string;
   coverUrl: string | null;
   authors: string[];
@@ -120,7 +139,6 @@ export type SearchResultItem = {
 export type BookLocation = {
   locationName: string | null;
   shelfRow: string | null;
-  shelfColumn: number | null;
   display: string | null;
 };
 
@@ -133,7 +151,9 @@ export type BookSeriesReference = {
 
 export type ApiBookListItem = {
   id: string;
+  slug: string;
   title: string;
+  subtitle: string | null;
   isbn: string | null;
   status: BookStatus;
   rating: number | null;
@@ -142,7 +162,6 @@ export type ApiBookListItem = {
   donatable: boolean;
   authors: AuthorOption[];
   category: CategoryOption | null;
-  tags: TagOption[];
   series: BookSeriesReference | null;
   location: BookLocation | null;
   isSeries: boolean;
@@ -168,7 +187,6 @@ export type BookDetail = ApiBookListItem & {
 export type BooksListFilters = {
   status: BookStatus | null;
   category: string | null;
-  tag: string | null;
   author: string | null;
   series: string | null;
   location: string | null;
@@ -203,11 +221,11 @@ export type SeriesReferenceInput =
 export type BookWriteLocationInput = {
   locationName?: string | null;
   shelfRow?: string | null;
-  shelfColumn?: number | null;
 };
 
 export type BookWriteInput = {
   title: string;
+  subtitle?: string | null;
   authors: EntityReferenceInput[];
   isbn?: string | null;
   publisher?: string | null;
@@ -226,7 +244,6 @@ export type BookWriteInput = {
   coverCustomUrl?: string | null;
   coverMetadataUrl?: string | null;
   category?: EntityReferenceInput | null;
-  tags?: EntityReferenceInput[];
   series?: SeriesReferenceInput | null;
   seriesOrder?: number | null;
   duplicateResolution?: DuplicateResolution;
@@ -235,7 +252,6 @@ export type BookWriteInput = {
 export type BulkBooksPatchInput = {
   bookIds: string[];
   category?: EntityReferenceInput | null;
-  tags?: EntityReferenceInput[];
   location?: BookWriteLocationInput | null;
   status?: Exclude<BookStatus, "loaned">;
   donatable?: boolean;
@@ -273,12 +289,14 @@ export type CategoryDistributionPoint = {
 export type AuthorDistributionPoint = {
   id: string;
   name: string;
+  slug: string;
   count: number;
 };
 
 export type FavoriteAuthor = {
   id: string;
   name: string;
+  slug: string;
   averageRating: number;
   ratedBooks: number;
 };
@@ -296,11 +314,21 @@ export type StatsSnapshot = {
 
 export type IsbnMetadata = {
   title: string | null;
+  subtitle: string | null;
+  authors: string[];
   publisher: string | null;
   publicationYear: number | null;
   pageCount: number | null;
   coverMetadataUrl: string | null;
   description: string | null;
+};
+
+export type IsbnMetadataSource = "open_library" | "google_books";
+
+export type IsbnCoverOption = {
+  source: IsbnMetadataSource;
+  label: string;
+  url: string;
 };
 
 export type IsbnMetadataResponse =
@@ -309,8 +337,9 @@ export type IsbnMetadataResponse =
     }
   | {
       found: true;
-      source: "open_library" | "google_books";
+      source: IsbnMetadataSource;
       metadata: IsbnMetadata;
+      coverOptions: IsbnCoverOption[];
     };
 
 export type DuplicateSuggestion = "increase_copy" | "new_edition" | "ignore";
@@ -326,6 +355,7 @@ export type DuplicateReason = "isbn_exact" | "title_author_match";
 export type DuplicateCheckInput = {
   isbn?: string | null;
   title: string;
+  subtitle?: string | null;
   authorIds: string[];
   excludeBookId?: string;
 };

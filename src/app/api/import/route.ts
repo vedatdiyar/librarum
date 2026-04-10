@@ -97,7 +97,7 @@ function parsePositiveInteger(value: string, fieldName: string, rowNumber: numbe
   const parsed = Number.parseInt(value.trim(), 10);
 
   if (Number.isNaN(parsed) || parsed < 1) {
-    throw new ApiError(400, `${rowNumber}. satirdaki ${fieldName} alani pozitif tam sayi olmali.`);
+    throw new ApiError(400, `${rowNumber}. satırdaki ${fieldName} alanı pozitif tam sayı olmalı.`);
   }
 
   return parsed;
@@ -111,7 +111,7 @@ function parseNullableInteger(value: string, fieldName: string, rowNumber: numbe
   const parsed = Number.parseInt(value.trim(), 10);
 
   if (Number.isNaN(parsed)) {
-    throw new ApiError(400, `${rowNumber}. satirdaki ${fieldName} alani sayi olmali.`);
+    throw new ApiError(400, `${rowNumber}. satırdaki ${fieldName} alanı sayı olmalı.`);
   }
 
   return parsed;
@@ -125,7 +125,7 @@ function parseNullableFloat(value: string, fieldName: string, rowNumber: number)
   const parsed = Number.parseFloat(value.trim());
 
   if (Number.isNaN(parsed)) {
-    throw new ApiError(400, `${rowNumber}. satirdaki ${fieldName} alani sayi olmali.`);
+    throw new ApiError(400, `${rowNumber}. satırdaki ${fieldName} alanı sayı olmalı.`);
   }
 
   return parsed;
@@ -146,7 +146,7 @@ function parseBoolean(value: string, fieldName: string, rowNumber: number) {
     return false;
   }
 
-  throw new ApiError(400, `${rowNumber}. satirdaki ${fieldName} alani true veya false olmali.`);
+  throw new ApiError(400, `${rowNumber}. satırdaki ${fieldName} alanı true veya false olmalı.`);
 }
 
 function parseList(value: string) {
@@ -164,7 +164,7 @@ function normalizeStatus(value: string, rowNumber: number) {
   }
 
   if (!BOOK_STATUSES.has(normalizedValue as CreateBookInput["status"])) {
-    throw new ApiError(400, `${rowNumber}. satirdaki status alani gecersiz.`);
+    throw new ApiError(400, `${rowNumber}. satırdaki status alanı geçersiz.`);
   }
 
   return normalizedValue as CreateBookInput["status"];
@@ -187,7 +187,7 @@ function validateCreateBookInput(input: CreateBookInput, rowNumber: number) {
     const issue = result.error.issues[0];
     throw new ApiError(
       400,
-      `${rowNumber}. satirdaki veri gecersiz: ${issue?.message ?? "Alanlar kontrol edilmeli."}`
+      `${rowNumber}. satırdaki veri geçersiz: ${issue?.message ?? "Alanlar kontrol edilmeli."}`
     );
   }
 
@@ -200,19 +200,17 @@ function normalizeCsvRow(headers: string[], row: string[], rowNumber: number): C
   );
 
   if (!record.title) {
-    throw new ApiError(400, `${rowNumber}. satirda title zorunlu.`);
+    throw new ApiError(400, `${rowNumber}. satırda title zorunlu.`);
   }
 
   const authors = parseList(record.authors ?? "").map((name) => ({ name }));
 
   if (authors.length === 0) {
-    throw new ApiError(400, `${rowNumber}. satirda authors zorunlu.`);
+    throw new ApiError(400, `${rowNumber}. satırda authors zorunlu.`);
   }
 
-  const tags = parseList(record.tags ?? "").map((name) => ({ name }));
   const locationName = record.locationName ?? "";
   const shelfRow = (record.shelfRow ?? "").toUpperCase();
-  const shelfColumn = parseNullableInteger(record.shelfColumn ?? "", "shelfColumn", rowNumber);
 
   return validateCreateBookInput(
     {
@@ -235,15 +233,13 @@ function normalizeCsvRow(headers: string[], row: string[], rowNumber: number): C
       loanedTo: record.loanedTo || undefined,
       loanedAt: record.loanedAt || undefined,
       category: record.category ? { name: record.category } : undefined,
-      tags,
       series: record.series ? { name: record.series } : undefined,
       seriesOrder: parsePositiveInteger(record.seriesOrder ?? "", "seriesOrder", rowNumber),
       location:
-        locationName || shelfRow || shelfColumn != null
+        locationName || shelfRow
           ? {
               locationName: locationName || null,
-              shelfRow: shelfRow || null,
-              shelfColumn: shelfColumn ?? null
+              shelfRow: shelfRow || null
             }
           : undefined,
       personalNote: record.personalNote || undefined,
@@ -255,7 +251,7 @@ function normalizeCsvRow(headers: string[], row: string[], rowNumber: number): C
 
 function normalizeJsonItem(item: unknown, rowNumber: number): CreateBookInput {
   if (!item || typeof item !== "object") {
-    throw new ApiError(400, `${rowNumber}. JSON kaydi nesne olmali.`);
+    throw new ApiError(400, `${rowNumber}. JSON kaydı nesne olmalı.`);
   }
 
   const record = item as Record<string, unknown>;
@@ -283,30 +279,8 @@ function normalizeJsonItem(item: unknown, rowNumber: number): CreateBookInput {
     : [];
 
   if (authors.length === 0) {
-    throw new ApiError(400, `${rowNumber}. JSON kaydinda authors zorunlu.`);
+    throw new ApiError(400, `${rowNumber}. JSON kaydında authors zorunlu.`);
   }
-
-  const tags = Array.isArray(record.tags)
-    ? record.tags
-        .map((tag) => {
-          if (typeof tag === "string") {
-            return tag.trim() ? { name: tag.trim() } : null;
-          }
-
-          if (
-            tag &&
-            typeof tag === "object" &&
-            "name" in tag &&
-            typeof tag.name === "string" &&
-            tag.name.trim()
-          ) {
-            return { name: tag.name.trim() };
-          }
-
-          return null;
-        })
-        .filter((tag): tag is { name: string } => Boolean(tag))
-    : [];
 
   const category =
     record.category &&
@@ -355,16 +329,11 @@ function normalizeJsonItem(item: unknown, rowNumber: number): CreateBookInput {
             typeof record.location.shelfRow === "string"
               ? record.location.shelfRow
               : null,
-          shelfColumn:
-            "shelfColumn" in record.location &&
-            typeof record.location.shelfColumn === "number"
-              ? record.location.shelfColumn
-              : null
         }
       : undefined;
 
   if (typeof record.title !== "string" || !record.title.trim()) {
-    throw new ApiError(400, `${rowNumber}. JSON kaydinda title zorunlu.`);
+    throw new ApiError(400, `${rowNumber}. JSON kaydında title zorunlu.`);
   }
 
   return validateCreateBookInput(
@@ -392,7 +361,6 @@ function normalizeJsonItem(item: unknown, rowNumber: number): CreateBookInput {
       coverMetadataUrl:
         typeof record.coverMetadataUrl === "string" ? record.coverMetadataUrl : undefined,
       category,
-      tags,
       series,
       seriesOrder:
         typeof record.seriesOrder === "number" ? record.seriesOrder : nestedSeriesOrder,
@@ -406,7 +374,7 @@ function buildCsvCandidates(text: string) {
   const rows = parseCsv(text);
 
   if (rows.length < 2) {
-    throw new ApiError(400, "CSV dosyasinda baslik satiri ve en az bir veri satiri olmali.");
+    throw new ApiError(400, "CSV dosyasında başlık satırı ve en az bir veri satırı olmalı.");
   }
 
   const headers = rows[0].map((header, index) =>
@@ -419,7 +387,7 @@ function buildCsvCandidates(text: string) {
   ) {
     throw new ApiError(
       400,
-      `CSV basliklari tam olarak su sirayla olmali: ${CSV_BOOK_COLUMNS.join(", ")}`
+      `CSV başlıkları tam olarak şu sırayla olmalı: ${CSV_BOOK_COLUMNS.join(", ")}`
     );
   }
 
@@ -448,7 +416,7 @@ function buildJsonCandidates(text: string) {
   try {
     data = JSON.parse(text);
   } catch {
-    throw new ApiError(400, "JSON dosyasi gecersiz.");
+    throw new ApiError(400, "JSON dosyası geçersiz.");
   }
 
   const list = Array.isArray(data) ? data : [data];
@@ -466,11 +434,11 @@ export const POST = withApiHandler(async (request: Request) => {
   const file = formData.get("file");
 
   if (!(file instanceof File)) {
-    throw new ApiError(400, "Ice aktarim dosyasi secilmedi.");
+    throw new ApiError(400, "İçe aktarım dosyası seçilmedi.");
   }
 
   if (file.size > 2 * 1024 * 1024) {
-    throw new ApiError(400, "Ice aktarim dosyasi 2MB'dan buyuk olamaz.");
+    throw new ApiError(400, "İçe aktarım dosyası 2MB'dan büyük olamaz.");
   }
 
   const text = await file.text();
@@ -478,7 +446,7 @@ export const POST = withApiHandler(async (request: Request) => {
   const candidates = isCsv ? buildCsvCandidates(text) : buildJsonCandidates(text);
 
   if (candidates.length > 500) {
-    throw new ApiError(400, "Tek seferde en fazla 500 kayit ice aktarilabilir.");
+    throw new ApiError(400, "Tek seferde en fazla 500 kayıt içe aktarılabilir.");
   }
 
   let added = 0;
@@ -496,7 +464,7 @@ export const POST = withApiHandler(async (request: Request) => {
         error:
           error instanceof Error
             ? error.message
-            : "Kayit ice aktarilirken beklenmeyen bir hata olustu."
+            : "Kayıt içe aktarılırken beklenmeyen bir hata oluştu."
       });
     }
   }

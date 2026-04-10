@@ -37,12 +37,10 @@ export const GET = withApiHandler(async () => {
       book.loanedTo,
       book.loanedAt,
       book.category?.name ?? "",
-      book.tags.map((tag) => tag.name).join("; "),
       book.series?.name ?? "",
       book.series?.seriesOrder ?? "",
       book.location?.locationName ?? "",
       book.location?.shelfRow ?? "",
-      book.location?.shelfColumn ?? "",
       book.personalNote
     ].map(escapeCSV).join(",");
   });

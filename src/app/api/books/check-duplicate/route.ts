@@ -8,7 +8,10 @@ export const dynamic = "force-dynamic";
 export const POST = withApiHandler(async (request: Request) => {
   await requireSession();
   const payload = await parseJsonBody(request, duplicateCheckSchema);
-  const result = await checkDuplicateBook(payload);
+  const result = await checkDuplicateBook({
+    ...payload,
+    authorIds: payload.authorIds ?? []
+  });
 
   return apiSuccess(result);
 });

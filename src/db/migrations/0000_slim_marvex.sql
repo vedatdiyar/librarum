@@ -24,12 +24,6 @@ CREATE TABLE "book_series" (
 	CONSTRAINT "book_series_series_order_positive_check" CHECK ("book_series"."series_order" is null or "book_series"."series_order" >= 1)
 );
 --> statement-breakpoint
-CREATE TABLE "book_tags" (
-	"book_id" uuid NOT NULL,
-	"tag_id" uuid NOT NULL,
-	CONSTRAINT "book_tags_pk" PRIMARY KEY("book_id","tag_id")
-);
---> statement-breakpoint
 CREATE TABLE "books" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"title" text NOT NULL,
@@ -81,22 +75,15 @@ CREATE TABLE "series" (
 	CONSTRAINT "series_total_volumes_positive_check" CHECK ("series"."total_volumes" is null or "series"."total_volumes" >= 1)
 );
 --> statement-breakpoint
-CREATE TABLE "tags" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"name" text NOT NULL
-);
---> statement-breakpoint
+
 ALTER TABLE "book_authors" ADD CONSTRAINT "book_authors_book_id_books_id_fk" FOREIGN KEY ("book_id") REFERENCES "public"."books"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "book_authors" ADD CONSTRAINT "book_authors_author_id_authors_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."authors"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "book_series" ADD CONSTRAINT "book_series_book_id_books_id_fk" FOREIGN KEY ("book_id") REFERENCES "public"."books"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "book_series" ADD CONSTRAINT "book_series_series_id_series_id_fk" FOREIGN KEY ("series_id") REFERENCES "public"."series"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "book_tags" ADD CONSTRAINT "book_tags_book_id_books_id_fk" FOREIGN KEY ("book_id") REFERENCES "public"."books"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "book_tags" ADD CONSTRAINT "book_tags_tag_id_tags_id_fk" FOREIGN KEY ("tag_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "books" ADD CONSTRAINT "books_category_id_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 CREATE UNIQUE INDEX "authors_name_ci_unique" ON "authors" USING btree (lower("name"));--> statement-breakpoint
 CREATE INDEX "book_authors_author_id_idx" ON "book_authors" USING btree ("author_id");--> statement-breakpoint
 CREATE INDEX "book_series_series_id_idx" ON "book_series" USING btree ("series_id");--> statement-breakpoint
-CREATE INDEX "book_tags_tag_id_idx" ON "book_tags" USING btree ("tag_id");--> statement-breakpoint
 CREATE INDEX "books_status_idx" ON "books" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "books_category_id_idx" ON "books" USING btree ("category_id");--> statement-breakpoint
 CREATE INDEX "books_read_year_idx" ON "books" USING btree ("read_year");--> statement-breakpoint

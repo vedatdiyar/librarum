@@ -6,25 +6,25 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { readJsonResponse } from "@/lib/shared";
 import type { BookDetail } from "@/types";
 
-export function useBookDetailData(bookId: string) {
+export function useBookDetailData(bookSlug: string) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
   const bookQuery = useQuery({
-    queryKey: ["book-detail", bookId],
-    queryFn: async () => readJsonResponse<BookDetail>(await fetch(`/api/books/${bookId}`))
+    queryKey: ["book-detail", bookSlug],
+    queryFn: async () => readJsonResponse<BookDetail>(await fetch(`/api/books/${bookSlug}`))
   });
 
   const invalidateBookQueries = React.useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: ["book-detail", bookId] });
+    void queryClient.invalidateQueries({ queryKey: ["book-detail", bookSlug] });
     void queryClient.invalidateQueries({ queryKey: ["books"] });
     void queryClient.invalidateQueries({ queryKey: ["dashboard", "stats"] });
-  }, [bookId, queryClient]);
+  }, [bookSlug, queryClient]);
 
   const deleteMutation = useMutation({
     mutationFn: async () =>
       readJsonResponse<{ message: string }>(
-        await fetch(`/api/books/${bookId}`, {
+        await fetch(`/api/books/${bookSlug}`, {
           method: "DELETE"
         })
       ),

@@ -6,7 +6,7 @@ import { z } from "zod";
 export const dynamic = "force-dynamic";
 
 const addPreferenceSchema = z.object({
-  type: z.enum(["author", "category", "tag"]),
+  type: z.enum(["author", "category"]),
   value: z.string().min(1)
 });
 

@@ -87,8 +87,7 @@ export const seriesReferenceSchema = z.union([
 export const locationInputSchema = z
   .object({
     locationName: nullableStringSchema,
-    shelfRow: z.preprocess(uppercaseOrNull, z.string().length(1).nullable()).optional(),
-    shelfColumn: nullablePositiveIntSchema
+    shelfRow: z.preprocess(uppercaseOrNull, z.string().length(1).nullable()).optional()
   })
   .strict();
 
@@ -98,7 +97,6 @@ export const listBooksQuerySchema = z.object({
   sort: z.enum(["created_at"]).default("created_at"),
   status: z.enum(bookStatusValues).nullable().optional().catch(undefined),
   category: uuidSchema.nullable().optional().catch(undefined),
-  tag: uuidSchema.nullable().optional().catch(undefined),
   author: uuidSchema.nullable().optional().catch(undefined),
   series: uuidSchema.nullable().optional().catch(undefined),
   location: nullableStringSchema
@@ -116,13 +114,15 @@ export const createAuthorSchema = z.object({
   name: z.string().trim().min(1)
 });
 
+export const resolveAuthorSchema = z.object({
+  name: z.string().trim().min(1),
+  decision: z.enum(["same_author", "new_author"]).optional(),
+  suggestedAuthorId: uuidSchema.optional()
+});
+
 export const updateAuthorSchema = createAuthorSchema;
 
 export const createCategorySchema = z.object({
-  name: z.string().trim().min(1)
-});
-
-export const createTagSchema = z.object({
   name: z.string().trim().min(1)
 });
 
@@ -136,6 +136,7 @@ export const updateSeriesSchema = createSeriesSchema;
 export const createBookSchema = z
   .object({
     title: z.string().trim().min(1),
+    subtitle: nullableStringSchema,
     authors: z.array(entityReferenceSchema).min(1),
     isbn: nullableStringSchema,
     publisher: nullableStringSchema,
@@ -154,7 +155,6 @@ export const createBookSchema = z
     coverCustomUrl: nullableUrlSchema,
     coverMetadataUrl: nullableUrlSchema,
     category: entityReferenceSchema.nullable().optional(),
-    tags: z.array(entityReferenceSchema).default([]),
     series: seriesReferenceSchema.nullable().optional(),
     seriesOrder: z.number().int().min(1).nullable().optional(),
     duplicateResolution: z.enum(duplicateResolutionValues).default("block")
@@ -188,13 +188,15 @@ export const createBookSchema = z
 export const duplicateCheckSchema = z.object({
   isbn: nullableStringSchema,
   title: z.string().trim().min(1),
-  authorIds: z.array(uuidSchema).min(1),
+  subtitle: nullableStringSchema,
+  authorIds: z.array(uuidSchema).optional(),
   excludeBookId: uuidSchema.optional()
 });
 
 export const updateBookSchema = z
   .object({
     title: z.string().trim().min(1).optional(),
+    subtitle: nullableStringSchema,
     authors: z.array(entityReferenceSchema).min(1).optional(),
     isbn: nullableStringSchema,
     publisher: nullableStringSchema,
@@ -213,7 +215,6 @@ export const updateBookSchema = z
     coverCustomUrl: nullableUrlSchema,
     coverMetadataUrl: nullableUrlSchema,
     category: entityReferenceSchema.nullable().optional(),
-    tags: z.array(entityReferenceSchema).optional(),
     series: seriesReferenceSchema.nullable().optional(),
     seriesOrder: z.number().int().min(1).nullable().optional()
   })
@@ -225,7 +226,6 @@ export const bulkBooksPatchSchema = z
   .object({
     bookIds: z.array(uuidSchema).min(1),
     category: entityReferenceSchema.nullable().optional(),
-    tags: z.array(entityReferenceSchema).optional(),
     location: locationInputSchema.nullable().optional(),
     status: z.enum(bulkBookStatusValues).optional(),
     donatable: z.boolean().optional(),
@@ -235,7 +235,6 @@ export const bulkBooksPatchSchema = z
   .superRefine((value, context) => {
     const hasMutationField =
       value.category !== undefined ||
-      value.tags !== undefined ||
       value.location !== undefined ||
       value.status !== undefined ||
       value.donatable !== undefined ||

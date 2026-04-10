@@ -1,30 +1,22 @@
 import { Metadata } from "next";
+import { appPageTitles } from "@/lib/navigation";
 import { SettingsClient } from "./_components/settings-client";
 import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
-  title: "Ayarlar | Librarum",
-  description: "Kütüphane ayarları, kategori, etiket ve seri yönetimi."
+  title: appPageTitles.settings,
+  description: "Kütüphane ayarları, kategori ve seri yönetimi."
 };
 
 export default function SettingsPage() {
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-8">
+    <section className="space-y-10 pb-20">
       <PageHero
-        aside={
-          <div className="page-metric">
-            <p className="page-metric-label">Yonetim</p>
-            <p className="page-metric-value">5</p>
-            <p className="mt-2 text-sm leading-6 text-text-secondary">
-              Kategori, etiket, seri, aktarim ve AI tercihleri tek yerde.
-            </p>
-          </div>
-        }
-        description="Kutuphane koleksiyonunu duzenle, veri akislarini yonet ve AI tercihlerini sakin bir yonetim yuzeyinden kontrol et."
-        kicker="Settings"
-        title="Ayarlar"
+        description="Kütüphane arşivinizi yapılandırın, veri akışlarını yönetin ve yapay zeka deneyiminizi huzurlu bir yönetim panelinden kontrol edin."
+        kicker="Yönetim Merkezi"
+        title={appPageTitles.settings}
       />
       <SettingsClient />
-    </div>
+    </section>
   );
 }

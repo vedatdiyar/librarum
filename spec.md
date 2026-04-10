@@ -95,7 +95,6 @@ _Multi-author support via book_authors junction table. No translator field. orig
 
 | **category_id**  | Single category per book (FK to categories table).                                     |
 | ---------------- | -------------------------------------------------------------------------------------- |
-| **tags\[\]**     | Multi-tag array. Used for filtering and AI context.                                    |
 | **is_series**    | Boolean checkbox. When checked, reveals series fields below.                           |
 | **series_id**    | Optional FK to series table. Visible only when is_series = true.                       |
 | **series_order** | Optional integer. Volume number within the series. Visible only when is_series = true. |
@@ -116,14 +115,13 @@ _"reading" (currently reading) and "unread" statuses removed. "owned" covers all
 
 ## **4.4 Location System**
 
-Each book stores a three-part location:
+Each book stores a two-part location:
 
 | **location_name** | Named area e.g. "Salon", "Çalışma Odası", "Depo" |
 | ----------------- | ------------------------------------------------ |
 | **shelf_row**     | Letter A-Z                                       |
-| **shelf_column**  | Integer 1-N                                      |
 
-_Example: Salon / B / 3_
+_Example: Salon / B_
 
 ## **4.5 Copy Management**
 
@@ -211,26 +209,7 @@ _RESOLVED: Metadata-sourced cover is used by default. The user can manually uplo
 | Create new edition  | Different edition / translation | New book record created           |
 | Ignore warning      | User is certain it is different | Record saved as-is                |
 
-# **7\. Category & Tag System**
-
-## **7.1 Categories**
-
-| **Cardinality** | One category per book                                              |
-| --------------- | ------------------------------------------------------------------ |
-| **Creation**    | User-defined. Created and managed in Settings → Categories.        |
-| **On deletion** | Category set to null on all affected books. Books are not deleted. |
-| **Examples**    | Roman, Felsefe, Tarih, Bilim, KPSS                                 |
-
-## **7.2 Tags**
-
-| **Cardinality** | Multiple tags per book                                      |
-| --------------- | ----------------------------------------------------------- |
-| **Creation**    | User-defined. Managed in Settings → Tags.                   |
-| **On deletion** | Tag removed from all affected books. Books are not deleted. |
-| **Uses**        | Filtering, AI recommendation context, smart search          |
-| **Examples**    | Russian literature, classics, Ottoman history, modern       |
-
-# **8\. Series System**
+# **7\. Series System**
 
 ## **8.1 Series Fields - Book**
 
@@ -289,13 +268,7 @@ _Search operates in Turkish. Natural language rule engine parses Turkish keyword
 
 ## **11.2 Keyword Search Fields**
 
-- title
-- author
-- series
-- category
-- tags
-- location
-- status
+- title\n- author\n- series\n- category\n- location\n- status
 
 ## **11.3 Structured Natural Language Queries**
 
@@ -342,7 +315,7 @@ _RESOLVED: The chat panel does NOT send the full collection to the AI. Instead, 
 
 | **Stored in**  | recommendation_preferences table          |
 | -------------- | ----------------------------------------- |
-| **Excludable** | Authors, categories, tags                 |
+| **Excludable** | Authors, categories                 |
 | **Applied to** | Both monthly cron and manual chat context |
 
 # **13\. Dashboard & Statistics**
@@ -409,7 +382,7 @@ _Full responsive support required. Tailwind breakpoints cover mobile, tablet, an
 
 ## **16.4 Book Detail Page Layout**
 
-| **Left column**  | Cover image, title, author(s), publisher, year, page count, ISBN, series, category, tags, location.                      |
+| **Left column**  | Cover image, title, author(s), publisher, year, page count, ISBN, series, category, location.                      |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | **Right column** | Personal note (textarea), star rating, reading date, status, loan info, action buttons (Edit, Mark as Returned, Delete). |
 | **Form**         | Add and Edit share the same form component in two modes.                                                                 |
@@ -443,7 +416,6 @@ _Full responsive support required. Tailwind breakpoints cover mobile, tablet, an
 Applied to all selected books:
 
 - Update category
-- Update tags
 - Update location
 - Update status
 - Toggle favorites
@@ -566,7 +538,7 @@ Complete log of all design decisions for Librarum v1.0.
 | **Cover image priority**    | Custom upload > Metadata URL > Placeholder. Custom upload persists until deleted.                                                                                                                                |
 | **Favorite author logic**   | Fully automatic - highest average rating. Derived at query time. No manual toggle.                                                                                                                               |
 | **Author entry & edit**     | Autocomplete + inline create on book form. Name edits on author detail page propagate to all books.                                                                                                              |
-| **Category / tag deletion** | Sets field to null on affected books. Books are never deleted.                                                                                                                                                   |
+| **Category / deletion** | Sets field to null on affected books. Books are never deleted.                                                                                                                                                   |
 | **Dashboard**               | "Currently reading" widget removed. Replaced with favorite authors + category distribution chart.                                                                                                                |
 | **Empty state**             | "Kütüphaneniz boş" + single "İlk kitabını ekle" CTA. Widgets hidden until collection has entries.                                                                                                                |
 | **Loan return flow**        | "Mark as Returned" button clears loan fields, prompts for new status. No due dates or reminders.                                                                                                                 |

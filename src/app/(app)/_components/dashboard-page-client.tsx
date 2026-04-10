@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { ArrowRight, Waypoints } from "lucide-react";
-import { Button, Card } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { PageHero } from "@/components/page-hero";
+import { appPageTitles } from "@/lib/navigation";
 import { useDashboardData } from "../_hooks/use-dashboard-data";
 import {
   AiSuggestionsWidget,
@@ -16,41 +17,62 @@ import {
 
 function DashboardSkeleton() {
   return (
-    <section className="page-stack pb-12">
-      <Card className="h-[320px] animate-pulse" surface="raised" />
+    <section className="space-y-10 pb-20">
+      {/* Hero Skeleton */}
+      <div className="grid gap-10 lg:grid-cols-[1fr_400px]">
+        <div className="space-y-8 py-10">
+          <div className="space-y-4">
+            <div className="h-4 w-32 animate-pulse rounded-full bg-white/5" />
+            <div className="h-16 w-3/4 animate-pulse rounded-2xl bg-white/5" />
+            <div className="h-20 w-full animate-pulse rounded-2xl bg-white/5" />
+          </div>
+          <div className="flex gap-4">
+            <div className="h-14 w-40 animate-pulse rounded-xl bg-white/5" />
+            <div className="h-14 w-40 animate-pulse rounded-xl bg-white/5" />
+          </div>
+        </div>
+        <div className="hidden lg:block">
+          <div className="h-full min-h-[300px] animate-pulse rounded-3xl border border-white/5 bg-white/2 p-6" />
+        </div>
+      </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      {/* Summary Stats Skeleton */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
-          <Card className="h-[168px] animate-pulse" key={`stat-skeleton-${index}`} surface="raised" />
+          <div className="h-32 animate-pulse rounded-2xl border border-white/5 bg-white/2" key={`stat-skeleton-${index}`} />
         ))}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_360px]">
-        <div className="space-y-6">
-          <Card className="h-[360px] animate-pulse" surface="raised" />
-          <Card className="h-[360px] animate-pulse" surface="raised" />
+      {/* Widgets Grid Skeleton */}
+      <div className="grid gap-10 xl:grid-cols-[minmax(0,1.35fr)_360px]">
+        <div className="space-y-10">
+          <div className="h-[400px] animate-pulse rounded-3xl border border-white/5 bg-white/2" />
+          <div className="h-[500px] animate-pulse rounded-3xl border border-white/5 bg-white/2" />
         </div>
-        <div className="space-y-6">
-          <Card className="h-[320px] animate-pulse" surface="raised" />
-          <Card className="h-[360px] animate-pulse" surface="raised" />
+        <div className="space-y-10">
+          <div className="h-[350px] animate-pulse rounded-3xl border border-white/5 bg-white/2" />
+          <div className="h-[450px] animate-pulse rounded-3xl border border-white/5 bg-white/2" />
         </div>
       </div>
-
-      <Card className="h-[180px] animate-pulse" surface="raised" />
     </section>
   );
 }
 
 function DashboardError({ message }: { message: string }) {
   return (
-    <section className="flex min-h-[60vh] flex-col items-center justify-center p-8 text-center animate-in fade-in duration-700">
-      <div className="mb-8 rounded-full bg-destructive/10 p-6 text-destructive ring-8 ring-destructive/5">
-        <Waypoints className="h-10 w-10 rotate-45" />
+    <section className="flex min-h-[60vh] flex-col items-center justify-center p-8 text-center duration-1000 animate-in fade-in zoom-in-95">
+      <div className="relative mb-10">
+        <div className="relative rounded-2xl border border-destructive/20 bg-destructive/10 p-6 text-destructive shadow-2xl">
+            <Waypoints className="h-10 w-10 rotate-45" />
+        </div>
       </div>
-      <h2 className="text-3xl font-semibold tracking-[-0.04em] text-text-primary">Veriler yuklenemedi</h2>
-      <p className="mt-4 max-w-md text-text-secondary">{message}</p>
-      <Button className="mt-8" onClick={() => window.location.reload()} variant="secondary">
-        Yeniden dene
+      <h2 className="mb-4 font-serif text-4xl font-bold tracking-tight text-foreground">Kütüphaneye ulaşılamadı.</h2>
+      <p className="max-w-md leading-relaxed text-foreground italic">{message}</p>
+      <Button 
+        className="mt-10 rounded-xl bg-white text-black shadow-2xl transition-all duration-500 hover:bg-primary hover:text-primary-foreground" 
+        onClick={() => window.location.reload()}
+      >
+        Yeniden Eşitle
       </Button>
     </section>
   );
@@ -58,32 +80,19 @@ function DashboardError({ message }: { message: string }) {
 
 function EmptyCollectionState() {
   return (
-    <section className="page-stack">
+    <section className="duration-1000 animate-in fade-in">
       <PageHero
         action={
-          <Button asChild size="lg">
+          <Button asChild size="lg" className="rounded-xl bg-white px-8 py-6 text-base text-black shadow-2xl transition-all duration-500 hover:-translate-y-1 hover:bg-primary hover:text-primary-foreground">
             <Link href="/books/new">
-              Ilk kitabi ekle
+              İlk Kitabı Ekle
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         }
-        aside={
-          <div className="glass-elevated rounded-[28px] p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
-              Hazirlik
-            </p>
-            <p className="mt-4 text-base font-semibold tracking-[-0.03em] text-text-primary">
-              Ilk kayittan sonra dashboard dolmaya baslayacak.
-            </p>
-            <p className="mt-3 text-sm leading-6 text-text-secondary">
-              Son eklenenler, favori yazarlar ve kategori dagilimi otomatik olarak burada gorunecek.
-            </p>
-          </div>
-        }
-        description="Koleksiyonunu kurmaya baslamak icin ilk kitabi ekle. Modern dashboard yapisi, arsiv buyudukce kendi ritmini gosterecek."
-        kicker="Bos Koleksiyon"
-        title="Kutuphane hazir, raflar seni bekliyor."
+        description="Henüz kayıtlı kitap bulunmuyor. İlk kitabınızı ekleyerek ana sayfadaki özetleri, okuma sırasını ve öneri kartlarını doldurmaya başlayabilirsiniz."
+        kicker="Koleksiyon"
+        title={appPageTitles.home}
       />
     </section>
   );
@@ -108,7 +117,7 @@ export function DashboardPageClient() {
         message={
           statsQuery.error instanceof Error
             ? statsQuery.error.message
-            : "Genel bakis verileri alinamadi."
+            : "Veri eşitleme hatası."
         }
       />
     );
@@ -117,87 +126,58 @@ export function DashboardPageClient() {
   const stats = statsQuery.data;
 
   if (!stats) {
-    return <DashboardError message="Genel bakis verileri alinamadi." />;
+    return <DashboardError message="Veri eşitleme hatası." />;
   }
 
   if (stats.totals.totalBooks === 0) {
     return <EmptyCollectionState />;
   }
 
-  const completionRate =
-    stats.totals.totalBooks > 0
-      ? Math.round((stats.totals.completedBooks / stats.totals.totalBooks) * 100)
-      : 0;
-
   const categoryChartData =
     categoryDistributionQuery.data?.filter((item) => item.count > 0) ?? [];
 
   return (
-    <section className="page-stack pb-12">
+    <section className="space-y-8 pb-24">
       <PageHero
         action={
           <>
-            <Button asChild size="lg">
-              <Link href="/books/new">Yeni kitap ekle</Link>
+            <Button asChild size="lg" className="h-13 rounded-2xl bg-white px-7 text-black transition-all hover:bg-primary hover:text-white">
+              <Link href="/books/new">Yeni Kitap Ekle</Link>
             </Button>
-            <Button asChild size="lg" variant="secondary">
-              <Link href="/books">Kutuphane gorunumu</Link>
+            <Button asChild size="lg" variant="secondary" className="h-13 rounded-2xl border-white/10 bg-white/5 px-7 transition-all hover:bg-white/10">
+              <Link href="/books">Kitaplara Git</Link>
             </Button>
           </>
         }
-        aside={
-          <div className="glass-elevated flex h-full flex-col rounded-[28px] p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
-              Bugunun Ozeti
-            </p>
-
-            <div className="mt-5 grid gap-3">
-              <div className="page-metric">
-                <p className="page-metric-label">Toplam nusha</p>
-                <p className="page-metric-value">{stats.totals.totalCopies}</p>
-              </div>
-
-              <div className="page-metric">
-                <p className="page-metric-label">Tamamlama orani</p>
-                <p className="page-metric-value">%{completionRate}</p>
-              </div>
-            </div>
-
-            <div className="mt-4 rounded-[24px] bg-muted/65 p-4">
-              <p className="text-sm font-semibold tracking-[-0.02em] text-text-primary">
-                {stats.totals.unreadBooks} kitap hala sirada, {stats.totals.loanedBooks} kitap ise oduncte.
-              </p>
-              <p className="mt-2 text-sm leading-6 text-text-secondary">
-                Dashboard artik okuma temposunu, arastirma alanlarini ve operasyon durumunu tek yerde tutuyor.
-              </p>
-            </div>
-          </div>
-        }
-        description="Koleksiyonun durumu, bekleyen okumalar ve arsivindeki ana egilimler tek bir sakin dashboard akisinda toplandi."
-        kicker="Overview"
-        title="Kutuphanenin tamami tek bakista."
+        description={`Koleksiyonunuz, okuma listeniz ve tüm aktiviteleriniz tek bir ekranda.`}
+        kicker="Genel Bakış"
+        title={appPageTitles.home}
       />
 
-      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="delay-100 duration-300 animate-in fade-in slide-in-from-bottom-4">
         <SummaryStats stats={stats} />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_360px]">
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100 fill-mode-both">
+      <div className="grid gap-6 lg:auto-rows-[minmax(320px,auto)] lg:grid-cols-12">
+        <div className="min-w-0 delay-200 duration-300 animate-in fade-in slide-in-from-bottom-4 lg:col-span-6">
           <BacklogWidget totalUnread={stats.totals.unreadBooks} unreadBacklogQuery={unreadBacklogQuery} />
+        </div>
+        <div className="min-w-0 delay-250 duration-300 animate-in fade-in slide-in-from-bottom-4 lg:col-span-6">
           <RecentBooksWidget recentBooksQuery={recentBooksQuery} />
         </div>
-
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200 fill-mode-both">
-          <FavoriteAuthorsWidget favoriteAuthorsQuery={favoriteAuthorsQuery} />
+        <div className="min-w-0 delay-300 duration-300 animate-in fade-in slide-in-from-bottom-4 lg:col-span-6">
           <CategoryDistributionWidget
             categoryChartData={categoryChartData}
             categoryDistributionQuery={categoryDistributionQuery}
           />
         </div>
+        <div className="min-w-0 delay-350 duration-300 animate-in fade-in slide-in-from-bottom-4 lg:col-span-6">
+          <FavoriteAuthorsWidget favoriteAuthorsQuery={favoriteAuthorsQuery} />
+        </div>
+        <div className="min-w-0 delay-400 duration-300 animate-in fade-in slide-in-from-bottom-4 lg:col-span-12">
+          <AiSuggestionsWidget />
+        </div>
       </div>
-
-      <AiSuggestionsWidget />
     </section>
   );
 }

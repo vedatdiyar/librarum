@@ -3,30 +3,39 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BookMarked, CircleDashed } from "lucide-react";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
+import { 
+  ArrowLeft, 
+  BookMarked, 
+  CircleDashed, 
+  LibraryBig, 
+  History, 
+  Trophy,
+  Terminal,
+  ChevronRight
+} from "lucide-react";
+import { Button, cn } from "@/components/ui";
 import type { SeriesDetail } from "@/types";
 import { readJsonResponse } from "@/lib/shared";
 import { PageHero } from "@/components/page-hero";
 
 async function fetchSeriesDetail(seriesId: string) {
-  return readJsonResponse<SeriesDetail>(await fetch(`/api/series/${seriesId}`));
+  const response = await fetch(`/api/series/${seriesId}`);
+  return readJsonResponse<SeriesDetail>(response);
 }
 
 function BookThumb({ title, coverUrl }: { title: string; coverUrl: string | null }) {
   if (coverUrl) {
     return (
-      <div className="relative h-20 w-14 overflow-hidden rounded-[8px] border border-border bg-surface-raised">
-        <Image alt={`${title} kapagi`} className="object-cover" fill sizes="56px" src={coverUrl} />
+      <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/2 shadow-xl transition-transform duration-500 group-hover:scale-110">
+        <Image alt="" className="object-cover opacity-30 blur-lg" fill src={coverUrl} />
+        <Image alt={`${title} cover`} className="relative object-contain" fill sizes="64px" src={coverUrl} />
       </div>
     );
   }
 
   return (
-    <div className="book-placeholder h-20 w-14 rounded-[8px] p-2">
-      <span className="line-clamp-3 font-display text-[10px] leading-4 text-text-primary">
-        {title}
-      </span>
+    <div className="flex h-24 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/2 p-2 transition-all duration-500">
+      <span className="line-clamp-3 text-center text-[7px] font-bold tracking-tighter text-foreground uppercase">{title}</span>
     </div>
   );
 }
@@ -39,36 +48,44 @@ export function SeriesDetailPageClient({ seriesId }: { seriesId: string }) {
 
   if (detailQuery.isLoading) {
     return (
-      <section className="space-y-6">
-        <div className="h-10 w-40 animate-pulse rounded-xl bg-surface-raised" />
-        <Card>
-          <CardContent className="h-[240px] animate-pulse p-8">
-            <div className="h-full rounded-[24px] bg-surface-raised" />
-          </CardContent>
-        </Card>
+      <section className="space-y-16 pt-24 pb-40">
+        {/* Back Link Skeleton */}
+        <div className="h-4 w-32 animate-pulse rounded-full bg-white/5" />
+
+        {/* Hero Skeleton */}
+        <div className="space-y-8 py-10">
+          <div className="space-y-4">
+            <div className="h-4 w-32 animate-pulse rounded-full bg-white/5" />
+            <div className="h-16 w-3/4 animate-pulse rounded-2xl bg-white/5" />
+            <div className="h-20 w-full animate-pulse rounded-2xl bg-white/5" />
+          </div>
+        </div>
+
+        <div className="grid gap-12 xl:grid-cols-[1fr_420px]">
+          <div className="space-y-12">
+             <div className="h-[600px] animate-pulse rounded-[40px] border border-white/5 bg-white/2" />
+          </div>
+          <div className="space-y-12">
+             <div className="h-[300px] animate-pulse rounded-[40px] border border-white/5 bg-white/2" />
+             <div className="h-[400px] animate-pulse rounded-[40px] border border-white/5 bg-white/2" />
+          </div>
+        </div>
       </section>
     );
   }
 
   if (detailQuery.isError || !detailQuery.data) {
     return (
-      <section className="space-y-6">
-        <Button asChild size="sm" variant="ghost">
-          <Link href="/series">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Serilere don
-          </Link>
-        </Button>
-        <Card>
-          <CardHeader>
-            <CardTitle>Seri detayi yuklenemedi</CardTitle>
-            <CardDescription>
-              {detailQuery.error instanceof Error
-                ? detailQuery.error.message
-                : "Seri verileri alinamadi."}
-            </CardDescription>
-          </CardHeader>
-        </Card>
+      <section className="pt-24 text-center">
+        <div className="glass-panel rounded-[40px] border-rose-400/20 bg-rose-400/5 p-12">
+            <h2 className="mb-4 font-serif text-3xl font-bold text-white">Dizi Eşitleme Hatası</h2>
+            <p className="mx-auto max-w-md text-sm text-foreground italic">
+                {detailQuery.error instanceof Error ? detailQuery.error.message : "Bu dizi sürekliliğine ait arşiv kaydı alınamadı."}
+            </p>
+            <Button asChild className="mt-8 rounded-xl bg-white text-black transition-all hover:bg-primary" variant="ghost">
+                <Link href="/series">Sürekliliklere Dön</Link>
+            </Button>
+        </div>
       </section>
     );
   }
@@ -76,141 +93,195 @@ export function SeriesDetailPageClient({ seriesId }: { seriesId: string }) {
   const detail = detailQuery.data;
 
   return (
-    <section className="page-stack">
-      <Button asChild size="sm" variant="ghost">
-        <Link href="/series">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Serilere don
-        </Link>
-      </Button>
+    <section className="space-y-16 pt-24 pb-40">
+      <div className="duration-700 animate-in fade-in slide-in-from-left-4">
+        <Button asChild variant="ghost" className="group rounded-xl px-0 hover:bg-transparent">
+            <Link href="/series" className="flex items-center gap-2 text-foreground transition-colors group-hover:text-primary">
+                <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Arşivsel Süreklilikler</span>
+            </Link>
+        </Button>
+      </div>
 
       <PageHero
-        aside={
-          <div className="page-metric">
-            <p className="page-metric-label">Ozet</p>
-            <dl className="mt-4 space-y-4 text-sm">
-              <div className="flex items-center justify-between gap-4 border-b border-border/80 pb-3">
-                <dt className="text-text-secondary">Toplam cilt</dt>
-                <dd className="font-display text-2xl text-text-primary">{detail.totalVolumes ?? "—"}</dd>
-              </div>
-              <div className="flex items-center justify-between gap-4 border-b border-border/80 pb-3">
-                <dt className="text-text-secondary">Sahip olunan</dt>
-                <dd className="font-display text-2xl text-text-primary">{detail.ownedVolumes.length}</dd>
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <dt className="text-text-secondary">Tamamlanma</dt>
-                <dd className="font-display text-2xl text-text-primary">
-                  {detail.completionPercentage == null ? "Bilinmiyor" : `%${detail.completionPercentage}`}
-                </dd>
-              </div>
-            </dl>
-          </div>
-        }
-        description="Seri icindeki sahip olunan ciltleri, eksik numaralari ve tamamlama seviyesini bu ekranda takip edebilirsin."
-        kicker="Series Detail"
+        description="Bu sürekli çok ciltli arşivin detaylı bir eşlemesi. Edinim kilometre taşlarını takip edin, parçalanmış dizileri tanımlayın ve arşiv tamamlanmasına yönelik eşitlemeyi izleyin."
+        kicker="Süreklilik Protokolü"
         title={detail.name}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)]">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl">Sahip olunan ciltler</CardTitle>
-            <CardDescription>Numarali olanlar once, numarasizlar sonda listelenir.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {detail.ownedVolumes.length === 0 ? (
-              <div className="empty-panel">
-                <p className="text-sm leading-7 text-text-secondary">Bu seride kitap bulunmuyor.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {detail.ownedVolumes.map((volume) => (
-                  <Link
-                    className="interactive-row group flex items-center gap-4 p-3"
-                    href={`/books/${volume.bookId}`}
-                    key={volume.bookId}
-                  >
-                    <BookThumb coverUrl={volume.coverUrl} title={volume.title} />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <p className="line-clamp-2 font-display text-xl text-text-primary">
-                          {volume.title}
-                        </p>
-                        <span className="rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-accent">
-                          {volume.seriesOrder ? `Cilt ${volume.seriesOrder}` : "No bilinmiyor"}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-sm text-text-secondary">{volume.status}</p>
+      <div className="grid gap-12 xl:grid-cols-[1fr_420px]">
+        <div className="space-y-12">
+            <div className="glass-panel overflow-hidden rounded-[40px] border-white/5 bg-white/1 shadow-2xl delay-300 duration-1000 animate-in fade-in fill-mode-both slide-in-from-bottom-12">
+                <div className="flex flex-col items-start justify-between gap-8 border-b border-white/3 bg-white/1 px-8 py-10 md:flex-row md:items-center md:px-12">
+                    <div>
+                        <h3 className="font-serif text-3xl font-bold tracking-tight text-white">Arşivlenmiş Parçalar</h3>
+                        <p className="mt-2 text-[13px] leading-relaxed text-foreground italic">Şu anda yerel matriste bulunan ardışık girişler.</p>
                     </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    
+                    <div className="flex flex-wrap items-center gap-8 md:gap-12">
+                         <div className="flex items-center gap-6">
+                            <div className="hidden h-14 w-px bg-white/5 md:block" />
+                            <div className="flex flex-col items-end gap-1.5">
+                              <div className="flex items-center gap-4">
+                                <span className="font-serif text-4xl font-bold tracking-tighter text-white">{detail.totalVolumes ?? "∞"}</span>
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/5 bg-white/3 text-primary">
+                                  <LibraryBig className="h-5.5 w-5.5" />
+                                </div>
+                              </div>
+                              <p className="line-clamp-1 text-[10px] font-bold tracking-[0.2em] text-primary/80 uppercase">Hedef Derinlik</p>
+                            </div>
+                          </div>
 
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-3xl">Eksik ciltler</CardTitle>
-              <CardDescription>Yalniz toplam cilt sayisi tanimli serilerde hesaplanir.</CardDescription>
-            </CardHeader>
-            <CardContent>
+                          <div className="flex items-center gap-6">
+                            <div className="hidden h-14 w-px bg-white/5 md:block" />
+                            <div className="flex flex-col items-end gap-1.5">
+                              <div className="flex items-center gap-4">
+                                <span className="font-serif text-4xl font-bold tracking-tighter text-white">{detail.ownedVolumes.length}</span>
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/5 bg-white/3 text-primary">
+                                  <History className="h-5.5 w-5.5" />
+                                </div>
+                              </div>
+                              <p className="line-clamp-1 text-[10px] font-bold tracking-[0.2em] text-primary/80 uppercase">Arşivlenen Cilt</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-6">
+                            <div className="hidden h-14 w-px bg-white/5 md:block" />
+                            <div className="flex flex-col items-end gap-1.5">
+                              <div className="flex items-center gap-4">
+                                <span className="font-serif text-4xl font-bold tracking-tighter text-white">{detail.completionPercentage ?? 0}%</span>
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/5 bg-white/3 text-primary">
+                                  <Trophy className="h-5.5 w-5.5" />
+                                </div>
+                              </div>
+                              <p className="line-clamp-1 text-[10px] font-bold tracking-[0.2em] text-primary/80 uppercase">Eşitleme Oranı</p>
+                            </div>
+                          </div>
+                    </div>
+                </div>
+
+                <div className="space-y-4 p-4 md:p-8">
+                    {detail.ownedVolumes.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-24 text-center text-foreground/40">
+                            <LibraryBig className="mb-6 h-12 w-12 opacity-20" />
+                            <p className="font-serif text-xl font-bold italic">Hiçbir ardışık parça arşivlenmedi.</p>
+                        </div>
+                    ) : (
+                        <div className="grid gap-4">
+                            {detail.ownedVolumes.map((volume, idx) => (
+                                <Link
+                                    className="group relative flex items-center gap-6 rounded-2xl border border-white/2 bg-white/1 p-4 transition-all duration-500 animate-in fade-in fill-mode-both slide-in-from-left-4 hover:border-white/10 hover:bg-white/4"
+                                    href={`/books/${volume.slug}`}
+                                    key={volume.bookId}
+                                    style={{ animationDelay: `${idx * 50}ms` }}
+                                >
+                                    <BookThumb coverUrl={volume.coverUrl} title={volume.title} />
+                                    <div className="min-w-0 flex-1 space-y-3">
+                                        <div className="flex flex-wrap items-center gap-3">
+                                            <p className="line-clamp-2 font-serif text-2xl leading-tight font-bold tracking-tight text-white transition-colors group-hover:text-primary">
+                                                {volume.title}
+                                            </p>
+                                            <div className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[9px] font-bold tracking-widest text-primary uppercase">
+                                                {volume.seriesOrder ? `Cilt ${volume.seriesOrder}` : "Ardışık Dizin Eksik"}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-1.5 w-1.5 rounded-full bg-white/20" />
+                                            <p className="text-[10px] font-bold tracking-[0.2em] text-foreground uppercase">{volume.status}</p>
+                                        </div>
+                                    </div>
+                                    <div className="shrink-0 rounded-xl p-3 opacity-0 transition-all duration-500 group-hover:translate-x-1 group-hover:opacity-100">
+                                        <ChevronRight className="h-5 w-5 text-primary" />
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+
+        <div className="space-y-12 delay-500 duration-1000 animate-in fade-in fill-mode-both slide-in-from-right-12">
+          <div className="glass-panel overflow-hidden rounded-[40px] border-white/5 bg-white/1 shadow-2xl">
+            <div className="border-b border-white/3 px-8 py-10">
+              <h3 className="font-serif text-2xl font-bold tracking-tight text-white">Boşluk Manifestosu</h3>
+              <p className="mt-1 text-[12px] leading-relaxed text-foreground italic">Süreklilik kaydı içinde tanımlanmış ardışık boşluklar.</p>
+            </div>
+            <div className="p-8">
               {detail.totalVolumes == null ? (
-                <div className="empty-panel min-h-[180px]">
-                  <p className="text-sm leading-7 text-text-secondary">
-                    Bu seri icin toplam cilt sayisi tanimli degil.
-                  </p>
+                <div className="flex flex-col items-center justify-center py-20 text-center text-foreground/80">
+                   <CircleDashed className="mb-4 h-10 w-10 animate-spin-slow" />
+                   <p className="text-[11px] font-bold tracking-[0.2em] uppercase">Hedef Derinlik Atanmamış</p>
                 </div>
               ) : detail.missingVolumes.length === 0 ? (
-                <div className="empty-panel min-h-[180px]">
-                  <p className="text-sm leading-7 text-text-secondary">
-                    Bilinen cilt numaralarina gore eksik cilt gorunmuyor.
-                  </p>
+                <div className="flex flex-col items-center justify-center py-20 text-center text-emerald-400/40">
+                   <Trophy className="mb-4 h-10 w-10" />
+                   <p className="text-[11px] font-bold tracking-[0.2em] uppercase">Süreklilik Eşitlendi</p>
                 </div>
               ) : (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2.5">
                   {detail.missingVolumes.map((volume) => (
                     <div
-                      className="rounded-full border border-border bg-surface-raised px-4 py-2 text-sm text-text-primary"
+                      className="group/chip relative rounded-xl border border-white/5 bg-white/2 px-4 py-2 transition-all duration-500 hover:border-white/10 hover:bg-white/5"
                       key={volume}
                     >
-                      Cilt {volume}
+                      <span className="text-[11px] font-bold tracking-widest text-foreground uppercase transition-colors group-hover/chip:text-primary">Vol. {volume}</span>
                     </div>
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-3xl">Tamamlanma</CardTitle>
-              <CardDescription>Bilinen cilt numaralarina gore hesaplanir.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="panel-muted p-5">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <span className="rounded-[18px] border border-accent/25 bg-accent/10 p-3 text-accent">
-                        <BookMarked className="h-4 w-4" />
-                      </span>
-                    <div>
-                      <p className="text-sm uppercase tracking-[0.18em] text-text-secondary">
-                        Tamamlanma orani
-                      </p>
-                      <p className="font-display text-3xl text-text-primary">
-                        {detail.completionPercentage == null ? "Bilinmiyor" : `%${detail.completionPercentage}`}
-                      </p>
-                    </div>
-                  </div>
-                  {detail.totalVolumes != null ? (
-                    <CircleDashed className="h-5 w-5 text-accent" />
-                  ) : null}
+          <div className="glass-panel overflow-hidden rounded-[40px] border-white/5 bg-white/1 shadow-2xl">
+            <div className="border-b border-white/3 px-8 py-10">
+              <h3 className="font-serif text-2xl font-bold tracking-tight text-white">Eşitleme Durumu</h3>
+              <p className="mt-1 text-[12px] leading-relaxed text-foreground italic">Hesaplanan dizinler genelinde orkestrasyon durumu.</p>
+            </div>
+            <div className="p-8">
+                <div className="group glass-panel relative overflow-hidden rounded-3xl border-white/5 bg-white/1 p-8 shadow-inner transition-all duration-700 hover:border-white/10">
+                   <div className="relative flex items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                            <div className="rounded-2xl border border-primary/20 bg-primary/10 p-4 text-primary">
+                                <BookMarked className="h-6 w-6" />
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold tracking-[0.2em] text-foreground uppercase">Tamamlanma Metriği</p>
+                                <p className="font-serif text-4xl font-bold tracking-tighter text-white">
+                                    {detail.completionPercentage == null ? "0" : detail.completionPercentage}<span className="ml-1 text-xl text-foreground">%</span>
+                                </p>
+                            </div>
+                        </div>
+                        {detail.totalVolumes != null && detail.completionPercentage === 100 && (
+                            <div className="rounded-full bg-emerald-400/20 p-1 text-emerald-400">
+                                <Trophy className="h-5 w-5" />
+                            </div>
+                        )}
+                   </div>
+
+                   <div className="relative mt-8 space-y-3">
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/3">
+                            <div 
+                                className={cn(
+                                    "h-full transition-all duration-2000 ease-in-out",
+                                    detail.completionPercentage === 100 ? "bg-emerald-400" : "bg-primary"
+                                )} 
+                                style={{ width: `${detail.completionPercentage ?? 0}%` }} 
+                            />
+                        </div>
+                        <div className="flex items-center justify-between px-1 text-[9px] font-bold tracking-widest text-foreground uppercase">
+                            <span>Matris Başlangıcı</span>
+                            <span>Hedef Ufuk</span>
+                        </div>
+                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+
+                <div className="mt-8 flex items-center gap-3 px-1 text-foreground">
+                    <Terminal className="h-3 w-3" />
+                    <p className="text-[9px] font-bold tracking-[0.15em] uppercase">Ardışık süreklilik metrikleri dizinler genelinde doğrulandı.</p>
+                </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

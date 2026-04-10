@@ -12,8 +12,7 @@ import type {
   BooksListFilters,
   BulkBooksPatchInput,
   CategoryOption,
-  SeriesListItem,
-  TagOption
+  SeriesListItem
 } from "@/types";
 
 export type BooksPageFilterState = Record<keyof BooksListFilters, string>;
@@ -21,7 +20,6 @@ export type BooksPageFilterState = Record<keyof BooksListFilters, string>;
 export const EMPTY_FILTERS: BooksPageFilterState = {
   status: "",
   category: "",
-  tag: "",
   location: "",
   author: "",
   series: ""
@@ -38,7 +36,6 @@ export function parseFilters(searchParams: URLSearchParams | ReadonlyURLSearchPa
   return {
     status: searchParams.get("status") ?? "",
     category: searchParams.get("category") ?? "",
-    tag: searchParams.get("tag") ?? "",
     location: searchParams.get("location") ?? "",
     author: searchParams.get("author") ?? "",
     series: searchParams.get("series") ?? ""
@@ -126,7 +123,7 @@ export function useSelection(items: ApiBookListItem[]) {
   };
 }
 
-export function useBooksPageData(searchParams: ReadonlyURLSearchParams) {
+export function useBooksPageData(searchParams: URLSearchParams | ReadonlyURLSearchParams) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -143,11 +140,6 @@ export function useBooksPageData(searchParams: ReadonlyURLSearchParams) {
     queryFn: async () => readJsonResponse<CategoryOption[]>(await fetch("/api/categories"))
   });
 
-  const tagsQuery = useQuery({
-    queryKey: ["tags"],
-    queryFn: async () => readJsonResponse<TagOption[]>(await fetch("/api/tags"))
-  });
-
   const authorsQuery = useQuery({
     queryKey: ["authors"],
     queryFn: async () => readJsonResponse<AuthorListItem[]>(await fetch("/api/authors"))
@@ -156,6 +148,11 @@ export function useBooksPageData(searchParams: ReadonlyURLSearchParams) {
   const seriesQuery = useQuery({
     queryKey: ["series"],
     queryFn: async () => readJsonResponse<SeriesListItem[]>(await fetch("/api/series"))
+  });
+
+  const locationsQuery = useQuery({
+    queryKey: ["locations"],
+    queryFn: async () => readJsonResponse<string[]>(await fetch("/api/locations"))
   });
 
   const syncFiltersToUrl = React.useCallback(
@@ -188,9 +185,9 @@ export function useBooksPageData(searchParams: ReadonlyURLSearchParams) {
     filters,
     booksQuery,
     categoriesQuery,
-    tagsQuery,
     authorsQuery,
     seriesQuery,
+    locationsQuery,
     syncFiltersToUrl,
     bulkUpdateMutation
   };

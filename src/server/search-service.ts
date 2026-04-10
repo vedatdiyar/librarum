@@ -20,6 +20,7 @@ type ParsedSearchQuery = {
 
 type BookRow = {
   id: string;
+  slug: string;
   title: string;
   coverUrl: string | null;
   updatedAt: string;
@@ -72,10 +73,10 @@ async function resolveCategoryId(normalizedQuery: string) {
 async function parseSearchQuery(query: string): Promise<ParsedSearchQuery> {
   const normalizedQuery = normalizeText(query);
   const statusMatches: Array<{ phrases: string[]; status: BookStatus }> = [
-    { phrases: ["okunmamis"], status: "owned" },
-    { phrases: ["okudum", "okunanlar"], status: "completed" },
-    { phrases: ["yarim biraktim", "yarim"], status: "abandoned" },
-    { phrases: ["odunc verilenler", "odunc"], status: "loaned" },
+    { phrases: ["okunmamis", "arsivde", "arsiv"], status: "owned" },
+    { phrases: ["okudum", "okunanlar", "tamamlandi"], status: "completed" },
+    { phrases: ["yarim biraktim", "yarim", "birakildi"], status: "abandoned" },
+    { phrases: ["odunc verilenler", "odunc", "disarida", "emanet"], status: "loaned" },
     { phrases: ["kayip"], status: "lost" }
   ];
 
@@ -166,6 +167,7 @@ async function searchStructuredResults(parsed: ParsedSearchQuery): Promise<BookR
   const rows = await db
     .select({
       id: books.id,
+      slug: books.slug,
       title: books.title,
       coverUrl: sql<string | null>`coalesce(${books.coverCustomUrl}, ${books.coverMetadataUrl})`,
       updatedAt: books.updatedAt
@@ -179,6 +181,7 @@ async function searchStructuredResults(parsed: ParsedSearchQuery): Promise<BookR
 
   return rows.map((row) => ({
     id: row.id,
+    slug: row.slug,
     title: row.title,
     coverUrl: row.coverUrl,
     updatedAt: row.updatedAt.toISOString(),
@@ -219,6 +222,7 @@ async function searchTokenResults(tokens: string[]): Promise<BookRow[]> {
   const rows = await db
     .select({
       id: books.id,
+      slug: books.slug,
       title: books.title,
       coverUrl: sql<string | null>`coalesce(${books.coverCustomUrl}, ${books.coverMetadataUrl})`,
       updatedAt: books.updatedAt
@@ -241,6 +245,7 @@ async function searchTokenResults(tokens: string[]): Promise<BookRow[]> {
 
     return {
       id: row.id,
+      slug: row.slug,
       title: row.title,
       coverUrl: row.coverUrl,
       updatedAt: row.updatedAt.toISOString(),
@@ -295,6 +300,7 @@ export async function searchBooks(query: string, limit = 8): Promise<SearchResul
     .slice(0, limit)
     .map((result) => ({
       id: result.id,
+      slug: result.slug,
       title: result.title,
       coverUrl: result.coverUrl,
       authors: result.authors

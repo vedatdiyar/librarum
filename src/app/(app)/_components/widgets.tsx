@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import type { ComponentType, ReactNode } from "react";
 import { ArrowRight, BookCopy, BookOpen, BrainCircuit, Clock3, LoaderCircle, UserRound, Waypoints } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, cn } from "@/components/ui";
+import { StatCard } from "@/components/stat-card";
 import type { CategoryDistributionPoint, StatsSnapshot } from "@/types";
 
 const Bar = dynamic(() => import("recharts").then((mod) => mod.Bar), { ssr: false });
@@ -17,14 +18,15 @@ const Tooltip = dynamic(() => import("recharts").then((mod) => mod.Tooltip), { s
 const XAxis = dynamic(() => import("recharts").then((mod) => mod.XAxis), { ssr: false });
 const YAxis = dynamic(() => import("recharts").then((mod) => mod.YAxis), { ssr: false });
 
-const CHART_COLORS = ["#1f635d", "#6f8f7a", "#d3b88c", "#8fa6a0", "#7b6f67"];
-const CHART_MARGIN = { top: 8, right: 0, left: -24, bottom: 0 };
+const CHART_COLORS = ["#EBD5A9", "#D4AF37", "#C5A059", "#AD9A74", "#8E733E"];
+const CHART_MARGIN = { top: 20, right: 0, left: -24, bottom: 0 };
 const TOOLTIP_STYLE = {
-  border: "1px solid rgba(221, 214, 201, 1)",
-  borderRadius: "18px",
-  background: "rgba(252, 251, 247, 0.96)",
-  color: "rgba(21, 23, 24, 1)",
-  boxShadow: "0 16px 44px -24px rgba(26, 35, 36, 0.22)"
+  border: "1px solid var(--border)",
+  borderRadius: "var(--radius)",
+  background: "var(--popover)",
+  backdropFilter: "blur(12px)",
+  color: "var(--popover-foreground)",
+  boxShadow: "var(--shadow-lg)"
 };
 
 function formatAuthors(authors: Array<{ name: string }>) {
@@ -39,9 +41,13 @@ export function WidgetState({
   isLoading?: boolean;
 }) {
   return (
-    <div className="empty-panel animate-in fade-in duration-300">
-      <p className="flex items-center gap-3 text-sm leading-6 text-text-secondary">
-        {isLoading ? <LoaderCircle className="h-4 w-4 animate-spin text-primary" /> : null}
+    <div className="flex min-h-[160px] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-white/5 bg-white/1 p-8 text-center duration-500 animate-in fade-in">
+      {isLoading ? (
+        <LoaderCircle className="h-6 w-6 animate-spin text-primary" />
+      ) : (
+        <div className="h-2 w-2 rounded-full bg-white/10" />
+      )}
+      <p className="max-w-[200px] text-sm leading-relaxed font-medium text-foreground">
         {message}
       </p>
     </div>
@@ -53,43 +59,22 @@ function SnapshotCard({
   value,
   helper,
   icon: Icon,
-  tintClassName,
   delayClass = ""
 }: {
   label: string;
   value: string | number;
   helper: string;
   icon: ComponentType<{ className?: string }>;
-  tintClassName: string;
   delayClass?: string;
 }) {
   return (
-    <Card
-      className={cn(
-        "group overflow-hidden border-border/70 bg-card/95 animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both",
-        delayClass
-      )}
-      surface="raised"
-    >
-      <CardContent className="p-6 md:p-7">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
-              {label}
-            </p>
-            <p className="mt-3 text-4xl font-semibold tracking-[-0.06em] text-text-primary">
-              {value}
-            </p>
-          </div>
-
-          <div className={cn("flex h-12 w-12 items-center justify-center rounded-[18px]", tintClassName)}>
-            <Icon className="h-5 w-5" />
-          </div>
-        </div>
-
-        <p className="mt-6 text-sm leading-6 text-text-secondary">{helper}</p>
-      </CardContent>
-    </Card>
+    <StatCard
+      description={helper}
+      icon={Icon as any}
+      label={label}
+      value={value}
+      className={cn("duration-300 animate-in fade-in fill-mode-both slide-in-from-bottom-4", delayClass)}
+    />
   );
 }
 
@@ -102,15 +87,16 @@ function BookThumb({
 }) {
   if (coverUrl) {
     return (
-      <div className="relative h-16 w-12 overflow-hidden rounded-xl border border-border/70 bg-card">
-        <Image alt={`${title} kapagi`} className="object-cover" fill sizes="48px" src={coverUrl} />
+      <div className="relative h-16 w-12 overflow-hidden rounded-lg border border-white/10 bg-white/2 shadow-lg transition-all duration-500 group-hover:scale-105 group-hover:border-white/20">
+        <Image alt="" className="object-cover opacity-30 blur-md" fill sizes="48px" src={coverUrl} />
+        <Image alt={`${title} kapagi`} className="relative object-contain" fill sizes="48px" src={coverUrl} />
       </div>
     );
   }
 
   return (
-    <div className="book-placeholder h-16 w-12 rounded-xl p-1.5">
-      <span className="line-clamp-3 text-center text-[9px] leading-3 text-text-primary/40">{title}</span>
+    <div className="flex h-16 w-12 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-white/2 p-2 transition-all duration-500 group-hover:scale-105">
+      <span className="line-clamp-3 text-center text-[8px] font-medium tracking-tighter text-foreground uppercase">{title}</span>
     </div>
   );
 }
@@ -129,16 +115,16 @@ export function DashboardSection({
   className?: string;
 }) {
   return (
-    <Card className={cn("overflow-hidden border-border/70 bg-card/95", className)} surface="raised">
-      <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0 border-b border-border/60 pb-5">
-        <div>
-          <CardTitle>{title}</CardTitle>
-          <CardDescription className="mt-2 max-w-xl">{description}</CardDescription>
+    <div className={cn("glass-panel flex h-full min-w-0 flex-col rounded-[28px] border-white/5 bg-white/1", className)}>
+      <div className="flex flex-row items-center justify-between border-b border-white/5 px-6 py-5">
+        <div className="space-y-1">
+          <h3 className="font-serif text-lg font-bold tracking-tight text-foreground">{title}</h3>
+          <p className="text-[11px] font-medium tracking-widest text-foreground uppercase">{description}</p>
         </div>
         {action}
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
+      </div>
+      <div className="min-w-0 p-6 pt-5">{children}</div>
+    </div>
   );
 }
 
@@ -152,34 +138,30 @@ export function SummaryStats({ stats }: { stats: StatsSnapshot }) {
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <SnapshotCard
         delayClass="stagger-1"
-        helper={`${stats.totals.totalCopies} adet fiziksel nusha envantere kayitli.`}
+        helper={`${stats.totals.totalCopies} kayıtlı eser.`}
         icon={BookCopy}
-        label="Toplam kitap"
-        tintClassName="bg-accent text-accent-foreground"
+        label="Kütüphane"
         value={stats.totals.totalBooks}
       />
       <SnapshotCard
         delayClass="stagger-2"
-        helper={`${stats.totals.completedBooks} kitap tamamlandi.`}
+        helper={`${stats.totals.completedBooks} kitap okundu.`}
         icon={BookOpen}
-        label="Tamamlama orani"
-        tintClassName="bg-primary text-primary-foreground"
+        label="Tamamlama Oranı"
         value={`%${completionRate}`}
       />
       <SnapshotCard
         delayClass="stagger-3"
-        helper="Okunmayi bekleyen mevcut raf listesi."
+        helper="Okunmayı bekleyen kitaplar."
         icon={Clock3}
-        label="Bekleyenler"
-        tintClassName="bg-secondary text-secondary-foreground"
+        label="Okunacaklar"
         value={stats.totals.unreadBooks}
       />
       <SnapshotCard
         delayClass="stagger-4"
-        helper={`${stats.totals.favoriteAuthorsCount} yazar favori olarak isaretli.`}
+        helper={`Kütüphane dışındaki kitaplar.`}
         icon={Waypoints}
-        label="Oduncte"
-        tintClassName="bg-muted text-text-primary"
+        label="Ödünçte"
         value={stats.totals.loanedBooks}
       />
     </div>
@@ -197,50 +179,51 @@ export function BacklogWidget({
     <DashboardSection
       action={
         <Link
-          className="inline-flex items-center gap-1 text-sm font-semibold tracking-[-0.02em] text-primary transition hover:text-primary/80"
+          className="group flex items-center gap-1.5 text-[11px] font-bold tracking-widest text-primary uppercase transition-colors hover:text-primary"
           href="/books"
         >
-          Tumunu gor
-          <ArrowRight className="h-4 w-4" />
+          Hepsini Gör
+          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
         </Link>
       }
-      description="Yakinda okunacaklar listesi. Arsivde bekleyen kayitlara hizli erisim saglar."
-      title={`Okuma sirasi (${totalUnread})`}
+      description="Sırada bekleyen kitaplarınız"
+      title={`Okunacaklar (${totalUnread})`}
     >
       {unreadBacklogQuery.isLoading ? (
-        <WidgetState isLoading message="Bekleyenler yukleniyor..." />
+        <WidgetState isLoading message="Liste yükleniyor..." />
       ) : unreadBacklogQuery.isError ? (
         <WidgetState
-          message={
-            unreadBacklogQuery.error instanceof Error
-              ? unreadBacklogQuery.error.message
-              : "Bekleyenler alinamadi."
-          }
+          message="Sıra getirilemedi"
         />
       ) : unreadBacklogQuery.data && unreadBacklogQuery.data.items.length > 0 ? (
-        <div className="space-y-3">
-          {unreadBacklogQuery.data.items.map((book: any) => (
-            <Link className="interactive-row group" href={`/books/${book.id}`} key={book.id}>
+        <div className="space-y-2">
+          {unreadBacklogQuery.data.items.map((book: any, idx: number) => (
+            <Link 
+              className="group flex items-center justify-between rounded-xl border border-transparent p-3 transition-all duration-300 animate-in fade-in fill-mode-both slide-in-from-left-4 hover:border-white/5 hover:bg-white/3" 
+              href={`/books/${book.slug}`} 
+              key={book.id}
+              style={{ animationDelay: `${idx * 100}ms` }}
+            >
               <div className="flex min-w-0 items-center gap-4">
                 <BookThumb coverUrl={book.coverUrl} title={book.title} />
                 <div className="min-w-0 flex-1">
-                  <p className="line-clamp-1 text-lg font-semibold tracking-[-0.03em] text-text-primary transition-colors group-hover:text-primary">
+                  <p className="line-clamp-1 text-sm font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
                     {book.title}
                   </p>
-                  <p className="mt-1 line-clamp-1 text-sm text-text-secondary">
+                  <p className="mt-0.5 line-clamp-1 text-[11px] font-medium tracking-tight text-foreground">
                     {formatAuthors(book.authors)}
                   </p>
                 </div>
               </div>
 
-              <span className="rounded-full bg-card px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-text-secondary">
-                Sirada
-              </span>
+              <div className="shrink-0 translate-x-4 opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100">
+                <ArrowRight className="h-4 w-4 text-primary" />
+              </div>
             </Link>
           ))}
         </div>
       ) : (
-        <WidgetState message="Bekleyen bir kitap kalmadi." />
+        <WidgetState message="Bekleyen kitap yok. Yeni bir eser eklemeye ne dersiniz?" />
       )}
     </DashboardSection>
   );
@@ -248,78 +231,80 @@ export function BacklogWidget({
 
 export function AiSuggestionsWidget() {
   return (
-    <Card className="overflow-hidden border-primary/10 bg-linear-to-r from-accent via-card to-card" surface="raised">
-      <CardContent className="flex flex-col gap-6 p-6 md:flex-row md:items-center md:justify-between md:p-8">
-        <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-[20px] bg-primary text-primary-foreground shadow-sm shadow-primary/20">
-            <BrainCircuit className="h-6 w-6" />
-          </div>
-
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
-              AI Workspace
-            </p>
-            <h3 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-text-primary">
-              Oneri paneli yeni dashboard ile hizalandi.
-            </h3>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-text-secondary">
-              Okuma oncelikleri, eksik ciltler ve bagislanabilecek kitaplar icin AI katmanini ayni sade tasarim diliyle kullanabilirsin.
-            </p>
-          </div>
-        </div>
-
+    <DashboardSection
+      action={
         <Link
-          className="inline-flex items-center gap-2 self-start rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:-translate-y-0.5 hover:bg-primary/92"
+          className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-widest text-primary uppercase transition-colors hover:text-white"
           href="/ai-suggestions"
         >
-          AI onerilerini ac
+          Aç
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      }
+      description="Eksik eserler, okuma önceliği ve tavsiyeler"
+      title="Akıllı Öneriler"
+    >
+      <div className="grid gap-5 lg:grid-cols-[auto_1fr_auto] lg:items-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-primary">
+          <BrainCircuit className="h-8 w-8" />
+        </div>
+        <div className="space-y-2">
+          <p className="text-[10px] font-bold tracking-[0.3em] text-primary uppercase">
+            Akıllı Öneriler
+          </p>
+          <p className="max-w-2xl text-sm leading-relaxed text-foreground/80">
+            Kütüphanenizdeki eksikleri tamamlayın, okuma önceliklerinizi belirleyin ve akıllı koleksiyon önerilerine göz atın.
+          </p>
+        </div>
+        <Link
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-black transition-all hover:bg-primary hover:text-white"
+          href="/ai-suggestions"
+        >
+          Önerileri İncele
           <ArrowRight className="h-4 w-4" />
         </Link>
-      </CardContent>
-    </Card>
+      </div>
+    </DashboardSection>
   );
 }
 
 export function RecentBooksWidget({ recentBooksQuery }: { recentBooksQuery: any }) {
   return (
     <DashboardSection
-      description="Son eklenenler. Arsive yeni giren kayitlari takip etmek icin kullan."
-      title="Son kayitlar"
+      description="Koleksiyonunuza son eklenen eserler"
+      title="Son Eklenenler"
     >
       {recentBooksQuery.isLoading ? (
-        <WidgetState isLoading message="Son kayitlar yukleniyor..." />
+        <WidgetState isLoading message="Kitaplar listeleniyor..." />
       ) : recentBooksQuery.isError ? (
         <WidgetState
-          message={
-            recentBooksQuery.error instanceof Error
-              ? recentBooksQuery.error.message
-              : "Son kayitlar alinamadi."
-          }
+          message="Gelenler getirilemedi"
         />
       ) : recentBooksQuery.data && recentBooksQuery.data.items.length > 0 ? (
-        <div className="space-y-3">
-          {recentBooksQuery.data.items.map((book: any) => (
-            <Link className="interactive-row group" href={`/books/${book.id}`} key={book.id}>
-              <div className="flex min-w-0 items-center gap-4">
-                <BookThumb coverUrl={book.coverUrl} title={book.title} />
-                <div className="min-w-0 flex-1">
-                  <p className="line-clamp-1 text-lg font-semibold tracking-[-0.03em] text-text-primary">
-                    {book.title}
-                  </p>
-                  <p className="mt-1 line-clamp-1 text-sm text-text-secondary">
-                    {formatAuthors(book.authors)}
-                  </p>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          {recentBooksQuery.data.items.map((book: any, idx: number) => (
+            <Link 
+                className="group flex flex-col items-center rounded-xl border border-transparent p-4 text-center transition-all duration-500 animate-in fade-in fill-mode-both zoom-in-95 hover:border-white/5 hover:bg-white/3" 
+                href={`/books/${book.slug}`} 
+                key={book.id}
+                style={{ animationDelay: `${idx * 150}ms` }}
+            >
+                <div className="relative mb-4">
+                    <BookThumb coverUrl={book.coverUrl} title={book.title} />
                 </div>
-              </div>
-
-              <span className="rounded-full bg-card px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-text-secondary">
-                Yeni
-              </span>
+                <div className="w-full min-w-0">
+                    <p className="line-clamp-1 text-xs font-bold tracking-tight text-foreground/90 transition-colors group-hover:text-primary">
+                        {book.title}
+                    </p>
+                    <p className="mt-1 line-clamp-1 text-[10px] font-medium tracking-tighter text-foreground uppercase">
+                        {formatAuthors(book.authors)}
+                    </p>
+                </div>
             </Link>
           ))}
         </div>
       ) : (
-        <WidgetState message="Henuz kaydedilmis kitap yok." />
+        <WidgetState message="Henüz yeni bir kitap eklenmemiş." />
       )}
     </DashboardSection>
   );
@@ -328,46 +313,50 @@ export function RecentBooksWidget({ recentBooksQuery }: { recentBooksQuery: any 
 export function FavoriteAuthorsWidget({ favoriteAuthorsQuery }: { favoriteAuthorsQuery: any }) {
   return (
     <DashboardSection
-      description="Puanlamalarina gore one cikan isimler."
-      title="Favori yazarlar"
+      description="En çok okuduğunuz yazarlar"
+      title="Favori Yazarlar"
     >
       {favoriteAuthorsQuery.isLoading ? (
-        <WidgetState isLoading message="Favori yazarlar yukleniyor..." />
+        <WidgetState isLoading message="Yazarlar listeleniyor..." />
       ) : favoriteAuthorsQuery.isError ? (
         <WidgetState
-          message={
-            favoriteAuthorsQuery.error instanceof Error
-              ? favoriteAuthorsQuery.error.message
-              : "Favori yazarlar alinamadi."
-          }
+          message="Bir hata ile karşılaşıldı"
         />
       ) : favoriteAuthorsQuery.data && favoriteAuthorsQuery.data.length > 0 ? (
-        <div className="space-y-3">
-          {favoriteAuthorsQuery.data.map((author: any) => (
-            <div className="panel-muted flex items-center justify-between gap-4" key={author.id}>
+        <div className="space-y-2">
+          {favoriteAuthorsQuery.data.map((author: any, idx: number) => (
+            <Link 
+                className="group flex items-center justify-between rounded-xl border border-white/5 bg-white/1 p-4 transition-all duration-500 animate-in fade-in fill-mode-both slide-in-from-right-4 hover:border-primary/20" 
+                href={`/authors/${author.slug}`}
+                key={author.id}
+                style={{ animationDelay: `${idx * 100}ms` }}
+            >
               <div className="flex min-w-0 items-center gap-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-[18px] bg-accent text-accent-foreground">
-                  <UserRound className="h-4 w-4" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/3 text-foreground transition-all duration-500 group-hover:border-primary/30 group-hover:text-primary">
+                  <UserRound className="h-4.5 w-4.5" />
                 </div>
 
                 <div className="min-w-0">
-                  <p className="truncate text-base font-semibold tracking-[-0.03em] text-text-primary">
+                  <p className="truncate text-sm font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
                     {author.name}
                   </p>
-                  <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-text-secondary">
-                    {author.ratedBooks} kitap puanlandi
+                  <p className="mt-0.5 text-[10px] font-bold tracking-widest text-foreground uppercase">
+                    {author.ratedBooks} değerlendirme
                   </p>
                 </div>
               </div>
 
-              <div className="rounded-full bg-card px-3 py-2 text-sm font-semibold tracking-[-0.02em] text-primary">
-                {author.averageRating.toFixed(1)}
+              <div className="flex flex-col items-end gap-0.5">
+                <div className="font-serif text-lg font-bold text-primary transition-transform group-hover:scale-110">
+                    {author.averageRating.toFixed(1)}
+                </div>
+                <div className="text-[10px] font-bold tracking-tighter text-foreground uppercase">Puan</div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       ) : (
-        <WidgetState message="Henuz puanlanmis kitap bulunmuyor." />
+        <WidgetState message="Henüz favori yazar yok." />
       )}
     </DashboardSection>
   );
@@ -382,43 +371,40 @@ export function CategoryDistributionWidget({
 }) {
   return (
     <DashboardSection
-      description="Koleksiyonun kategori bazli yogunlugunu gosterir."
-      title="Kategori dagilimi"
+      description="Koleksiyonunuzun konu dağılımı"
+      title="Kategori Dağılımı"
     >
       {categoryDistributionQuery.isLoading ? (
-        <WidgetState isLoading message="Kategori dagilimi yukleniyor..." />
+        <WidgetState isLoading message="Kategoriler analiz ediliyor..." />
       ) : categoryDistributionQuery.isError ? (
         <WidgetState
-          message={
-            categoryDistributionQuery.error instanceof Error
-              ? categoryDistributionQuery.error.message
-              : "Kategori dagilimi alinamadi."
-          }
+          message="Kategoriler incelenirken hata oluştu"
         />
       ) : categoryChartData.length > 0 ? (
-        <div className="space-y-6">
-          <div className="h-[260px] w-full rounded-[22px] bg-muted/35 p-2">
-            <ResponsiveContainer height="100%" width="100%">
+        <div className="space-y-8">
+          <div className="h-[240px] w-full min-w-0 rounded-2xl border border-white/5 bg-white/1 p-4 shadow-inner">
+            <ResponsiveContainer height="100%" minHeight={240} minWidth={0} width="100%">
               <BarChart data={categoryChartData} margin={CHART_MARGIN}>
-                <CartesianGrid stroke="rgba(221, 214, 201, 0.9)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.03)" vertical={false} />
                 <XAxis
                   axisLine={false}
                   dataKey="name"
-                  tick={{ fill: "rgba(106, 104, 95, 1)", fontSize: 11, fontWeight: 500 }}
+                  tick={{ fill: "var(--foreground)", fontSize: 9, fontWeight: 700, style: { textTransform: 'uppercase', letterSpacing: '0.1em' } }}
                   tickLine={false}
                 />
                 <YAxis
                   allowDecimals={false}
                   axisLine={false}
-                  tick={{ fill: "rgba(106, 104, 95, 1)", fontSize: 11, fontWeight: 500 }}
+                  tick={{ fill: "var(--foreground)", fontSize: 9, fontWeight: 700 }}
                   tickLine={false}
                 />
-                <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: "rgba(31, 99, 93, 0.08)" }} />
-                <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: "rgba(255, 255, 255, 0.02)" }} wrapperStyle={{ outline: 'none' }} />
+                <Bar dataKey="count" fill={CHART_COLORS[0]} radius={[6, 6, 0, 0]}>
                   {categoryChartData.map((entry, index) => (
                     <Cell
                       fill={CHART_COLORS[index % CHART_COLORS.length]}
                       key={`${entry.name}-${index}`}
+                      className="transition-opacity duration-300 hover:opacity-80"
                     />
                   ))}
                 </Bar>
@@ -428,16 +414,19 @@ export function CategoryDistributionWidget({
 
           <div className="grid gap-3 sm:grid-cols-2">
             {categoryChartData.map((entry, index) => (
-              <div className="panel-muted flex items-center justify-between px-4 py-3" key={entry.name}>
+              <div 
+                  className="group flex items-center justify-between rounded-xl border border-white/5 bg-white/1 px-4 py-3 transition-all duration-300 hover:border-white/10 hover:bg-white/3" 
+                  key={entry.name}
+              >
                 <div className="flex items-center gap-3">
                   <span
-                    className="h-2.5 w-2.5 rounded-full"
+                    className="h-1.5 w-1.5 rounded-full"
                     style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
                   />
-                  <span className="text-sm font-medium text-text-primary">{entry.name}</span>
+                  <span className="text-xs font-bold text-foreground transition-colors group-hover:text-primary">{entry.name}</span>
                 </div>
 
-                <span className="text-sm font-semibold tracking-[-0.02em] text-text-secondary">
+                <span className="font-serif text-[11px] font-bold text-foreground transition-colors group-hover:text-primary">
                   {entry.count}
                 </span>
               </div>
@@ -445,7 +434,7 @@ export function CategoryDistributionWidget({
           </div>
         </div>
       ) : (
-        <WidgetState message="Kategori verisi henuz olusmadi." />
+        <WidgetState message="Henüz kategori verisi bulunmuyor." />
       )}
     </DashboardSection>
   );

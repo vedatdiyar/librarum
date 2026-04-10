@@ -13,6 +13,7 @@ const nextConfig = {
     ]
   },
   images: {
+    qualities: [70, 75, 90],
     remotePatterns: [
       {
         protocol: "https",
@@ -25,6 +26,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "books.googleusercontent.com"
+      },
+      {
+        protocol: "https",
+        hostname: "*.archive.org"
       },
       ...(r2PublicUrl
         ? [

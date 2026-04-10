@@ -11,7 +11,6 @@ import {
 import { 
   Button, 
   Input, 
-  Card,
   Dialog,
   DialogContent,
   DialogHeader,
@@ -48,7 +47,7 @@ export function CategoryTab() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name })
       });
-      if (!res.ok) throw new Error("Kategori eklenemedi");
+      if (!res.ok) throw new Error("Kategori oluşturulamadı");
       return res.json();
     },
     onSuccess: () => {
@@ -72,99 +71,129 @@ export function CategoryTab() {
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="p-6">
-        <h3 className="text-xl font-semibold mb-4">Yeni Kategori Ekle</h3>
-        <div className="flex flex-col gap-3 md:flex-row md:gap-2">
+    <div className="space-y-8">
+      <div className="space-y-5">
+        <div className="space-y-1.5">
+            <h3 className="font-serif text-lg font-bold tracking-tight text-white">Kategori Ekle</h3>
+            <p className="text-sm text-foreground/70">Arşivinizin yapısını düzenlemek için yeni kategoriler belirleyin.</p>
+        </div>
+        
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
+          <label className="sr-only" htmlFor="category-name-input">Yeni kategori adı</label>
           <Input
             ref={inputRef}
-            placeholder="Kategori adı..." 
+            id="category-name-input"
+            name="categoryName"
+            placeholder="Koleksiyon ismi (örn. Roman, Tarih, Felsefe)..." 
             value={newName}
+            className="h-9 rounded-lg border-white/5 bg-white/2 shadow-inner transition-all hover:bg-white/4 focus:border-primary/40 focus:bg-white/8 md:max-w-md"
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && newName) createMutation.mutate(newName);
             }}
           />
           <Button 
-            className="w-full md:w-auto"
+            className="h-9 rounded-lg bg-white px-5 text-[10px] font-bold tracking-widest text-black uppercase shadow-2xl transition-all hover:bg-primary"
             onClick={() => createMutation.mutate(newName)}
             disabled={!newName || createMutation.isPending}
           >
-            {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+            {createMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="mr-2 h-3.5 w-3.5" />}
             Ekle
           </Button>
         </div>
-      </Card>
+      </div>
 
-      {categories && categories.length > 0 ? (
-        <div className="grid gap-4">
-          {categories.map((category) => (
-            <Card key={category.id} className="p-4 flex items-center justify-between gap-4">
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-lg truncate">{category.name}</p>
-                <p className="text-sm text-text-secondary">{category.bookCount} kitap</p>
-              </div>
-              <Button 
-                variant="destructive" 
-                size="sm"
-                className="shrink-0"
-                onClick={() => setDeleteConfirm(category)}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </Card>
-          ))}
+      <div className="h-px w-full bg-white/5" />
+
+      <div className="space-y-5">
+        <div className="flex items-center justify-between">
+            <h3 className="font-serif text-lg font-bold tracking-tight text-white">Mevcut Kategoriler</h3>
+            <span className="text-[10px] font-bold tracking-[0.2em] text-foreground/50 uppercase">{categories?.length ?? 0} Kategori</span>
         </div>
-      ) : (
-        <Card className="p-6">
-          <div className="space-y-3">
-            <div>
-              <p className="text-lg font-medium">Henuz kategori yok</p>
-              <p className="text-sm leading-6 text-text-secondary">
-                Koleksiyonunu daha rahat filtrelemek icin ilk kategorini simdi ekleyebilirsin.
-              </p>
+
+        {categories && categories.length > 0 ? (
+            <div className="overflow-hidden rounded-xl border border-white/5 bg-white/2">
+              <div className="grid grid-cols-[1fr_120px_80px] border-b border-white/5 bg-white/2 px-6 py-2">
+                <span className="text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Koleksiyon</span>
+                <span className="text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Eser Sayısı</span>
+                <span className="sr-only">İşlemler</span>
+              </div>
+              <div className="divide-y divide-white/2">
+                {categories.map((category, idx) => (
+                    <div 
+                        key={category.id} 
+                        className="group grid grid-cols-[1fr_120px_80px] items-center px-6 py-2 transition-colors hover:bg-white/4"
+                    >
+                        <p className="font-serif text-[15px] font-bold text-white transition-colors group-hover:text-primary">{category.name}</p>
+                        <p className="text-[10px] font-medium text-foreground/50">{category.bookCount} eser</p>
+                        <div className="flex justify-end">
+                          <Button 
+                              variant="ghost" 
+                              size="icon"
+                              className="h-8 w-8 rounded-lg text-foreground/20 transition-all hover:bg-destructive/10 hover:text-destructive"
+                              onClick={() => setDeleteConfirm(category)}
+                          >
+                              <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                    </div>
+                ))}
+              </div>
             </div>
-            <Button onClick={() => inputRef.current?.focus()} variant="secondary">
-              <Plus className="w-4 h-4 mr-2" />
-              Ilk kategoriyi ekle
-            </Button>
-          </div>
-        </Card>
-      )}
+        ) : (
+            <div className="glass-panel flex flex-col items-center justify-center rounded-3xl border-dashed border-white/5 p-12 duration-700 animate-in fade-in">
+                <p className="mb-4 font-serif text-lg font-bold text-white/40">Koleksiyon Henüz Boş</p>
+                <p className="mb-8 max-w-xs text-center text-sm leading-relaxed text-foreground">
+                    Henüz herhangi bir kategori eklenmemiş.
+                </p>
+                <Button 
+                    onClick={() => inputRef.current?.focus()} 
+                    variant="ghost"
+                    className="rounded-xl border border-white/5 hover:bg-white/3"
+                >
+                    İlk Kategoriyi Ekle
+                </Button>
+            </div>
+        )}
+      </div>
 
       <Dialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Kategoriyi Sil?</DialogTitle>
-            <DialogDescription>
-              {deleteConfirm && (
-                <div className="flex flex-col gap-4 mt-2">
-                  <div className="flex items-start gap-2 rounded-lg border border-destructive/25 bg-destructive/10 p-3 text-destructive">
-                    <AlertCircle className="w-5 h-5 shrink-0" />
-                    <p className="text-sm">
-                       Bu kategori <strong>{deleteConfirm.bookCount}</strong> kitapta kullanılıyor. 
-                       Silinirse bu kitapların kategorisi boş kalır.
+        <DialogContent className="glass-panel rounded-3xl border-white/10 bg-background/95 backdrop-blur-3xl sm:max-w-[425px]">
+          <DialogHeader className="space-y-4">
+            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl border border-destructive/20 bg-destructive/10">
+                <Trash2 className="h-6 w-6 text-destructive" />
+            </div>
+            <DialogTitle className="font-serif text-2xl font-bold text-white">Kategoriyi Sil?</DialogTitle>
+            <DialogDescription className="text-[13px] leading-relaxed text-foreground">
+               {deleteConfirm && (
+                <div className="mt-4 flex flex-col gap-6">
+                  <div className="flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-destructive">
+                    <AlertCircle className="h-5 w-5 shrink-0 opacity-60" />
+                    <p className="text-[11px] leading-relaxed font-bold tracking-tight uppercase">
+                       Dikkat: Bu kategori şu anda <strong>{deleteConfirm.bookCount}</strong> eser ile ilişkilendirilmiş durumda. 
+                       Silme işlemi bu kitapları kategorisiz bırakacaktır.
                     </p>
                   </div>
-                  <p><strong>{deleteConfirm.name}</strong> kategorisini silmek istediğinizden emin misiniz?</p>
+                  <p><strong>{deleteConfirm.name}</strong> kategorisinin silinmesini onaylıyor musunuz?</p>
                 </div>
               )}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setDeleteConfirm(null)}>Vazgeç</Button>
+          <DialogFooter className="mt-8 gap-3">
+            <Button variant="ghost" onClick={() => setDeleteConfirm(null)} className="rounded-xl border-white/5 bg-white/3 hover:bg-white/8">Vazgeç</Button>
             <Button 
               variant="destructive" 
               onClick={() => deleteConfirm && deleteMutation.mutate(deleteConfirm.id)}
               disabled={deleteMutation.isPending}
+              className="rounded-xl shadow-2xl"
             >
-              {deleteMutation.isPending ? <Loader2 className="animate-spin" /> : "Kategoriyi Sil"}
+              {deleteMutation.isPending ? <Loader2 className="animate-spin" /> : "Sil"}
             </Button>
           </DialogFooter>
         </DialogContent>

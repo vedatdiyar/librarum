@@ -1,2 +1,2 @@
-export { createDb } from "./client";
-export * from "./schema";
+export { createDb } from "./client.ts";
+export * from "./schema/index.ts";

@@ -6,7 +6,7 @@ export async function listPreferences() {
   return db.select().from(recommendationPreferences);
 }
 
-export async function addPreference(type: "author" | "category" | "tag", value: string) {
+export async function addPreference(type: "author" | "category", value: string) {
   const db = createDb();
   const existing = await db
     .select({ id: recommendationPreferences.id })

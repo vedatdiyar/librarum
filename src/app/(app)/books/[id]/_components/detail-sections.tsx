@@ -6,72 +6,69 @@ import { BookOpenText, MapPin, Star, Trash2 } from "lucide-react";
 import {
   Badge,
   Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   cn
 } from "@/components/ui";
 import type { BookDetail, BookStatus } from "@/types";
 import { EditBookFormTrigger } from "./edit-book-form-trigger";
 
 const NOTE_CLASS_NAME =
-  "min-h-[180px] w-full rounded-[22px] border border-border/80 bg-surface-raised px-4 py-3 text-sm leading-7 text-text-primary outline-none placeholder:text-text-secondary/60";
+  "min-h-[220px] w-full rounded-2xl border border-white/5 bg-white/1 px-6 py-5 text-sm leading-relaxed text-white/80 outline-none placeholder:text-foreground italic shadow-inner focus:border-primary/20 transition-all duration-300";
+
+import { BOOK_STATUS_LABELS } from "@/lib/constants/books";
 
 const STATUS_META: Record<
   BookStatus,
-  { label: string; className: string; accentClassName: string }
+  { label: string; className: string; accentColor: string }
 > = {
   owned: {
-    label: "Sahibim",
-    className: "border border-sky-400/25 bg-sky-400/12 text-sky-200",
-    accentClassName: "text-sky-200"
+    label: BOOK_STATUS_LABELS.owned,
+    className: "border-primary/20 bg-primary/5 text-primary",
+    accentColor: "var(--primary)"
   },
   completed: {
-    label: "Okudum",
-    className: "border border-emerald-400/25 bg-emerald-400/12 text-emerald-200",
-    accentClassName: "text-emerald-200"
+    label: BOOK_STATUS_LABELS.completed,
+    className: "border-emerald-400/20 bg-emerald-400/5 text-emerald-400/70",
+    accentColor: "var(--chart-2)"
   },
   abandoned: {
-    label: "Yarim Biraktim",
-    className: "border border-amber-400/25 bg-amber-400/12 text-amber-200",
-    accentClassName: "text-amber-200"
+    label: BOOK_STATUS_LABELS.abandoned,
+    className: "border-amber-400/20 bg-amber-400/5 text-amber-400/70",
+    accentColor: "var(--chart-4)"
   },
   loaned: {
-    label: "Odunc Verdim",
-    className: "border border-violet-400/25 bg-violet-400/12 text-violet-200",
-    accentClassName: "text-violet-200"
+    label: BOOK_STATUS_LABELS.loaned,
+    className: "border-violet-400/20 bg-violet-400/5 text-violet-400/70",
+    accentColor: "var(--chart-3)"
   },
   lost: {
-    label: "Kayip",
-    className: "border border-rose-400/25 bg-rose-400/12 text-rose-200",
-    accentClassName: "text-rose-200"
+    label: BOOK_STATUS_LABELS.lost,
+    className: "border-rose-400/20 bg-rose-400/5 text-rose-400/70",
+    accentColor: "var(--chart-5)"
   }
 };
 
 function RatingStars({ rating }: { rating: number | null }) {
   if (!rating) {
-    return <p className="text-sm text-text-secondary">Puan verilmedi</p>;
+    return <p className="text-[11px] font-bold tracking-[0.15em] text-foreground uppercase italic">Henüz puan verilmemiş</p>;
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex items-center gap-1">
+    <div className="flex items-center gap-4">
+      <div className="flex items-center gap-1.5">
         {Array.from({ length: 5 }, (_, index) => {
           const fill = Math.max(0, Math.min(1, rating - index));
 
           return (
-            <span className="relative h-5 w-5" key={index}>
-              <Star className="absolute inset-0 h-5 w-5 text-border" />
-              <span className="absolute inset-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
-                <Star className="h-5 w-5 fill-accent text-accent" />
+              <span className="relative h-4.5 w-4.5" key={index}>
+                <Star className="absolute inset-0 h-4.5 w-4.5 text-white/5" />
+                <span className="absolute inset-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
+                  <Star className="h-4.5 w-4.5 fill-primary text-primary" />
+                </span>
               </span>
-            </span>
           );
         })}
       </div>
-      <span className="text-sm font-medium text-text-primary">{rating.toFixed(1)} / 5</span>
+      <span className="font-serif text-lg font-bold tracking-tight text-foreground">{rating.toFixed(1)} <span className="ml-1 font-sans text-sm font-medium text-foreground uppercase">/ 5.0</span></span>
     </div>
   );
 }
@@ -86,9 +83,9 @@ function DetailRow({
   valueClassName?: string;
 }) {
   return (
-    <div className="grid gap-1 sm:grid-cols-[120px,1fr] sm:gap-4">
-      <span className="text-xs uppercase tracking-[0.18em] text-text-secondary">{label}</span>
-      <div className={cn("text-sm leading-7 text-text-primary", valueClassName)}>{value}</div>
+    <div className="grid items-start gap-2 border-b border-white/3 py-4 sm:grid-cols-[140px_1fr] sm:gap-8">
+      <span className="text-[10px] font-bold tracking-[0.25em] text-foreground uppercase">{label}</span>
+      <div className={cn("text-sm leading-relaxed font-medium tracking-tight text-white/90", valueClassName)}>{value}</div>
     </div>
   );
 }
@@ -96,25 +93,24 @@ function DetailRow({
 function formatBookMeta(book: BookDetail) {
   const pieces = [book.publisher, book.publicationYear?.toString(), book.pageCount ? `${book.pageCount} sayfa` : null]
     .filter((piece): piece is string => Boolean(piece));
-
-  return pieces.length > 0 ? pieces.join(" / ") : "Bilgi belirtilmedi";
+  return pieces.length > 0 ? pieces.join(" • ") : "Bilgi verilmemiş";
 }
 
 function formatLocation(book: BookDetail) {
   if (!book.location) {
-    return "Konum belirtilmedi";
+    return "Fiziksel konum bilinmiyor";
   }
 
-  return [
-    book.location.locationName ?? "Alan yok",
-    book.location.shelfRow ?? "Raf yok",
-    book.location.shelfColumn?.toString() ?? "Sutun yok"
-  ].join(" / ");
+  const parts = [];
+  if (book.location.locationName) parts.push(book.location.locationName);
+  if (book.location.shelfRow) parts.push(`Raf ${book.location.shelfRow}`);
+
+  return parts.length > 0 ? parts.join(" / ") : "Bölge bilinmiyor";
 }
 
 function formatReadingDate(book: BookDetail) {
   if (!book.readYear) {
-    return "Belirtilmedi";
+    return "Tarihsiz";
   }
 
   if (!book.readMonth) {
@@ -129,7 +125,7 @@ function formatReadingDate(book: BookDetail) {
 
 function formatLoanDate(value: string | null) {
   if (!value) {
-    return "Tarih belirtilmedi";
+    return "Tarih bilinmiyor";
   }
 
   return new Intl.DateTimeFormat("tr-TR", {
@@ -141,86 +137,77 @@ function formatLoanDate(value: string | null) {
 
 export function BookMetaSection({ book }: { book: BookDetail }) {
   return (
-    <div className="space-y-8">
-      <div className="space-y-5">
-        <div className="flex flex-wrap items-center gap-2">
+    <div className="space-y-12">
+      <div className="space-y-8">
+        <div className="flex flex-wrap items-center gap-4">
           {book.authors.length > 0 ? (
-            book.authors.map((author) => (
-              <Link
-                className="text-base text-text-primary transition hover:text-text-secondary"
-                href={`/authors/${author.id}`}
-                key={author.id}
-              >
-                {author.name}
-              </Link>
+            book.authors.map((author, idx) => (
+              <React.Fragment key={author.id}>
+                  {idx > 0 && <span className="text-foreground italic">&</span>}
+                  <Link
+                    className="font-serif text-2xl font-bold text-foreground transition-all duration-500 hover:-translate-y-0.5 hover:text-primary md:text-3xl"
+                    href={`/authors/${author.slug}`}
+                  >
+                    {author.name}
+                  </Link>
+              </React.Fragment>
             ))
           ) : (
-            <span className="text-base text-text-secondary">Yazar belirtilmedi</span>
+            <span className="font-serif text-2xl font-bold text-foreground italic">Bilinmeyen Yetkili</span>
           )}
         </div>
 
-        <div className="panel-muted p-5">
-          <div className="grid gap-4">
-            <DetailRow label="Yayin" value={formatBookMeta(book)} />
-            <DetailRow label="ISBN" value={book.isbn ?? "Belirtilmedi"} valueClassName="font-meta text-xs" />
+        <div className="glass-panel rounded-3xl border-white/5 bg-white/1 p-8 shadow-inner">
+          <div className="divide-y divide-white/2">
+            <DetailRow label="Yayın" value={formatBookMeta(book)} />
+            <DetailRow label="Kimlik" value={book.isbn ?? "ISBN YOK"} valueClassName="font-mono text-[11px] font-bold tracking-[0.2em] text-foreground uppercase" />
             <DetailRow
-              label="Seri"
+              label="Süreklilik"
               value={
                 book.series ? (
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-3">
                     <Link
-                      className="text-text-primary transition hover:text-text-secondary"
+                      className="font-bold text-primary transition hover:text-foreground"
                       href={`/series/${book.series.id}`}
                     >
                       {book.series.name}
                     </Link>
                     {book.series.seriesOrder ? (
-                      <span className="text-text-secondary">Cilt {book.series.seriesOrder}</span>
+                      <span className="rounded-md bg-white/5 px-2 py-0.5 text-[10px] font-bold tracking-widest text-foreground uppercase">Cilt {book.series.seriesOrder}</span>
                     ) : null}
                   </div>
                 ) : (
-                  "Seri bilgisi yok"
+                  <span className="text-foreground italic">Müstakil Eser</span>
                 )
               }
             />
             <DetailRow
-              label="Kategori"
+              label="Alan"
               value={
                 book.category ? (
-                  <Badge className="w-fit" variant="accent">
+                  <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-primary uppercase">
                     {book.category.name}
-                  </Badge>
-                ) : (
-                  "Kategori belirtilmedi"
-                )
-              }
-            />
-            <DetailRow
-              label="Etiketler"
-              value={
-                book.tags.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {book.tags.map((tag) => (
-                      <Badge className="w-fit" key={tag.id} variant="muted">
-                        {tag.name}
-                      </Badge>
-                    ))}
                   </div>
                 ) : (
-                  "Etiket eklenmedi"
+                  <span className="text-foreground italic">Kategorisiz Alan</span>
                 )
               }
             />
+
           </div>
         </div>
       </div>
 
-      <div className="panel-muted p-5">
-        <div className="mb-4 flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-accent" />
-          <p className="text-sm font-medium text-text-primary">Konum</p>
+      <div className="glass-panel flex flex-col items-stretch gap-8 rounded-3xl border-border bg-card p-8 shadow-inner md:flex-row md:items-center">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/5">
+          <MapPin className="h-6 w-6 text-primary" />
         </div>
-        <p className="text-base leading-7 text-text-primary">{formatLocation(book)}</p>
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold tracking-[0.3em] text-primary uppercase">Envanter Konumu</p>
+          <p className="font-serif text-xl font-bold tracking-tight text-foreground italic">
+            {formatLocation(book)}
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -228,98 +215,110 @@ export function BookMetaSection({ book }: { book: BookDetail }) {
 
 export function BookStatusAndNotesSection({
   book,
-  bookId,
+  onBookUpdated,
   invalidateBookQueries,
   setIsReturnDialogOpen,
   setIsDeleteDialogOpen
 }: {
   book: BookDetail;
-  bookId: string;
+  onBookUpdated: (book: BookDetail, action?: "created" | "increase_copy" | "updated") => void;
   invalidateBookQueries: () => void;
   setIsReturnDialogOpen: (open: boolean) => void;
   setIsDeleteDialogOpen: (open: boolean) => void;
 }) {
   return (
-    <Card>
-      <CardHeader className="space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <CardTitle className="text-3xl">Durum ve Notlar</CardTitle>
-            <CardDescription>
-              Kaydin guncel durumu, puanlama ve kisisel notlar.
-            </CardDescription>
-          </div>
-          <Badge className={cn("shrink-0", STATUS_META[book.status].className)}>
-            {STATUS_META[book.status].label}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="panel-muted p-5">
-          <div className="space-y-4">
-            <DetailRow label="Puan" value={<RatingStars rating={book.rating} />} />
-            <DetailRow label="Okuma tarihi" value={formatReadingDate(book)} />
-            <DetailRow
-              label="Odunc"
-              value={
-                book.loanedTo ? `${book.loanedTo} - ${formatLoanDate(book.loanedAt)}` : "Odunc kaydi yok"
-              }
-            />
-            <DetailRow
-              label="Kopya"
-              value={`${book.copyCount} adet`}
-            />
-            <DetailRow
-              label="Bagis"
-              value={book.donatable ? "Bagislanabilir" : "Bagisa uygun degil"}
-              valueClassName={book.donatable ? "text-emerald-200" : undefined}
-            />
-          </div>
-        </div>
+    <div className="space-y-12">
+      <div className="glass-panel group relative overflow-hidden rounded-3xl border-white/5 bg-white/1 p-8 md:p-12">
+        <div className="relative space-y-12">
+            <div className="flex flex-col justify-between gap-8 md:flex-row md:items-start">
+                <div className="space-y-2">
+                    <h3 className="font-serif text-4xl font-bold tracking-tight text-foreground">Eser Arşivi</h3>
+                    <p className="max-w-xl text-[13px] leading-relaxed text-foreground italic"> Eserin arşivdeki güncel durumu, entelektüel hakimiyet ve kişisel yansımalar.</p>
+                </div>
+                <div className={cn("inline-flex items-center rounded-full border px-4 py-2 text-xs font-bold tracking-[0.2em] uppercase", STATUS_META[book.status].className)}>
+                    {STATUS_META[book.status].label}
+                </div>
+            </div>
 
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-text-primary" htmlFor="personal-note">
-            Kisisel not
-          </label>
-          <textarea
-            aria-label="Kisisel not"
-            className={NOTE_CLASS_NAME}
-            id="personal-note"
-            readOnly
-            value={book.personalNote ?? "Bu kitap icin not eklenmemis."}
-          />
+            <div className="grid gap-12 lg:grid-cols-2">
+                <div className="space-y-8">
+                   <div className="space-y-2">
+                        <label className="px-1 text-[10px] font-bold tracking-[0.3em] text-foreground uppercase">Hakimiyet Puanı</label>
+                        <RatingStars rating={book.rating} />
+                   </div>
+
+                   <div className="divide-y divide-white/4 rounded-2xl border border-white/5 bg-white/1 px-6">
+                        <DetailRow label="Okuma Kaydı" value={formatReadingDate(book)} />
+                        <DetailRow
+                        label="Ödünç"
+                        value={
+                            book.loanedTo ? (
+                                <div className="space-y-1">
+                                    <p className="font-bold text-primary">{book.loanedTo}</p>
+                                    <p className="text-xs text-foreground italic">{formatLoanDate(book.loanedAt)} tarihinden beri</p>
+                                </div>
+                            ) : "Aktif ödünç yok"
+                        }
+                        />
+                        <DetailRow
+                        label="Envanter"
+                        value={`${book.copyCount} fiziksel nüsha`}
+                        />
+                        <DetailRow
+                        label="Bağış"
+                        value={book.donatable ? "Bağışlanabilir" : "Arşiv Temel Parçası"}
+                        valueClassName={book.donatable ? "text-emerald-400" : "text-foreground italic"}
+                        />
+                   </div>
+                </div>
+
+                <div className="space-y-3">
+                    <label className="px-1 text-[10px] font-bold tracking-[0.3em] text-foreground uppercase" htmlFor="personal-note">
+                        Kişisel Yansımalar
+                    </label>
+                    <div className="relative">
+                        <textarea
+                            aria-label="Kişisel düşünceler"
+                            className={NOTE_CLASS_NAME}
+                            id="personal-note"
+                            readOnly
+                            value={book.personalNote ?? "Arşivler bu eser hakkında sessiz. Henüz bir yansıma kaydedilmemiş."}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex flex-col gap-4 border-t border-white/5 pt-8 md:flex-row">
+                <EditBookFormTrigger
+                    bookSlug={book.slug}
+                    buttonProps={{ className: "flex-1 h-14 rounded-xl bg-white text-black hover:bg-primary transition-all duration-500 shadow-2xl font-bold uppercase tracking-widest text-[11px]", size: "lg" }}
+                    onSuccess={onBookUpdated}
+                />
+
+                {book.status === "loaned" ? (
+                    <Button
+                    className="h-14 flex-1 rounded-xl border border-primary/20 bg-primary/10 text-[11px] font-bold tracking-widest text-primary uppercase transition-all hover:bg-primary/20"
+                    onClick={() => setIsReturnDialogOpen(true)}
+                    size="lg"
+                    variant="ghost"
+                    >
+                    <BookOpenText className="mr-2 h-4 w-4" />
+                    İade İşlemi
+                    </Button>
+                ) : null}
+
+                <Button
+                    className="h-14 rounded-xl border border-destructive/20 bg-destructive/10 px-8 text-[11px] font-bold tracking-widest text-destructive uppercase transition-all hover:bg-destructive/20"
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                    size="lg"
+                    variant="ghost"
+                >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Kaldır
+                </Button>
+            </div>
         </div>
-
-        <div className="flex flex-col gap-3">
-          <EditBookFormTrigger
-            bookId={bookId}
-            buttonProps={{ className: "w-full", size: "lg" }}
-            onSuccess={invalidateBookQueries}
-          />
-
-          {book.status === "loaned" ? (
-            <Button
-              className="w-full"
-              onClick={() => setIsReturnDialogOpen(true)}
-              size="lg"
-              variant="secondary"
-            >
-              <BookOpenText className="mr-2 h-4 w-4" />
-              Iade Edildi
-            </Button>
-          ) : null}
-
-          <Button
-            className="w-full"
-            onClick={() => setIsDeleteDialogOpen(true)}
-            size="lg"
-            variant="destructive"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Sil
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -1,4 +1,9 @@
+import type { Metadata } from "next";
 import { SeriesDetailPageClient } from "./_components/series-detail-page-client";
+
+export const metadata: Metadata = {
+  title: "Seri Detayı",
+};
 
 type SeriesDetailPageProps = {
   params: Promise<{

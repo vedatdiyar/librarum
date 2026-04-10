@@ -1,6 +1,6 @@
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-serverless";
-import * as schema from "./schema";
+import * as schema from "./schema/index.ts";
 
 type DbInstance = ReturnType<typeof drizzle<typeof schema>>;
 
@@ -57,4 +57,20 @@ export function createDb(connectionString = process.env.LIBRARUM_DATABASE_URL) {
   dbCache.set(connectionString, db);
 
   return db;
+}
+
+export async function closeAllDbPools(): Promise<void> {
+  const poolCache = globalThis.__librarumPoolCache;
+  if (!poolCache || poolCache.size === 0) {
+    return;
+  }
+
+  const endPromises: Promise<void>[] = [];
+  for (const pool of poolCache.values()) {
+    endPromises.push(pool.end());
+  }
+
+  await Promise.allSettled(endPromises);
+  poolCache.clear();
+  globalThis.__librarumDbCache?.clear();
 }

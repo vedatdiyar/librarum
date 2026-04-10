@@ -32,13 +32,14 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-1/2 top-1/2 z-50 flex max-h-[90vh] w-[min(92vw,980px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-[28px] border border-border/60 bg-surface shadow-shell",
+        "fixed top-1/2 left-1/2 z-50 flex max-h-[90vh] w-[min(92vw,980px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-[28px] border border-border/60 bg-surface shadow-shell",
         className
       )}
       {...props}
+      aria-describedby={props["aria-describedby"] || undefined}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full border border-transparent p-2 text-text-secondary transition hover:border-border/55 hover:bg-surface-raised/80 hover:text-text-primary">
+      <DialogPrimitive.Close className="absolute top-4 right-4 rounded-full border border-transparent p-2 text-text-secondary transition hover:border-border/55 hover:bg-surface-raised/80 hover:text-text-primary">
         <X className="h-5 w-5" />
         <span className="sr-only">Kapat</span>
       </DialogPrimitive.Close>

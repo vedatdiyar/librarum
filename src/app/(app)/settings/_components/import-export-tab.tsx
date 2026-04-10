@@ -7,19 +7,20 @@ import {
   FileJson, 
   FileSpreadsheet,
   AlertCircle,
-  Loader2
+  Loader2,
+  Database,
+  ArrowRightLeft
 } from "lucide-react";
 import { 
   Button, 
-  Card,
   Dialog,
-  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  Input
+  Input,
+  cn
 } from "@/components/ui";
 import { readJsonResponse } from "@/lib/shared";
 import {
@@ -47,7 +48,7 @@ export function ImportExportTab() {
       const res = await fetch(`/api/export/${format}`);
       if (!res.ok) {
         const data = await readJsonResponse<{ error?: { message?: string } }>(res);
-        throw new Error(data.error?.message ?? "Disa aktarma basarisiz oldu.");
+        throw new Error(data.error?.message ?? "Dışa aktarma işlemi başarısız oldu.");
       }
       
       const blob = await res.blob();
@@ -61,7 +62,7 @@ export function ImportExportTab() {
       document.body.removeChild(a);
     } catch (err) {
       setDownloadError(
-        err instanceof Error ? err.message : "Disa aktarma basarisiz oldu."
+        err instanceof Error ? err.message : "Dışa aktarma işlemi başarısız oldu."
       );
     }
   };
@@ -88,7 +89,7 @@ export function ImportExportTab() {
       setImportResult(result);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Ice aktarma basarisiz oldu."
+        err instanceof Error ? err.message : "İçe aktarma işlemi başarısız oldu."
       );
     } finally {
       setImporting(false);
@@ -97,107 +98,136 @@ export function ImportExportTab() {
   };
 
   return (
-    <div className="space-y-8">
-      <section>
-        <h3 className="mb-4 text-xl font-semibold">Veri Disa Aktar</h3>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <Card className="flex flex-col gap-4 p-6">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg border border-border/80 bg-surface-raised p-2 text-accent">
-                <FileJson className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="font-medium">JSON Formati</p>
-                <p className="text-sm text-text-secondary">
-                  Tum verilerin tam kopyasi. Yedek almak ve ayni kutuphaneyi geri
-                  yuklemek icin idealdir.
-                </p>
-              </div>
-            </div>
-            <Button className="mt-2" onClick={() => handleExport("json")} variant="secondary">
-              <Download className="mr-2 h-4 w-4" />
-              JSON Indir
-            </Button>
-          </Card>
+    <div className="space-y-10 duration-1000 animate-in fade-in">
+      <section className="space-y-5">
+        <div className="space-y-1.5">
+            <h3 className="font-serif text-lg font-bold tracking-tight text-white">Dışa Aktar</h3>
+            <p className="max-w-xl text-[13px] leading-relaxed text-foreground/70">Kütüphane kayıtlarınızı yedeklemek veya başka ortamlara taşımak için dışa aktarın.</p>
+        </div>
 
-          <Card className="flex flex-col gap-4 p-6">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg border border-border/80 bg-surface-raised p-2 text-accent">
-                <FileSpreadsheet className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="font-medium">CSV Formati</p>
-                <p className="text-sm text-text-secondary">
-                  Excel veya Google Sheets icin tablosal cikti. Ayni kolon sozlesmesiyle
-                  tekrar Librarum icine alinabilir.
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="group relative overflow-hidden rounded-xl border border-white/5 bg-white/2 p-5 transition-all duration-500 hover:border-white/10">
+            <div className="relative space-y-4">
+                <div className="flex items-center gap-3">
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-2.5 text-primary">
+                    <FileJson className="h-5 w-5" />
+                </div>
+                <div>
+                    <p className="font-serif text-[15px] font-bold tracking-tight text-white">Tam Arşiv (JSON)</p>
+                    <p className="mt-0.5 text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Tam Veri Yedeği</p>
+                </div>
+                </div>
+                <p className="text-sm leading-relaxed text-foreground">
+                    Kütüphane veritabanınızın tam kopyası. Başka bir kütüphaneye taşınmak veya tam yedek almak için uygundur.
                 </p>
-              </div>
+                <Button 
+                    className="h-9 w-full rounded-lg border-white/10 bg-white/3 text-[10px] font-bold tracking-widest text-white/70 uppercase transition-all hover:bg-white/8 hover:text-white" 
+                    onClick={() => handleExport("json")} 
+                    variant="ghost"
+                >
+                    <Download className="mr-2 h-3.5 w-3.5" />
+                    JSON Olarak İndir
+                </Button>
             </div>
-            <Button className="mt-2" onClick={() => handleExport("csv")} variant="secondary">
-              <Download className="mr-2 h-4 w-4" />
-              CSV Indir
-            </Button>
-          </Card>
+          </div>
+
+          <div className="group relative overflow-hidden rounded-xl border border-white/5 bg-white/2 p-5 transition-all duration-500 hover:border-white/10">
+            <div className="relative space-y-4">
+                <div className="flex items-center gap-3">
+                <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-2.5 text-emerald-400/70">
+                    <FileSpreadsheet className="h-5 w-5" />
+                </div>
+                <div>
+                    <p className="font-serif text-[15px] font-bold tracking-tight text-white">Tablo Halinde Veri (CSV)</p>
+                    <p className="mt-0.5 text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Tablo Görünümü</p>
+                </div>
+                </div>
+                <p className="text-sm leading-relaxed text-foreground">
+                    Okunabilir tablo formatı. Excel veya Google Sheets gibi veri analizi araçlarıyla uyumludur.
+                </p>
+                <Button 
+                    className="h-9 w-full rounded-lg border-white/10 bg-white/3 text-[10px] font-bold tracking-widest text-white/70 uppercase transition-all hover:bg-white/8 hover:text-white" 
+                    onClick={() => handleExport("csv")} 
+                    variant="ghost"
+                >
+                    <Download className="mr-2 h-3.5 w-3.5" />
+                    CSV Olarak İndir
+                </Button>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="space-y-4">
-        <div>
-          <h3 className="mb-2 text-xl font-semibold">CSV Kolon Sozlesmesi</h3>
-          <p className="text-sm leading-6 text-text-secondary">
-            CSV import ve export ayni standart kolonlari kullanir. `authors` ve `tags`
-            alanlari noktalı virgulle ayrilir.
+      <div className="h-px w-full bg-white/5" />
+
+      <section className="space-y-5">
+        <div className="space-y-1.5">
+          <h3 className="font-serif text-lg font-bold tracking-tight text-white">Dosya Yapısı</h3>
+          <p className="max-w-xl text-[13px] leading-relaxed text-foreground/70">
+            Excel/CSV dosyası için gerekli sütun dizilimi. Alanlar virgülle, liste formatındaki alanlar ise noktalı virgülle ayrılmalıdır.
           </p>
         </div>
 
-        <Card className="p-6">
-          <div className="grid gap-3 md:grid-cols-2">
-            {CSV_BOOK_COLUMNS.map((column) => (
-              <div
-                className="rounded-2xl border border-border/80 bg-surface-raised p-4"
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {CSV_BOOK_COLUMNS.map((column, idx) => (
+                <div
+                className="group relative flex flex-col rounded-xl border border-white/5 bg-white/1 p-4 transition-all duration-500 animate-in fade-in fill-mode-both hover:bg-white/3"
                 key={column}
-              >
-                <p className="font-mono text-sm text-text-primary">{column}</p>
-                <p className="mt-2 text-sm leading-6 text-text-secondary">
-                  {CSV_BOOK_COLUMN_DESCRIPTIONS[column]}
+                style={{ animationDelay: `${idx * 50}ms` }}
+                >
+                <p className="font-mono text-xs font-bold tracking-widest text-primary uppercase transition-colors group-hover:text-primary">{column}</p>
+                <p className="mt-2 text-[11px] leading-relaxed text-foreground">
+                    {CSV_BOOK_COLUMN_DESCRIPTIONS[column]}
                 </p>
-              </div>
+                </div>
             ))}
-          </div>
-        </Card>
+        </div>
       </section>
 
-      <section className="space-y-4">
-        <h3 className="text-xl font-semibold">Veri Ice Aktar</h3>
-        <Card className="flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border/80 bg-surface-raised/40 p-8 text-center">
-          <div className="mb-2 rounded-full border border-border/80 bg-surface-raised p-4 text-accent">
-            <Upload className="h-8 w-8" />
+      <div className="h-px w-full bg-white/5" />
+
+      <section className="space-y-5">
+        <div className="space-y-1.5">
+            <h3 className="font-serif text-lg font-bold tracking-tight text-white">İçe Aktar</h3>
+            <p className="max-w-xl text-[13px] leading-relaxed text-foreground/70">Dışarıdaki kayıtlarınızı kütüphanenize dahil edin. JSON mevcut arşivi değiştirir; CSV ise verilerinize ekleme yapar.</p>
+        </div>
+
+        <div className="group relative flex flex-col items-center justify-center gap-4 rounded-[2.5rem] border border-dashed border-white/5 bg-white/1 p-8 text-center transition-all duration-700 hover:border-white/10 hover:bg-white/2 lg:p-10">
+          <div className="relative mb-0 rounded-xl border border-white/10 bg-white/5 p-3.5 text-primary transition-transform duration-700 group-hover:scale-105">
+            <Upload className="h-6 w-6" />
           </div>
-          <div>
-            <p className="text-lg font-medium">Dosya Secin</p>
-            <p className="mx-auto max-w-xl text-sm text-text-secondary">
-              JSON tam yedek olarak geri yuklenir. CSV tarafinda duplicate kontrolu satir
-              bazli calisir; gecersiz veya duplicate kayitlar atlanir ve raporlanir.
+          
+          <div className="relative space-y-2">
+            <p className="font-serif text-lg font-bold text-white">Dosya Yükle</p>
+            <p className="mx-auto max-w-xl text-sm leading-relaxed text-foreground/60">
+              Bir JSON veya CSV dosyası seçin. Sistemimiz kayıtları kontrol ederek kütüphanenize işleyecektir.
             </p>
           </div>
-          <div className="relative">
+
+          <div className="relative mt-4">
+            <label className="sr-only" htmlFor="import-file-input">İçe aktarılacak JSON veya CSV dosyası seçin</label>
             <Input
               accept=".json,.csv"
               className="absolute inset-0 cursor-pointer opacity-0"
               disabled={importing}
+              id="import-file-input"
+              name="importFile"
               onChange={handleImport}
               type="file"
             />
-            <Button disabled={importing}>
+            <Button 
+                disabled={importing}
+                className="h-10 min-w-[180px] rounded-xl bg-white text-[10px] font-bold tracking-widest text-black uppercase shadow-2xl transition-all hover:bg-primary"
+            >
               {importing ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
               ) : (
-                <Upload className="mr-2 h-4 w-4" />
+                <ArrowRightLeft className="mr-2 h-3.5 w-3.5" />
               )}
-              Dosya Sec
+              Dosya Seç
             </Button>
           </div>
-        </Card>
+        </div>
       </section>
 
       <Dialog
@@ -208,75 +238,86 @@ export function ImportExportTab() {
         }}
         open={Boolean(importResult || error || downloadError)}
       >
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>
+        <DialogContent className="max-w-lg rounded-2xl border border-white/10 bg-background/95 shadow-2xl backdrop-blur-3xl">
+          <DialogHeader className="space-y-4">
+            <div className={cn(
+                "mb-2 flex h-12 w-12 items-center justify-center rounded-2xl",
+                (downloadError || error) ? "border border-destructive/20 bg-destructive/10 text-destructive" : "border border-primary/20 bg-primary/10 text-primary"
+            )}>
+                 {(downloadError || error) ? <AlertCircle className="h-6 w-6" /> : <Database className="h-6 w-6" />}
+            </div>
+            <DialogTitle className="font-serif text-2xl font-bold text-white">
               {downloadError
-                ? "Disa aktarma hatasi"
+                ? "Dışa Aktarma Hatası"
                 : error
-                  ? "Ice aktarma hatasi"
-                  : "Ice aktarma tamamlandi"}
+                  ? "İçe Aktarma Hatası"
+                  : "İşlem Tamamlandı"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-[13px] leading-relaxed text-foreground">
               {downloadError || error
-                ? "Islem tamamlanamadi. Mesaji kontrol edip tekrar deneyebilirsin."
-                : "Rapor asagida satir bazli olarak listelendi."}
+                ? "İşlem sırasında bir hata oluştu. Aşağıdaki detayları inceleyin."
+                : "Kayıtlar kütüphanenize başarıyla eklendi."}
             </DialogDescription>
           </DialogHeader>
-          <DialogBody className="space-y-4">
+          
+          <div className="space-y-6 p-1">
             {downloadError || error ? (
-              <div className="flex items-start gap-2 rounded-2xl border border-destructive/25 bg-destructive/10 p-4 text-destructive">
-                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
-                <p className="text-sm leading-6">{downloadError ?? error}</p>
+              <div className="flex items-start gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-5 text-destructive">
+                <p className="text-[11px] leading-relaxed font-bold tracking-tight uppercase">{downloadError ?? error}</p>
               </div>
             ) : null}
 
             {importResult ? (
-              <div className="space-y-4">
+              <div className="space-y-8">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-lg border border-success/20 bg-success/10 p-3">
-                    <p className="text-2xl font-bold text-success">{importResult.added}</p>
-                    <p className="text-xs text-text-secondary">Basariyla eklendi</p>
+                  <div className="group relative rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-5 transition-all">
+                    <p className="font-serif text-4xl font-bold text-emerald-400">{importResult.added}</p>
+                    <p className="mt-1 text-[10px] font-bold tracking-[0.2em] text-emerald-400/50 uppercase">Eklenen Kitaplar</p>
                   </div>
-                  <div className="rounded-lg border border-border/80 bg-surface-raised p-3">
-                    <p className="text-2xl font-bold">{importResult.skipped}</p>
-                    <p className="text-xs text-text-secondary">Atlanan / raporlanan</p>
+                  <div className="group relative rounded-2xl border border-white/5 bg-white/3 p-5">
+                    <p className="font-serif text-4xl font-bold text-white/40">{importResult.skipped}</p>
+                    <p className="mt-1 text-[10px] font-bold tracking-[0.2em] text-foreground uppercase">Atlanan / Mevcut</p>
                   </div>
                 </div>
 
                 {importResult.errors.length > 0 ? (
-                  <div>
-                    <p className="mb-2 text-sm font-medium">
-                      Satir bazli rapor ({importResult.errors.length})
+                  <div className="space-y-4">
+                    <p className="px-1 text-[10px] font-bold tracking-[0.2em] text-foreground uppercase">
+                      Hata Detayları ({importResult.errors.length})
                     </p>
-                    <div className="max-h-56 divide-y overflow-y-auto rounded-xl border border-border/80 bg-surface-raised/40">
+                    <div className="max-h-72 divide-y divide-white/3 overflow-y-auto rounded-2xl border border-white/10 bg-white/1">
                       {importResult.errors.map((item, index) => (
-                        <div className="p-3 text-sm" key={`${item.row}-${index}`}>
-                          <span className="mr-2 rounded bg-surface-raised px-2 py-1 font-mono text-xs">
-                            Satir {item.row}
+                        <div className="flex items-start gap-4 p-4" key={`${item.row}-${index}`}>
+                          <span className="shrink-0 rounded-md border border-white/10 bg-white/5 px-2 py-1 font-mono text-[9px] font-bold text-foreground">
+                            SATIR {item.row}
                           </span>
-                          <span className="text-text-secondary">{item.error}</span>
+                          <span className="text-xs leading-relaxed text-foreground">{item.error}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-text-secondary">
-                    Tum satirlar sorunsuz islenmis.
-                  </p>
+                  <div className="flex flex-col items-center justify-center py-6 text-center">
+                    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400/10">
+                        <Database className="h-5 w-5 text-emerald-400/40" />
+                    </div>
+                    <p className="text-sm text-emerald-400/40">Hatasız aktarım tamamlandı.</p>
+                  </div>
                 )}
               </div>
             ) : null}
-          </DialogBody>
-          <DialogFooter>
+          </div>
+
+          <DialogFooter className="mt-8">
             <Button
+              className="h-12 w-full rounded-xl border-white/10 bg-white/3 text-[11px] font-bold tracking-widest text-white/80 uppercase transition-all hover:bg-white/8"
               onClick={() => {
                 setImportResult(null);
                 setError(null);
                 setDownloadError(null);
               }}
             >
-              Kapat
+              Görünümü Kapat
             </Button>
           </DialogFooter>
         </DialogContent>

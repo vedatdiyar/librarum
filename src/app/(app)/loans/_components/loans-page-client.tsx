@@ -4,20 +4,31 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpenText } from "lucide-react";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui";
+import { BookOpenText, History, User, Calendar, ArrowRight } from "lucide-react";
+import { 
+  Button, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow,
+  cn
+} from "@/components/ui";
 import type { BookListResponse } from "@/types";
 import { readJsonResponse } from "@/lib/shared";
 import { BookReturnDialog } from "@/components/books/book-return-dialog";
 import { PageHero } from "@/components/page-hero";
+import { appPageTitles } from "@/lib/navigation";
 
 async function fetchLoanedBooks() {
-  return readJsonResponse<BookListResponse>(await fetch("/api/books?status=loaned"));
+  const response = await fetch("/api/books?status=loaned");
+  return readJsonResponse<BookListResponse>(response);
 }
 
 function formatLoanDate(value: string | null) {
   if (!value) {
-    return "Tarih belirtilmedi";
+    return "Bilinmeyen Zaman";
   }
 
   return new Intl.DateTimeFormat("tr-TR", {
@@ -30,17 +41,16 @@ function formatLoanDate(value: string | null) {
 function BookThumb({ title, coverUrl }: { title: string; coverUrl: string | null }) {
   if (coverUrl) {
     return (
-      <div className="relative h-20 w-14 overflow-hidden rounded-[8px] border border-border bg-surface-raised">
-        <Image alt={`${title} kapağı`} className="object-cover" fill sizes="56px" src={coverUrl} />
+      <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/2 shadow-xl transition-transform duration-500 group-hover:scale-110">
+        <Image alt="" className="object-cover opacity-30 blur-lg" fill src={coverUrl} />
+        <Image alt={`${title} cover`} className="relative object-contain" fill sizes="64px" src={coverUrl} />
       </div>
     );
   }
 
   return (
-    <div className="book-placeholder h-20 w-14 rounded-[8px] p-2">
-      <span className="line-clamp-3 font-display text-[10px] leading-4 text-text-primary">
-        {title}
-      </span>
+    <div className="flex h-24 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/2 p-2 transition-all duration-500">
+      <span className="line-clamp-3 text-center text-[7px] font-bold tracking-tighter text-foreground uppercase">{title}</span>
     </div>
   );
 }
@@ -54,10 +64,38 @@ export function LoansPageClient() {
 
   if (loansQuery.isLoading) {
     return (
-      <section className="page-stack">
-        <div className="page-hero rounded-[24px] p-8">
-          <div className="h-4 w-24 animate-pulse rounded-full bg-surface-raised" />
-          <div className="mt-6 h-14 w-72 animate-pulse rounded-2xl bg-surface-raised" />
+      <section className="space-y-10 pb-20">
+        {/* Hero Skeleton */}
+        <div className="space-y-8 py-10">
+          <div className="space-y-4">
+            <div className="h-4 w-32 animate-pulse rounded-full bg-white/5" />
+            <div className="h-16 w-3/4 animate-pulse rounded-2xl bg-white/5" />
+            <div className="h-20 w-full animate-pulse rounded-2xl bg-white/5" />
+          </div>
+        </div>
+
+        {/* Table Container Skeleton */}
+        <div className="rounded-3xl border border-white/5 bg-white/2 p-6">
+           <div className="mb-8 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+              <div className="space-y-2">
+                 <div className="h-8 w-48 animate-pulse rounded-lg bg-white/5" />
+                 <div className="h-4 w-80 animate-pulse rounded-full bg-white/5" />
+              </div>
+              <div className="h-12 w-40 animate-pulse rounded-xl bg-white/5" />
+           </div>
+
+           <div className="space-y-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div className="flex h-20 items-center gap-4 rounded-xl border border-white/2 bg-white/2 px-4" key={`loan-skeleton-${i}`}>
+                   <div className="h-12 w-10 shrink-0 animate-pulse rounded-xl bg-white/5" />
+                   <div className="flex-1 space-y-2">
+                      <div className="h-5 w-1/2 animate-pulse rounded-lg bg-white/5" />
+                      <div className="h-3 w-1/4 animate-pulse rounded-full bg-white/5" />
+                   </div>
+                   <div className="h-9 w-28 animate-pulse rounded-xl bg-white/5" />
+                </div>
+              ))}
+           </div>
         </div>
       </section>
     );
@@ -65,17 +103,14 @@ export function LoansPageClient() {
 
   if (loansQuery.isError) {
     return (
-      <section className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Ödünç listesi yüklenemedi</CardTitle>
-            <CardDescription>
-              {loansQuery.error instanceof Error
-                ? loansQuery.error.message
-                : "Ödünçteki kitaplar alınamadı."}
-            </CardDescription>
-          </CardHeader>
-        </Card>
+      <section className="pt-24 text-center">
+        <div className="glass-panel rounded-[40px] border-rose-400/20 bg-rose-400/5 p-12">
+            <h2 className="mb-4 font-serif text-3xl font-bold text-white">Ödünç Kaydı Hatası</h2>
+            <p className="mx-auto max-w-md text-sm text-foreground italic">
+                {loansQuery.error instanceof Error ? loansQuery.error.message : "Güncel ödünç listesi alınamadı."}
+            </p>
+            <Button onClick={() => loansQuery.refetch()} variant="ghost" className="mt-8 rounded-xl border border-white/5 hover:bg-white/3">Yeniden Dene</Button>
+        </div>
       </section>
     );
   }
@@ -84,76 +119,105 @@ export function LoansPageClient() {
 
   return (
     <>
-      <section className="page-stack">
+      <section className="space-y-10 pb-20">
         <PageHero
-          aside={
-            <div className="page-metric">
-              <p className="page-metric-label">Aktif ödünç</p>
-              <p className="page-metric-value">{items.length}</p>
-            </div>
-          }
-          description="Şu anda kimde hangi kitap var ve ne zaman verildi, hepsi tek listede."
-          kicker="Ödünç İşlemleri"
-          title="Ödünç verdiğin kitaplar"
+          description="Şu anda kütüphane dışında olan tüm eserlerin listesi. Kimde olduklarını ve iade tarihlerini buradan takip edebilirsiniz."
+          kicker="Ödünç Listesi"
+          title={appPageTitles.loans}
         />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl">Ödünç listesi</CardTitle>
-            <CardDescription>Tüm status=loaned kitaplar burada listelenir.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {items.length === 0 ? (
-              <div className="empty-panel min-h-[240px]">
-                <p className="text-sm leading-7 text-text-secondary">
-                  Şu an ödünç verilen kitabın yok.
-                </p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-24">Kapak</TableHead>
-                    <TableHead>Başlık</TableHead>
-                    <TableHead className="w-48">Kime Verildi</TableHead>
-                    <TableHead className="w-52">Verilme Tarihi</TableHead>
-                    <TableHead className="w-40">İade Et</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map((book) => (
-                    <TableRow key={book.id}>
-                      <TableCell>
-                        <BookThumb coverUrl={book.coverUrl} title={book.title} />
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <Link
-                            className="font-display text-2xl text-text-primary transition hover:text-text-secondary"
-                            href={`/books/${book.id}`}
-                          >
-                            {book.title}
-                          </Link>
-                          <p className="text-sm text-text-secondary">
-                            {book.authors.map((author) => author.name).join(", ") || "Yazar belirtilmedi"}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>{book.loanedTo ?? "Belirtilmedi"}</TableCell>
-                      <TableCell>{formatLoanDate(book.loanedAt)}</TableCell>
-                      <TableCell>
-                        <Button onClick={() => setSelectedBookId(book.id)} variant="secondary">
-                          <BookOpenText className="mr-2 h-4 w-4" />
-                          İade Et
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+        <div className="glass-panel overflow-hidden rounded-3xl border-white/5 bg-white/2 shadow-[0_24px_80px_-24px_rgba(0,0,0,0.5)] delay-300 duration-1000 animate-in fade-in fill-mode-both slide-in-from-bottom-8">
+            <div className="flex flex-col items-start justify-between gap-6 border-b border-white/3 bg-white/3 px-6 py-6 md:flex-row md:items-center md:px-8">
+                <div>
+                   <h3 className="font-serif text-xl font-bold tracking-tight text-white">Aktif Ödünçler</h3>
+                   <p className="mt-1 text-[12px] leading-relaxed text-foreground/60 italic">Kütüphane dışında bulunan kitapların listesi.</p>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="hidden h-10 w-px bg-white/5 md:block" />
+                  <div className="flex flex-col items-end gap-1">
+                    <div className="flex items-center gap-3">
+                      <span className="font-serif text-2xl font-bold tracking-tighter text-white">{items.length}</span>
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-primary">
+                        <History className="h-5 w-5" />
+                      </div>
+                    </div>
+                    <p className="line-clamp-1 text-[9px] font-bold tracking-wider text-primary/70 uppercase">Aktif Emanet Kaydı</p>
+                  </div>
+                </div>
+            </div>
+
+            <div className="px-2 py-2 pb-8 md:px-4">
+                {items.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-32 text-center text-foreground/40">
+                        <History className="mb-6 h-12 w-12 opacity-20" />
+                        <p className="font-serif text-xl font-bold italic">Şu anda ödünç verilmiş kitap bulunmuyor.</p>
+                    </div>
+                ) : (
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="border-b border-white/5 hover:bg-transparent">
+                                <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Eser Bilgisi</TableHead>
+                                <TableHead className="text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Kimde?</TableHead>
+                                <TableHead className="text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Verildiği Tarih</TableHead>
+                                <TableHead className="w-40 text-right text-[9px] font-bold tracking-wider text-foreground/40 uppercase">İşlem</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {items.map((book, idx) => (
+                                <TableRow 
+                                    key={book.id}
+                                    className="group border-b border-white/2 transition-all duration-500 animate-in fade-in fill-mode-both slide-in-from-left-4 last:border-0 hover:bg-white/3"
+                                    style={{ animationDelay: `${idx * 40}ms` }}
+                                >
+                                    <TableCell className="px-4 py-3">
+                                        <div className="flex items-center gap-6">
+                                            <BookThumb coverUrl={book.coverUrl} title={book.title} />
+                                            <div className="flex flex-col space-y-1.5">
+                                                <Link
+                                                    className="flex items-center gap-3 font-serif text-2xl leading-tight font-bold tracking-tight text-white transition-colors group-hover:text-primary"
+                                                    href={`/books/${book.slug}`}
+                                                >
+                                                    {book.title}
+                                                    <ArrowRight className="h-4 w-4 -translate-x-2 text-primary opacity-0 transition-all duration-700 group-hover:translate-x-0 group-hover:opacity-100" />
+                                                </Link>
+                                                <p className="text-[10px] font-bold tracking-[0.2em] text-foreground uppercase">
+                                                    {book.authors.map((author) => author.name).join(", ") || "Bilinmeyen Yazar"}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="px-6">
+                                        <div className="flex items-center gap-2">
+                                            <div className="rounded-lg border border-white/5 bg-white/2 p-2 text-foreground">
+                                                <User className="h-3.5 w-3.5" />
+                                            </div>
+                                            <span className="text-base font-bold tracking-tight text-foreground">{book.loanedTo ?? "İsimsiz"}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="px-6">
+                                        <div className="flex items-center gap-2">
+                                            <div className="rounded-lg border border-white/5 bg-white/2 p-2 text-foreground">
+                                                <Calendar className="h-3.5 w-3.5" />
+                                            </div>
+                                            <span className="text-sm font-medium text-foreground">{formatLoanDate(book.loanedAt)}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="px-6 text-right">
+                                        <Button 
+                                            onClick={() => setSelectedBookId(book.id)} 
+                                            className="h-10 rounded-xl bg-white px-6 text-[9px] font-bold tracking-widest text-black uppercase shadow-2xl transition-all hover:bg-primary"
+                                        >
+                                            <BookOpenText className="mr-2 h-3.5 w-3.5" />
+                                            Eseri İade Edildi
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                )}
+            </div>
+        </div>
       </section>
 
       {selectedBookId ? (

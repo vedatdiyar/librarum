@@ -15,6 +15,20 @@
       "when": 1775653171457,
       "tag": "0001_ordinary_maverick",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775765160582,
+      "tag": "0002_fuzzy_longshot",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1775820000000,
+      "tag": "0003_slug_routes",
+      "breakpoints": true
     }
   ]
 }

@@ -2,40 +2,38 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
+import { appPageTitles } from "@/lib/navigation";
 import { BookForm } from "../../_components/book-form";
-import { BookFormShell } from "../../_components/book-form-shell";
 
 export function NewBookForm() {
   const router = useRouter();
-  const [open, setOpen] = React.useState(true);
 
   return (
-    <BookFormShell
-      description="Yeni bir kitabi tum kutuphane alanlariyla birlikte ekleyin."
-      onOpenChange={(nextOpen) => {
-        setOpen(nextOpen);
-
-        if (!nextOpen) {
-          React.startTransition(() => {
-            router.push("/books");
-          });
+    <section className="space-y-10 pb-24">
+      <PageHero
+        action={
+          <Button
+            className="rounded-2xl border-white/10 bg-white/5 px-5 text-sm transition-all hover:bg-white/10"
+            onClick={() => router.push("/books")}
+            variant="ghost"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Kitaplara Dön
+          </Button>
         }
-      }}
-      open={open}
-      title="Yeni Kitap"
-    >
-      <BookForm
-        mode="add"
-        onOpenChange={(nextOpen) => {
-          setOpen(nextOpen);
-
-          if (!nextOpen) {
-            React.startTransition(() => {
-              router.push("/books");
-            });
-          }
-        }}
+        description="Yeni kitabı tüm temel bibliyografik alanlarıyla ekleyin. ISBN kontrolüyle yayınevi, yıl, kapak ve yazar bilgilerini tek adımda doldurabilirsiniz."
+        kicker="Katalog"
+        title={appPageTitles.newBook}
       />
-    </BookFormShell>
+
+      <BookForm
+        layout="page"
+        mode="add"
+        onCancel={() => router.push("/books")}
+      />
+    </section>
   );
 }

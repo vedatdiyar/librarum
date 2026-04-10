@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Card, CardContent, cn } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 type PageHeroProps = {
   kicker: string;
@@ -23,47 +23,38 @@ export function PageHero({
   className
 }: PageHeroProps) {
   return (
-    <Card className={cn("page-hero shadow-lg shadow-[#1a2324]/[0.06]", className)}>
-      <div className="absolute inset-x-0 top-0 h-28 bg-linear-to-r from-primary/10 via-primary/4 to-transparent" />
-      <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-      <div className="absolute -bottom-24 left-10 h-56 w-56 rounded-full bg-secondary blur-3xl" />
-
-      {bgImage ? (
-        <div className="absolute inset-0 z-0 overflow-hidden opacity-[0.14]">
-          <Image
-            alt=""
-            className="object-cover object-center mix-blend-multiply"
-            fill
-            priority
-            src={bgImage}
-          />
-          <div className="absolute inset-0 bg-linear-to-r from-card via-card/96 to-card/78" />
-        </div>
-      ) : null}
-
-      <CardContent className={cn("page-hero-grid relative z-10", bgImage ? "min-h-[340px]" : "")}>
-        <div className="flex flex-col justify-between gap-8">
-          <div className="space-y-5">
-            <div className="page-kicker">
-              <span className="h-2 w-2 rounded-full bg-primary" />
-              {kicker}
-            </div>
-
-            <div className="space-y-4">
-              <h1 className="page-title text-balance">{title}</h1>
-              <p className="page-copy">{description}</p>
-            </div>
+    <div className={cn("relative mb-8 overflow-hidden", className)}>
+      <div className="flex flex-col justify-between gap-8 pt-2 pb-1 lg:flex-row lg:items-end">
+        <div className="max-w-2xl space-y-4">
+          <div className="inline-flex items-center gap-2 duration-300 animate-in fade-in slide-in-from-left-1">
+            <span className="h-1 w-1 rounded-full bg-primary/60" />
+            <span className="text-[10px] font-bold tracking-[0.2em] text-primary uppercase">{kicker}</span>
           </div>
 
-          {action ? <div className="flex flex-wrap gap-3">{action}</div> : null}
+          <div className="space-y-2">
+            <h1 className="font-serif text-3xl font-bold tracking-tight text-white duration-300 animate-in fade-in slide-in-from-bottom-1 md:text-4xl">
+              {title}
+            </h1>
+            <p className="max-w-xl text-sm leading-relaxed text-foreground duration-300 animate-in fade-in fill-mode-both slide-in-from-bottom-2">
+              {description}
+            </p>
+          </div>
+
+          {action && (
+            <div className="flex flex-wrap gap-3 pt-1">
+              {action}
+            </div>
+          )}
         </div>
 
-        {aside ? (
-          <div className="flex items-stretch xl:justify-end">
-            <div className="w-full max-w-[320px]">{aside}</div>
+        {aside && (
+          <div className="shrink-0 duration-300 animate-in fade-in slide-in-from-right-2 lg:w-[300px]">
+            {aside}
           </div>
-        ) : null}
-      </CardContent>
-    </Card>
+        )}
+      </div>
+      
+      <div className="mt-6 h-px w-full bg-white/5" />
+    </div>
   );
 }

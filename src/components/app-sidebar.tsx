@@ -1,44 +1,35 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
-import { Button, Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, cn } from "@/components/ui";
+import { Menu, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
+import * as React from "react";
+import { Button, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, cn } from "@/components/ui";
 import { GlobalSearch } from "@/components/global-search";
 import { navigationItems } from "@/lib/navigation";
+import { Branding } from "./branding";
 
-function NavContent({ showLogo = true }: { showLogo?: boolean }) {
+function NavContent({ 
+  showSearch = true, 
+  onClose,
+  isCollapsed = false
+}: { 
+  showSearch?: boolean; 
+  onClose?: () => void;
+  isCollapsed?: boolean;
+}) {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-full flex-col">
-      {showLogo ? (
-        <Link className="rounded-[28px] border border-border/70 bg-background/70 p-4 transition hover:bg-background" href="/">
-          <div className="flex items-center gap-4">
-            <span className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-primary text-primary-foreground shadow-sm shadow-primary/20">
-              <Image alt="Librarum Logo" height={26} src="/logo.svg" width={26} />
-            </span>
-            <div className="min-w-0">
-              <p className="text-lg font-semibold tracking-[-0.04em] text-text-primary">Librarum</p>
-              <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.22em] text-text-secondary">
-                Library Dashboard
-              </p>
-            </div>
-          </div>
-        </Link>
-      ) : null}
+    <div className="flex h-full flex-col py-6">
+      {showSearch && !isCollapsed && (
+        <div className="mb-8 px-4 duration-300 animate-in fade-in">
+          <GlobalSearch />
+        </div>
+      )}
 
-      <div className={cn("mt-6", showLogo ? "" : "mt-1")}>
-        <GlobalSearch compact={!showLogo} />
-      </div>
-
-      <div className="mt-8 flex-1">
-        <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
-          Navigasyon
-        </p>
-
-        <nav className="mt-3 flex flex-col gap-1.5">
+      <div className="flex-1 space-y-1 px-3 pt-5">
+        <nav className="space-y-1.5">
           {navigationItems.map((item) => {
             const isActive =
               item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
@@ -46,86 +37,141 @@ function NavContent({ showLogo = true }: { showLogo?: boolean }) {
             return (
               <Link
                 className={cn(
-                  "group flex items-center gap-3 rounded-[22px] px-3 py-3 transition-all duration-200",
+                  "group relative flex items-center gap-1 rounded-xl px-3 py-2.5 transition-all duration-500",
+                  isCollapsed && "justify-center px-0",
                   isActive
-                    ? "bg-card text-text-primary shadow-sm"
-                    : "text-text-secondary hover:bg-background/80 hover:text-text-primary"
+                    ? "bg-white/4 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
+                    : "text-foreground hover:bg-white/2 hover:text-white"
                 )}
                 href={item.href}
                 key={item.href}
+                onClick={onClose}
                 prefetch={false}
               >
                 <span
                   className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-[16px] transition-all duration-200",
+                    "flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-500",
                     isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-background/70 text-text-secondary group-hover:text-primary"
+                      ? "border border-primary/20 bg-primary/10 text-primary"
+                      : "bg-transparent text-foreground group-hover:scale-110 group-hover:text-primary"
                   )}
                 >
                   <item.icon className="h-[18px] w-[18px]" />
                 </span>
 
-                <div className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold tracking-[-0.02em]">{item.label}</span>
-                </div>
-
-                {isActive ? <span className="h-2 w-2 rounded-full bg-primary" /> : null}
+                {!isCollapsed && (
+                  <div className="min-w-0 flex-1 duration-500 animate-in fade-in slide-in-from-left-2">
+                    <span className="block text-sm font-bold text-foreground">{item.label}</span>
+                  </div>
+                )}
               </Link>
             );
           })}
         </nav>
       </div>
 
-      <div className="mt-6 rounded-[28px] border border-border/70 bg-background/70 p-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
-          Yeni Görünüm
-        </p>
-        <p className="mt-2 text-sm leading-6 text-text-secondary">
-          Koleksiyon, keşif ve operasyon akışını daha sade bir dashboard düzeninde birleştirdik.
-        </p>
-      </div>
+
     </div>
   );
 }
 
+import { useUIStore } from "@/stores/ui-store";
+
 export function AppDesktopSidebar() {
+  const { isSidebarCollapsed: isCollapsed, toggleSidebar, setSidebarCollapsed } = useUIStore();
+  const pathname = usePathname();
+
+  // Auto-collapse on specific pages, but otherwise rely on store persistence
+  React.useEffect(() => {
+    if (pathname === "/books/new") {
+      setSidebarCollapsed(true);
+    }
+  }, [pathname, setSidebarCollapsed]);
+
   return (
-    <aside className="sticky top-0 hidden h-screen w-[300px] shrink-0 py-4 lg:block">
-      <div className="glass-elevated flex h-full flex-col rounded-[32px] p-5">
-        <NavContent />
+    <aside 
+      className={cn(
+        "sticky top-0 z-50 hidden h-screen min-h-screen shrink-0 self-start border-r border-white/5 bg-background/50 backdrop-blur-3xl transition-all duration-500 lg:block",
+        isCollapsed ? "w-[84px]" : "w-[240px]"
+      )}
+    >
+      <div className="flex h-full flex-col">
+        {/* Branding section with fixed height and bottom border to intersect with header */}
+        <div className="flex h-[72px] items-center justify-center border-b border-white/5">
+          <Branding isCollapsed={isCollapsed} showSubtitle={false} />
+        </div>
+        
+        <div className="custom-scrollbar flex-1 overflow-y-auto">
+          <NavContent isCollapsed={isCollapsed} showSearch={false} />
+        </div>
+
+        {/* Toggle Button at the bottom */}
+        <div className="mt-auto border-t border-white/5 px-3 py-4">
+          <button
+            onClick={toggleSidebar}
+            className={cn(
+              "group relative flex w-full items-center justify-start gap-1 rounded-xl px-3 py-2.5 text-foreground transition-all duration-500 hover:bg-white/2 hover:text-white",
+              isCollapsed && "justify-center px-0"
+            )}
+            title={isCollapsed ? "Genişlet" : "Daralt"}
+          >
+            <span className={cn(
+                "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-transparent text-foreground transition-all duration-500 group-hover:scale-110 group-hover:text-primary",
+                isCollapsed && "group-hover:bg-white/5"
+            )}>
+              {isCollapsed ? (
+                <PanelLeftOpen className="h-5 w-5" />
+              ) : (
+                <PanelLeftClose className="h-5 w-5" />
+              )}
+            </span>
+            {!isCollapsed && (
+              <div className="min-w-0 duration-500 animate-in fade-in slide-in-from-left-2">
+                <span className="block text-sm font-bold text-foreground">{isCollapsed ? "Genişlet" : "Daralt"}</span>
+              </div>
+            )}
+          </button>
+        </div>
       </div>
     </aside>
   );
 }
 
 export function AppMobileHeader() {
+  const [open, setOpen] = React.useState(false);
+
   return (
-    <div className="sticky top-0 z-40 lg:hidden">
-      <div className="glass-elevated flex items-center gap-3 rounded-[24px] px-4 py-3">
-        <Link className="flex shrink-0 items-center gap-3" href="/">
-          <span className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-primary text-primary-foreground">
-            <Image alt="Librarum Logo" height={22} src="/logo.svg" width={22} />
-          </span>
-          <span className="text-base font-semibold tracking-[-0.03em] text-text-primary">Librarum</span>
-        </Link>
+    <div className="sticky top-0 z-50 lg:hidden">
+      <div className="flex items-center justify-between border-b border-white/5 bg-background/80 px-6 py-4 backdrop-blur-xl">
+        <Branding className="px-0" showSubtitle={false} />
 
-        <div className="min-w-0 flex-1">
-          <GlobalSearch compact />
-        </div>
-
-        <Sheet>
+        <Sheet onOpenChange={setOpen} open={open}>
           <SheetTrigger asChild>
-            <Button aria-label="Navigasyonu aç" size="icon" variant="secondary">
-              <Menu className="h-5 w-5" />
+            <Button className="h-10 w-10 rounded-xl border-white/10 bg-white/3 p-0 transition-all hover:bg-white/8" variant="ghost">
+              <Menu className="h-5 w-5 text-white/70" />
             </Button>
           </SheetTrigger>
 
-          <SheetContent className="p-5" side="left">
+          <SheetContent className="w-[240px] border-r-white/10 bg-background p-0 backdrop-blur-2xl" side="left">
             <SheetHeader className="sr-only">
-              <SheetTitle>Navigasyon</SheetTitle>
+              <SheetTitle>Gezinti</SheetTitle>
+              <SheetDescription>Ana navigasyon menüsü</SheetDescription>
             </SheetHeader>
-            <NavContent showLogo={false} />
+            <div className="flex h-full flex-col">
+              <div className="flex h-[72px] items-center justify-center border-b border-white/5 px-6">
+                <Branding className="px-0" showSubtitle={false} />
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                <NavContent onClose={() => setOpen(false)} showSearch={true} />
+              </div>
+            </div>
+            <Button 
+                onClick={() => setOpen(false)}
+                className="absolute top-4 right-4 h-10 w-10 rounded-xl border-white/10 bg-white/3 p-0 hover:bg-white/8"
+                variant="ghost"
+            >
+                <X className="h-5 w-5 text-white/50" />
+            </Button>
           </SheetContent>
         </Sheet>
       </div>
@@ -141,3 +187,4 @@ export function AppSidebar() {
     </>
   );
 }
+

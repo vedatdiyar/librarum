@@ -97,6 +97,10 @@ export function normalizeDatabaseError(error: unknown) {
     if (error.code === "23503") {
       return new ApiError(409, "Referenced resource does not exist.");
     }
+
+    if (error.code === "23514") {
+      return new ApiError(400, "Database constraint violation.");
+    }
   }
 
   return error;

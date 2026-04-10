@@ -47,13 +47,14 @@ export async function getFavoriteAuthors(): Promise<FavoriteAuthor[]> {
       select
         ${authors.id} as id,
         ${authors.name} as name,
+        ${authors.slug} as slug,
         round(avg(${books.rating})::numeric, 2) as average_rating,
         count(distinct ${books.id}) as rated_books
       from ${authors}
       inner join ${bookAuthors} on ${bookAuthors.authorId} = ${authors.id}
       inner join ${books} on ${books.id} = ${bookAuthors.bookId}
       where ${books.rating} is not null
-      group by ${authors.id}, ${authors.name}
+      group by ${authors.id}, ${authors.name}, ${authors.slug}
     ),
     top_rating as (
       select max(average_rating) as average_rating from author_ratings
@@ -61,6 +62,7 @@ export async function getFavoriteAuthors(): Promise<FavoriteAuthor[]> {
     select
       author_ratings.id,
       author_ratings.name,
+      author_ratings.slug,
       author_ratings.average_rating,
       author_ratings.rated_books
     from author_ratings
@@ -72,6 +74,7 @@ export async function getFavoriteAuthors(): Promise<FavoriteAuthor[]> {
   return favoriteRows.rows.map((row) => ({
     id: String(row.id),
     name: String(row.name),
+    slug: String(row.slug),
     averageRating: normalizeFloat(row.average_rating as number | string),
     ratedBooks: normalizeCount(row.rated_books as number | string)
   }));
@@ -141,6 +144,7 @@ async function getAuthorDistribution(): Promise<AuthorDistributionPoint[]> {
     .select({
       id: authors.id,
       name: authors.name,
+      slug: authors.slug,
       count: countDistinct(bookAuthors.bookId)
     })
     .from(authors)
@@ -151,6 +155,7 @@ async function getAuthorDistribution(): Promise<AuthorDistributionPoint[]> {
   return rows.map((row) => ({
     id: row.id,
     name: row.name,
+    slug: row.slug,
     count: normalizeCount(row.count)
   }));
 }

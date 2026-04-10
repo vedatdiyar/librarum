@@ -10,36 +10,40 @@ import type { SearchResultItem } from "@/types";
 import { readJsonResponse } from "@/lib/shared";
 
 async function fetchSearchResults(query: string) {
-  return readJsonResponse<SearchResultItem[]>(await fetch(`/api/search?q=${encodeURIComponent(query)}`));
+  const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+  return readJsonResponse<SearchResultItem[]>(response);
 }
 
 function BookThumb({ title, coverUrl }: { title: string; coverUrl: string | null }) {
   if (coverUrl) {
     return (
-      <div className="relative h-14 w-10 overflow-hidden rounded-xl border border-border/70 bg-card">
-        <Image alt={`${title} kapagi`} className="object-cover" fill sizes="40px" src={coverUrl} />
+      <div className="relative h-12 w-9 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/2 shadow-xl transition-transform duration-500 group-hover:scale-110">
+        <Image alt={`${title} cover`} className="object-cover" fill sizes="36px" src={coverUrl} />
       </div>
     );
   }
 
   return (
-    <div className="book-placeholder h-14 w-10 rounded-xl p-1.5">
-      <span className="line-clamp-3 font-display text-[9px] leading-3 text-text-primary/45">{title}</span>
+    <div className="flex h-12 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-white/2 p-1.5 transition-all duration-500">
+      <span className="line-clamp-3 text-center text-[7px] font-bold tracking-tighter text-foreground uppercase">{title}</span>
     </div>
   );
 }
 
 type GlobalSearchProps = {
   compact?: boolean;
+  expandable?: boolean;
   className?: string;
 };
 
-export function GlobalSearch({ compact = false, className }: GlobalSearchProps) {
+export function GlobalSearch({ compact = false, expandable = false, className }: GlobalSearchProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [query, setQuery] = React.useState("");
   const [debouncedQuery, setDebouncedQuery] = React.useState("");
   const [isFocused, setIsFocused] = React.useState(false);
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
   const rootRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
@@ -58,6 +62,7 @@ export function GlobalSearch({ compact = false, className }: GlobalSearchProps) 
     function handlePointerDown(event: MouseEvent) {
       if (!rootRef.current?.contains(event.target as Node)) {
         setIsFocused(false);
+        setIsExpanded(false);
       }
     }
 
@@ -73,81 +78,120 @@ export function GlobalSearch({ compact = false, className }: GlobalSearchProps) 
 
   const shouldShowDropdown =
     isFocused &&
-    debouncedQuery.length >= 2 &&
-    (searchQuery.isLoading || searchQuery.isError || (searchQuery.data?.length ?? 0) >= 0);
+    debouncedQuery.length >= 2;
+
+  const isSearchActive = !expandable || isExpanded || query.length > 0;
+  const isCollapsedExpandable = expandable && !isExpanded && !query;
 
   return (
-    <div className={cn("relative", className)} ref={rootRef}>
-      <div
-        className={cn(
-          "flex items-center gap-3 rounded-[22px] border border-border/70 bg-card/92 px-4 py-3 shadow-xs transition-all duration-200 focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-ring/12",
-          compact ? "rounded-[18px] px-3 py-2.5" : ""
-        )}
-      >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-text-secondary">
-          <Search className="h-4 w-4" />
-        </span>
-
-        <input
-          aria-label="Arama yap"
-          className="w-full bg-transparent text-[15px] font-medium text-text-primary outline-none placeholder:text-text-secondary/55"
-          onBlur={() => {
-            window.setTimeout(() => setIsFocused(false), 120);
+    <div className={cn("group relative", className)} ref={rootRef}>
+      {isCollapsedExpandable ? (
+        <button
+          aria-label="Arşivlerde ara"
+          className={cn(
+            "flex h-11 w-11 items-center justify-center rounded-xl border border-white/5 bg-white/2 transition-all duration-300 hover:scale-105 hover:border-white/10 hover:bg-white/5 active:scale-95",
+            compact ? "h-10 w-10" : ""
+          )}
+          onClick={() => {
+            setIsExpanded(true);
+            setTimeout(() => inputRef.current?.focus(), 100);
           }}
-          onChange={(event) => setQuery(event.target.value)}
-          onFocus={() => setIsFocused(true)}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") {
-              setIsFocused(false);
-            }
-          }}
-          placeholder="Kitap, yazar veya seri ara..."
-          value={query}
-        />
+          type="button"
+        >
+          <Search className="h-5 w-5 text-foreground/70 transition-colors duration-500" />
+        </button>
+      ) : (
+        <div
+          className={cn(
+            "flex items-center rounded-xl border border-white/5 bg-white/2 transition-all duration-300 focus-within:border-primary/30 focus-within:bg-white/5 hover:border-white/10 hover:bg-white/5",
+            "w-full min-w-[280px] px-4 py-3 md:min-w-[320px]",
+            compact && (isExpanded || !expandable) ? "px-3 py-2.5" : ""
+          )}
+        >
+          <div className={cn(
+            "relative flex shrink-0 items-center justify-center text-foreground/70 transition-all duration-500 group-focus-within:text-primary",
+            "h-8 w-8"
+          )}>
+            <Search className="h-5 w-5" />
+          </div>
 
-        {searchQuery.isLoading && debouncedQuery.length >= 2 ? (
-          <LoaderCircle className="h-4 w-4 animate-spin text-primary" />
-        ) : !compact ? (
-          <span className="hidden rounded-full bg-muted px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-text-secondary md:inline-flex">
-            Ara
-          </span>
-        ) : null}
-      </div>
+          <input
+            aria-label="Arşivlerde ara"
+            ref={inputRef}
+            className="ml-3 w-full bg-transparent text-[14px] font-medium text-white/90 transition-all duration-500 outline-none placeholder:text-foreground"
+            onBlur={() => {
+              if (query === "") {
+                setIsExpanded(false);
+              }
+              window.setTimeout(() => setIsFocused(false), 150);
+            }}
+            onChange={(event) => setQuery(event.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                setIsFocused(false);
+                setIsExpanded(false);
+              }
+            }}
+            placeholder="Eserlerde, yazarlarda ara..."
+            value={query}
+          />
 
-      {shouldShowDropdown ? (
-        <div className="absolute left-0 right-0 z-50 mt-3 overflow-hidden rounded-[26px] border border-border/70 bg-card/98 shadow-lg backdrop-blur-sm">
-          <Command shouldFilter={false}>
+          {isSearchActive && (
+            <div className="ml-2">
+               {searchQuery.isLoading && debouncedQuery.length >= 2 ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin text-primary" />
+                ) : !compact ? (
+                  <div className="hidden items-center gap-1.5 rounded-lg border border-white/5 bg-white/3 px-2 py-1 text-[9px] font-bold tracking-[0.2em] text-foreground uppercase md:flex">
+                    Bul
+                  </div>
+                ) : null}
+            </div>
+          )}
+        </div>
+      )}
+
+      {shouldShowDropdown && (
+        <div className="absolute right-0 left-0 z-50 mt-3 overflow-hidden rounded-2xl border border-white/10 bg-background/95 shadow-2xl backdrop-blur-3xl duration-500 animate-in fade-in slide-in-from-top-2">
+          <Command shouldFilter={false} className="bg-transparent">
             <CommandInput className="hidden" value={query} />
-            <CommandList>
+            <CommandList className="max-h-[440px]">
               {searchQuery.isLoading ? (
-                <div className="px-4 py-6 text-sm text-text-secondary">Yukleniyor...</div>
+                <div className="flex items-center justify-center p-12">
+                   <LoaderCircle className="h-6 w-6 animate-spin text-primary" />
+                </div>
               ) : searchQuery.isError ? (
-                <div className="px-4 py-6 text-sm text-destructive">
-                  {searchQuery.error instanceof Error
-                    ? searchQuery.error.message
-                    : "Arama tamamlanamadi."}
+                <div className="px-6 py-8 text-sm font-medium text-rose-400 italic">
+                  Eşitleme hatası oluştu.
                 </div>
               ) : (
                 <>
-                  <CommandEmpty>Sonuc bulunamadi</CommandEmpty>
-                  <CommandGroup heading="Sonuclar">
-                    {(searchQuery.data ?? []).map((result) => (
+                  <CommandEmpty className="px-6 py-12 text-center text-sm text-foreground italic">Matriste eşleşen eser bulunamadı.</CommandEmpty>
+                  <CommandGroup 
+                    heading={<span className="mb-2 block border-b border-white/5 px-2 py-4 text-[10px] font-bold tracking-[0.3em] text-foreground uppercase">Keşif Matrisi</span>}
+                  >
+                    {(searchQuery.data ?? []).map((result, idx) => (
                       <CommandItem
                         key={result.id}
                         onSelect={() => {
                           setIsFocused(false);
-                          router.push(`/books/${result.id}`);
+                          router.push(`/books/${result.slug}`);
                         }}
+                        className="group flex cursor-pointer items-center gap-4 px-4 py-3 transition-all duration-300 animate-in fade-in fill-mode-both slide-in-from-left-4 hover:bg-white/3 aria-selected:bg-white/5"
+                        style={{ animationDelay: `${idx * 40}ms` }}
                         value={result.id}
                       >
                         <BookThumb coverUrl={result.coverUrl} title={result.title} />
                         <div className="min-w-0 flex-1">
-                          <p className="line-clamp-1 text-base font-semibold tracking-[-0.03em] text-text-primary">
+                          <p className="line-clamp-1 text-[15px] font-bold tracking-tight text-white/90 transition-colors group-hover:text-primary">
                             {result.title}
                           </p>
-                          <p className="line-clamp-1 text-sm text-text-secondary">
-                            {result.authors.join(", ") || "Yazar belirtilmedi"}
+                          <p className="mt-0.5 line-clamp-1 text-[11px] font-medium text-foreground italic">
+                            {result.authors.join(", ") || "Bilinmeyen Yazar"}
                           </p>
+                        </div>
+                        <div className="shrink-0 opacity-0 transition-transform duration-500 group-hover:translate-x-1 group-hover:opacity-100">
+                           <Search className="h-3.5 w-3.5 text-primary" />
                         </div>
                       </CommandItem>
                     ))}
@@ -157,7 +201,7 @@ export function GlobalSearch({ compact = false, className }: GlobalSearchProps) 
             </CommandList>
           </Command>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

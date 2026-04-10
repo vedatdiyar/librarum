@@ -10,9 +10,10 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid
 } from "drizzle-orm/pg-core";
-import { authors, categories, tags, series } from "./catalog";
+import { authors, categories, series } from "./catalog.ts";
 
 export const bookStatusEnum = pgEnum("book_status", [
   "owned",
@@ -27,6 +28,8 @@ export const books = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     title: text("title").notNull(),
+    slug: text("slug").notNull(),
+    subtitle: text("subtitle"),
     isbn: text("isbn"),
     publisher: text("publisher"),
     publicationYear: integer("publication_year"),
@@ -34,7 +37,6 @@ export const books = pgTable(
     status: bookStatusEnum("status").notNull(),
     locationName: text("location_name"),
     shelfRow: text("shelf_row"),
-    shelfColumn: integer("shelf_column"),
     copyCount: integer("copy_count").notNull().default(1),
     donatable: boolean("donatable").notNull().default(false),
     rating: numeric("rating", {
@@ -72,6 +74,7 @@ export const books = pgTable(
   },
   (table) => [
     index("books_status_idx").on(table.status),
+    uniqueIndex("books_slug_unique").on(table.slug),
     index("books_category_id_idx").on(table.categoryId),
     index("books_read_year_idx").on(table.readYear),
     index("books_read_month_idx").on(table.readMonth),
@@ -83,10 +86,6 @@ export const books = pgTable(
     check(
       "books_page_count_positive_check",
       sql`${table.pageCount} is null or ${table.pageCount} > 0`
-    ),
-    check(
-      "books_shelf_column_positive_check",
-      sql`${table.shelfColumn} is null or ${table.shelfColumn} >= 1`
     ),
     check(
       "books_read_month_range_check",
@@ -128,30 +127,7 @@ export const bookAuthors = pgTable(
   ]
 );
 
-export const bookTags = pgTable(
-  "book_tags",
-  {
-    bookId: uuid("book_id")
-      .notNull()
-      .references(() => books.id, {
-        onDelete: "cascade",
-        onUpdate: "cascade"
-      }),
-    tagId: uuid("tag_id")
-      .notNull()
-      .references(() => tags.id, {
-        onDelete: "cascade",
-        onUpdate: "cascade"
-      })
-  },
-  (table) => [
-    primaryKey({
-      name: "book_tags_pk",
-      columns: [table.bookId, table.tagId]
-    }),
-    index("book_tags_tag_id_idx").on(table.tagId)
-  ]
-);
+
 
 export const bookSeries = pgTable(
   "book_series",
@@ -184,7 +160,5 @@ export type Book = typeof books.$inferSelect;
 export type NewBook = typeof books.$inferInsert;
 export type BookAuthor = typeof bookAuthors.$inferSelect;
 export type NewBookAuthor = typeof bookAuthors.$inferInsert;
-export type BookTag = typeof bookTags.$inferSelect;
-export type NewBookTag = typeof bookTags.$inferInsert;
 export type BookSeries = typeof bookSeries.$inferSelect;
 export type NewBookSeries = typeof bookSeries.$inferInsert;

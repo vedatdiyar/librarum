@@ -45,7 +45,7 @@ export function useCoverUpload(options: {
 
         options.onCoverUploaded(result.url, result.key);
       } catch (error) {
-        options.onError(error instanceof Error ? error.message : "Kapak yuklenemedi.");
+        options.onError(error instanceof Error ? error.message : "Kapak yüklenemedi.");
       } finally {
         setIsUploadingCover(false);
       }

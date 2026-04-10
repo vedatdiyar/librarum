@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { hash } from "bcryptjs";
 import { eq, sql } from "drizzle-orm";
 import { createDb } from "./client.ts";
-import { users } from "./schema";
+import { users } from "./schema/index.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "../../..");
