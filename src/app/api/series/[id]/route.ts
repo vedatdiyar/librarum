@@ -14,8 +14,7 @@ type SeriesRouteContext = {
 export const GET = withApiHandler(async (_request: Request, context: SeriesRouteContext) => {
   await requireSession();
   const { id } = await context.params;
-  const seriesId = uuidSchema.parse(id);
-  const detail = await getSeriesDetail(seriesId);
+  const detail = await getSeriesDetail(id);
 
   return apiSuccess(detail);
 });
@@ -23,10 +22,9 @@ export const GET = withApiHandler(async (_request: Request, context: SeriesRoute
 export const PATCH = withApiHandler(async (request: Request, context: SeriesRouteContext) => {
   await requireSession();
   const { id } = await context.params;
-  const seriesId = uuidSchema.parse(id);
   const payload = await parseJsonBody(request, updateSeriesSchema);
   const updatedSeries = await updateSeries(
-    seriesId,
+    id,
     payload.name,
     payload.totalVolumes
   );
@@ -37,8 +35,7 @@ export const PATCH = withApiHandler(async (request: Request, context: SeriesRout
 export const DELETE = withApiHandler(async (_request: Request, context: SeriesRouteContext) => {
   await requireSession();
   const { id } = await context.params;
-  const seriesId = uuidSchema.parse(id);
-  await deleteSeries(seriesId);
+  await deleteSeries(id);
 
   return apiMessage("Series deleted.");
 });

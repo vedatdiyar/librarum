@@ -5,6 +5,7 @@ import {
   desc,
   eq,
   inArray,
+  or,
   sql,
   type InferSelectModel
 } from "drizzle-orm";
@@ -35,7 +36,7 @@ import type {
 } from "@/types";
 import { ApiError, assertFound } from "@/server/api";
 import { buildBookSlugSource } from "@/lib/shared/book-title";
-import { buildUniqueSlug, isUuid } from "@/lib/shared";
+import { buildUniqueSlug, isUuid, toSlugPart } from "@/lib/shared";
 import {
   checkDuplicateBook,
   normalizeCreateBookResult,
@@ -211,6 +212,7 @@ async function loadBookRelations(
         bookId: bookSeries.bookId,
         id: series.id,
         name: series.name,
+        slug: series.slug,
         totalVolumes: series.totalVolumes,
         seriesOrder: bookSeries.seriesOrder
       })
@@ -251,6 +253,7 @@ async function loadBookRelations(
     seriesByBookId.set(seriesRow.bookId, {
       id: seriesRow.id,
       name: seriesRow.name,
+      slug: seriesRow.slug,
       totalVolumes: seriesRow.totalVolumes,
       seriesOrder: seriesRow.seriesOrder
     });
@@ -433,6 +436,7 @@ async function getSeriesRecord(
     .insert(series)
     .values({
       name: normalizedName,
+      slug: toSlugPart(normalizedName, "series"),
       totalVolumes: reference.totalVolumes ?? null
     })
     .returning({
@@ -552,7 +556,7 @@ export async function resolveBookIdentifier(identifier: string) {
     .from(books)
     .where(
       isUuid(identifier)
-        ? sql`${books.id} = ${identifier} or ${books.slug} = ${identifier}`
+        ? or(eq(books.id, identifier), eq(books.slug, identifier))
         : eq(books.slug, identifier)
     )
     .limit(1);

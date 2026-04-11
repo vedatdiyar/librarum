@@ -138,7 +138,7 @@ export function SeriesPageClient() {
                     style={{ animationDelay: `${idx * 40}ms` }}
                   >
                     <TableCell className="px-4 py-3">
-                      <Link className="flex items-center gap-4" href={`/series/${item.id}`}>
+                      <Link className="flex items-center gap-4" href={`/series/${item.slug}`}>
                         <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-foreground transition-all duration-500 group-hover:border-primary/30 group-hover:bg-primary/5 group-hover:text-primary">
                           <LibraryBig className="h-5 w-5" />
                         </div>

@@ -376,7 +376,7 @@ export function AuthorDetailPageClientContinuitySection({ relatedSeries }: { rel
             {relatedSeries.map((series) => (
               <Link
                 className="group flex items-center justify-between gap-6 rounded-2xl border border-white/2 bg-white/1 p-6 transition-all duration-500 hover:border-white/10 hover:bg-white/4"
-                href={`/series/${series.id}`}
+                href={`/series/${series.slug}`}
                 key={series.id}
               >
                 <div className="space-y-1.5">

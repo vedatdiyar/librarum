@@ -85,6 +85,7 @@ export type CategoryOption = EntityOption & {
 };
 
 export type SeriesOption = EntityOption & {
+  slug: string;
   totalVolumes: number | null;
   bookCount?: number;
   ownedCount?: number;
@@ -110,6 +111,7 @@ export type AuthorDetailBook = {
 export type AuthorRelatedSeries = {
   id: string;
   name: string;
+  slug: string;
   totalVolumes: number | null;
   ownedCount: number;
 };
@@ -126,6 +128,7 @@ export type AuthorDetail = {
 };
 
 export type SeriesListItem = EntityOption & {
+  slug: string;
   totalVolumes: number | null;
   ownedCount: number;
   completionPercentage: number | null;
@@ -143,6 +146,7 @@ export type SeriesOwnedVolume = {
 export type SeriesDetail = {
   id: string;
   name: string;
+  slug: string;
   totalVolumes: number | null;
   ownedVolumes: SeriesOwnedVolume[];
   missingVolumes: number[];
@@ -166,6 +170,7 @@ export type BookLocation = {
 export type BookSeriesReference = {
   id: string;
   name: string;
+  slug: string;
   totalVolumes: number | null;
   seriesOrder: number | null;
 };

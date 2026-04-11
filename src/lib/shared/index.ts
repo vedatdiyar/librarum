@@ -72,6 +72,7 @@ export function normalizeText(value: string): string {
     .toLocaleLowerCase("tr-TR")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\u2019'`´]/g, "")
     .replace(/ı/g, "i")
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")

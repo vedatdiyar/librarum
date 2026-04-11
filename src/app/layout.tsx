@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins, Newsreader } from "next/font/google";
+import { Poppins, Newsreader, Fredoka } from "next/font/google";
 import { auth } from "@/auth";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -17,6 +17,13 @@ const serif = Newsreader({
   variable: "--font-serif",
   display: "optional",
   preload: false,
+});
+
+const fredoka = Fredoka({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-fredoka",
+  display: "swap",
 });
 
 
@@ -41,7 +48,7 @@ export default async function RootLayout({
   const session = await auth();
 
   return (
-    <html lang="tr" data-scroll-behavior="smooth" suppressHydrationWarning className={`${sans.variable} ${serif.variable}`}>
+    <html lang="tr" data-scroll-behavior="smooth" suppressHydrationWarning className={`${sans.variable} ${serif.variable} ${fredoka.variable}`}>
       <head>
         <meta name="apple-mobile-web-app-title" content="Librarum" />
       </head>

@@ -137,7 +137,7 @@ export function BookMetaSection({ book }: { book: BookDetail }) {
          value={
            book.series ? (
              <div className="flex flex-col gap-1">
-               <Link href={`/series/${book.series.id}`} className="text-sm font-bold text-white transition-colors hover:text-primary">
+               <Link href={`/series/${book.series.slug}`} className="text-sm font-bold text-white transition-colors hover:text-primary">
                  {book.series.name}
                </Link>
                {book.series.seriesOrder && (

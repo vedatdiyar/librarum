@@ -37,7 +37,7 @@ function NavContent({
             return (
               <Link
                 className={cn(
-                  "group relative flex items-center gap-1 rounded-xl px-3 py-2.5 transition-all duration-500",
+                  "group relative flex flex-nowrap items-center gap-1 overflow-hidden rounded-xl px-3 py-2.5 transition-all duration-500",
                   isCollapsed && "justify-center px-0",
                   isActive
                     ? "bg-white/4 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
@@ -61,7 +61,7 @@ function NavContent({
 
                 {!isCollapsed && (
                   <div className="min-w-0 flex-1 duration-500 animate-in fade-in slide-in-from-left-2">
-                    <span className="block text-sm font-bold text-foreground">{item.label}</span>
+                    <span className="block truncate text-sm font-bold whitespace-nowrap text-foreground">{item.label}</span>
                   </div>
                 )}
               </Link>
@@ -110,7 +110,7 @@ export function AppDesktopSidebar() {
           <button
             onClick={toggleSidebar}
             className={cn(
-              "group relative flex w-full items-center justify-start gap-1 rounded-xl px-3 py-2.5 text-foreground transition-all duration-500 hover:bg-white/2 hover:text-white",
+              "group relative flex w-full flex-nowrap items-center justify-start gap-1 overflow-hidden rounded-xl px-3 py-2.5 text-foreground transition-all duration-500 hover:bg-white/2 hover:text-white",
               isCollapsed && "justify-center px-0"
             )}
             title={isCollapsed ? "Genişlet" : "Daralt"}
@@ -127,7 +127,7 @@ export function AppDesktopSidebar() {
             </span>
             {!isCollapsed && (
               <div className="min-w-0 duration-500 animate-in fade-in slide-in-from-left-2">
-                <span className="block text-sm font-bold text-foreground">{isCollapsed ? "Genişlet" : "Daralt"}</span>
+                <span className="block truncate text-sm font-bold whitespace-nowrap text-foreground">{isCollapsed ? "Genişlet" : "Daralt"}</span>
               </div>
             )}
           </button>

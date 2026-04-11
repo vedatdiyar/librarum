@@ -54,10 +54,12 @@ export const series = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     name: text("name").notNull(),
+    slug: text("slug").notNull(),
     totalVolumes: integer("total_volumes")
   },
   (table) => [
     uniqueIndex("series_name_ci_unique").on(sql`lower(${table.name})`),
+    uniqueIndex("series_slug_unique").on(table.slug),
     check(
       "series_total_volumes_positive_check",
       sql`${table.totalVolumes} is null or ${table.totalVolumes} >= 1`

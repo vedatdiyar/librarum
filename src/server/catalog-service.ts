@@ -1,4 +1,4 @@
-import { asc, countDistinct, eq, sql } from "drizzle-orm";
+import { asc, countDistinct, eq, or, sql } from "drizzle-orm";
 import {
   authorAliases,
   authors,
@@ -107,6 +107,51 @@ async function computeAuthorSlug(name: string, authorId: string) {
   return buildUniqueSlug(name, authorId, "author", () => true);
 }
 
+export async function resolveSeriesIdentifier(identifier: string) {
+  const db = createDb();
+  const rows = await db
+    .select({
+      id: series.id,
+      slug: series.slug
+    })
+    .from(series)
+    .where(
+      isUuid(identifier)
+        ? or(eq(series.id, identifier), eq(series.slug, identifier))
+        : eq(series.slug, identifier)
+    )
+    .limit(1);
+
+  return assertFound(rows[0], "Series not found.");
+}
+
+async function seriesSlugExists(slug: string, excludedId?: string) {
+  const db = createDb();
+  const rows = await db
+    .select({
+      id: series.id
+    })
+    .from(series)
+    .where(
+      excludedId
+        ? sql`${series.slug} = ${slug} and ${series.id} <> ${excludedId}`
+        : eq(series.slug, slug)
+    )
+    .limit(1);
+
+  return Boolean(rows[0]);
+}
+
+async function computeSeriesSlug(name: string, seriesId: string) {
+  const baseSlug = buildUniqueSlug(name, seriesId, "series", () => false);
+
+  if (!(await seriesSlugExists(baseSlug, seriesId))) {
+    return baseSlug;
+  }
+
+  return buildUniqueSlug(name, seriesId, "series", () => true);
+}
+
 export async function resolveAuthorIdentifier(identifier: string) {
   const db = createDb();
   const rows = await db
@@ -117,7 +162,7 @@ export async function resolveAuthorIdentifier(identifier: string) {
     .from(authors)
     .where(
       isUuid(identifier)
-        ? sql`${authors.id} = ${identifier} or ${authors.slug} = ${identifier}`
+        ? or(eq(authors.id, identifier), eq(authors.slug, identifier))
         : eq(authors.slug, identifier)
     )
     .limit(1);
@@ -328,6 +373,7 @@ export async function getAuthorDetail(authorId: string): Promise<AuthorDetail> {
         coalesce(${books.coverCustomUrl}, ${books.coverMetadataUrl}) as cover_url,
         ${series.id} as series_id,
         ${series.name} as series_name,
+        ${series.slug} as series_slug,
         ${series.totalVolumes} as series_total_volumes,
         ${bookSeries.seriesOrder} as series_order
       from ${books}
@@ -353,13 +399,14 @@ export async function getAuthorDetail(authorId: string): Promise<AuthorDetail> {
       select
         ${series.id} as id,
         ${series.name} as name,
+        ${series.slug} as slug,
         ${series.totalVolumes} as total_volumes,
         count(distinct ${bookSeries.bookId}) as owned_count
       from ${series}
       inner join ${bookSeries} on ${bookSeries.seriesId} = ${series.id}
       inner join ${bookAuthors} on ${bookAuthors.bookId} = ${bookSeries.bookId}
       where ${bookAuthors.authorId} = ${authorId}
-      group by ${series.id}, ${series.name}, ${series.totalVolumes}
+      group by ${series.id}, ${series.name}, ${series.slug}, ${series.totalVolumes}
       order by ${series.name} asc
     `)
   ]);
@@ -375,6 +422,7 @@ export async function getAuthorDetail(authorId: string): Promise<AuthorDetail> {
       ? {
           id: String(row.series_id),
           name: String(row.series_name),
+          slug: row.series_slug ? String(row.series_slug) : "",
           totalVolumes: row.series_total_volumes == null
             ? null
             : normalizeCount(row.series_total_volumes as number | string),
@@ -394,6 +442,7 @@ export async function getAuthorDetail(authorId: string): Promise<AuthorDetail> {
   const relatedSeries: AuthorRelatedSeries[] = relatedSeriesRows.rows.map((row) => ({
     id: String(row.id),
     name: String(row.name),
+    slug: String(row.slug),
     totalVolumes:
       row.total_volumes == null
         ? null
@@ -531,12 +580,13 @@ export async function listSeries(): Promise<SeriesOption[]> {
     select
       ${series.id} as id,
       ${series.name} as name,
+      ${series.slug} as slug,
       ${series.totalVolumes} as total_volumes,
       count(distinct ${bookSeries.bookId}) as book_count,
       count(distinct case when ${bookSeries.seriesOrder} is not null then ${bookSeries.seriesOrder} end) as known_owned_count
     from ${series}
     left join ${bookSeries} on ${bookSeries.seriesId} = ${series.id}
-    group by ${series.id}, ${series.name}, ${series.totalVolumes}
+    group by ${series.id}, ${series.name}, ${series.slug}, ${series.totalVolumes}
     order by ${series.name} asc
   `);
 
@@ -551,6 +601,7 @@ export async function listSeries(): Promise<SeriesOption[]> {
     return {
       id: String(row.id),
       name: String(row.name),
+      slug: String(row.slug),
       totalVolumes,
       bookCount,
       ownedCount: bookCount,
@@ -563,18 +614,23 @@ export async function createSeries(
   name: string,
   totalVolumes: number | null | undefined
 ): Promise<SeriesOption> {
+  const db = createDb();
   await assertNameAvailable(series, series.name, name);
 
-  const db = createDb();
+  const seriesId = crypto.randomUUID();
+  const slug = await computeSeriesSlug(name, seriesId);
   const created = await db
     .insert(series)
     .values({
+      id: seriesId,
       name,
+      slug,
       totalVolumes: totalVolumes ?? null
     })
     .returning({
       id: series.id,
       name: series.name,
+      slug: series.slug,
       totalVolumes: series.totalVolumes
     });
 
@@ -590,27 +646,23 @@ export async function updateSeries(
   totalVolumes: number | null | undefined
 ): Promise<SeriesOption> {
   const db = createDb();
-  const existing = await db
-    .select({
-      id: series.id
-    })
-    .from(series)
-    .where(eq(series.id, seriesId))
-    .limit(1);
+  const seriesRecord = await resolveSeriesIdentifier(seriesId);
+  const internalId = seriesRecord.id;
 
-  assertFound(existing[0], "Series not found.");
-  await assertNameAvailable(series, series.name, name, seriesId);
+  await assertNameAvailable(series, series.name, name, internalId);
 
   const updated = await db
     .update(series)
     .set({
       name,
+      slug: await computeSeriesSlug(name, internalId),
       totalVolumes: totalVolumes ?? null
     })
-    .where(eq(series.id, seriesId))
+    .where(eq(series.id, internalId))
     .returning({
       id: series.id,
       name: series.name,
+      slug: series.slug,
       totalVolumes: series.totalVolumes
     });
 
@@ -629,30 +681,27 @@ export async function updateSeries(
 
 export async function deleteSeries(seriesId: string) {
   const db = createDb();
-  const existing = await db
-    .select({
-      id: series.id
-    })
-    .from(series)
-    .where(eq(series.id, seriesId))
-    .limit(1);
-
-  assertFound(existing[0], "Series not found.");
-  await db.delete(series).where(eq(series.id, seriesId));
+  const seriesRecord = await resolveSeriesIdentifier(seriesId);
+  await db.delete(series).where(eq(series.id, seriesRecord.id));
 }
 
 export async function getSeriesDetail(seriesId: string): Promise<SeriesDetail> {
   const db = createDb();
-  const summaryResult = await db.execute(sql`
-    select
-      ${series.id} as id,
-      ${series.name} as name,
-      ${series.totalVolumes} as total_volumes
-    from ${series}
-    where ${series.id} = ${seriesId}
-    limit 1
-  `);
-  const seriesRow = assertFound(summaryResult.rows[0], "Series not found.");
+  const summaryRows = await db
+    .select({
+      id: series.id,
+      name: series.name,
+      slug: series.slug,
+      totalVolumes: series.totalVolumes
+    })
+    .from(series)
+    .where(
+      isUuid(seriesId)
+        ? or(eq(series.id, seriesId), eq(series.slug, seriesId))
+        : eq(series.slug, seriesId)
+    )
+    .limit(1);
+  const seriesRow = assertFound(summaryRows[0], "Series not found.");
 
   const ownedResult = await db.execute(sql`
     select
@@ -664,7 +713,7 @@ export async function getSeriesDetail(seriesId: string): Promise<SeriesDetail> {
       ${bookSeries.seriesOrder} as series_order
     from ${bookSeries}
     inner join ${books} on ${books.id} = ${bookSeries.bookId}
-    where ${bookSeries.seriesId} = ${seriesId}
+    where ${bookSeries.seriesId} = ${seriesRow.id}
     order by
       case when ${bookSeries.seriesOrder} is null then 1 else 0 end asc,
       ${bookSeries.seriesOrder} asc,
@@ -684,9 +733,9 @@ export async function getSeriesDetail(seriesId: string): Promise<SeriesDetail> {
   }));
 
   const totalVolumes =
-    seriesRow.total_volumes == null
+    seriesRow.totalVolumes == null
       ? null
-      : normalizeCount(seriesRow.total_volumes as number | string);
+      : normalizeCount(seriesRow.totalVolumes as number | string);
   const knownOwnedNumbers = Array.from(
     new Set(
       ownedVolumes
@@ -703,6 +752,7 @@ export async function getSeriesDetail(seriesId: string): Promise<SeriesDetail> {
   return {
     id: String(seriesRow.id),
     name: String(seriesRow.name),
+    slug: String(seriesRow.slug),
     totalVolumes,
     ownedVolumes,
     missingVolumes,

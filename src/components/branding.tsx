@@ -25,19 +25,19 @@ export function Branding({ className, onClose, showSubtitle = true, isCollapsed 
       <div className="flex shrink-0 items-center justify-center">
         <Image 
           alt="Librarum Logo" 
-          height={42} 
+          height={48} 
+          width={48}
           src="/logo.svg" 
-          width={42}
           loading="eager"
           className={cn(
-            "brightness-110 transition-transform duration-500 group-hover:scale-110",
+            "brightness-110 transition-transform group-hover:rotate-6",
             isCollapsed && "h-9 w-9"
           )}
         />
       </div>
       {!isCollapsed && (
         <div className="flex min-w-0 flex-col justify-center duration-300 animate-in fade-in slide-in-from-left-2">
-          <p className="font-serif text-xl leading-none font-bold tracking-wider text-white transition-colors duration-300 group-hover:text-primary">Librarum</p>
+          <p className="mt-1 font-fredoka text-xl font-medium tracking-wider whitespace-nowrap text-[#F8EDD8] uppercase">Librarum</p>
           {showSubtitle && (
             <p className="mt-1 text-[10px] leading-none font-medium tracking-[0.2em] text-foreground uppercase">
               Özel Kütüphane
