@@ -102,7 +102,7 @@ export function ImportExportTab() {
       <section className="space-y-5">
         <div className="space-y-1.5">
             <h3 className="font-serif text-lg font-bold tracking-tight text-white">Dışa Aktar</h3>
-            <p className="max-w-xl text-[13px] leading-relaxed text-foreground/70">Kütüphane kayıtlarınızı yedeklemek veya başka ortamlara taşımak için dışa aktarın.</p>
+            <p className="max-w-xl text-[13px] leading-relaxed text-foreground/70">Koleksiyon kayıtlarınızı yedeklemek veya başka ortamlara taşımak için dışa aktarın.</p>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -118,7 +118,7 @@ export function ImportExportTab() {
                 </div>
                 </div>
                 <p className="text-sm leading-relaxed text-foreground">
-                    Kütüphane veritabanınızın tam kopyası. Başka bir kütüphaneye taşınmak veya tam yedek almak için uygundur.
+                    Koleksiyon veritabanınızın tam kopyası. Başka bir kütüphaneye taşınmak veya tam yedek almak için uygundur.
                 </p>
                 <Button 
                     className="h-9 w-full rounded-lg border-white/10 bg-white/3 text-[10px] font-bold tracking-widest text-white/70 uppercase transition-all hover:bg-white/8 hover:text-white" 
@@ -189,7 +189,7 @@ export function ImportExportTab() {
       <section className="space-y-5">
         <div className="space-y-1.5">
             <h3 className="font-serif text-lg font-bold tracking-tight text-white">İçe Aktar</h3>
-            <p className="max-w-xl text-[13px] leading-relaxed text-foreground/70">Dışarıdaki kayıtlarınızı kütüphanenize dahil edin. JSON mevcut arşivi değiştirir; CSV ise verilerinize ekleme yapar.</p>
+            <p className="max-w-xl text-[13px] leading-relaxed text-foreground/70">Dışarıdaki kayıtlarınızı koleksiyonunuza dahil edin. JSON mevcut arşivi değiştirir; CSV ise verilerinize ekleme yapar.</p>
         </div>
 
         <div className="group relative flex flex-col items-center justify-center gap-4 rounded-[2.5rem] border border-dashed border-white/5 bg-white/1 p-8 text-center transition-all duration-700 hover:border-white/10 hover:bg-white/2 lg:p-10">
@@ -200,7 +200,7 @@ export function ImportExportTab() {
           <div className="relative space-y-2">
             <p className="font-serif text-lg font-bold text-white">Dosya Yükle</p>
             <p className="mx-auto max-w-xl text-sm leading-relaxed text-foreground/60">
-              Bir JSON veya CSV dosyası seçin. Sistemimiz kayıtları kontrol ederek kütüphanenize işleyecektir.
+              Bir JSON veya CSV dosyası seçin. Sistemimiz kayıtları kontrol ederek koleksiyonunuza işleyecektir.
             </p>
           </div>
 
@@ -256,7 +256,7 @@ export function ImportExportTab() {
             <DialogDescription className="text-[13px] leading-relaxed text-foreground">
               {downloadError || error
                 ? "İşlem sırasında bir hata oluştu. Aşağıdaki detayları inceleyin."
-                : "Kayıtlar kütüphanenize başarıyla eklendi."}
+                : "Kayıtlar koleksiyonunuza başarıyla eklendi."}
             </DialogDescription>
           </DialogHeader>
           

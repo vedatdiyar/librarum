@@ -105,12 +105,12 @@ function EmptyState({
               ) : (
                 <Cpu className="mr-2 h-4 w-4" />
               )}
-              {isAnalyzing ? "Analiz Ediliyor..." : "Kütüphaneyi Analiz Et"}
+              {isAnalyzing ? "Analiz Ediliyor..." : "Koleksiyonu Analiz Et"}
             </Button>
           </div>
         }
 
-        description="Aylık kütüphane analiziniz henüz oluşturulmadı. Kütüphanenizdeki eksikleri ve yeni önerileri görmek için bir analiz başlatabilirsiniz."
+        description="Aylık koleksiyon analiziniz henüz oluşturulmadı. Koleksiyonunuzdaki eksikleri ve yeni önerileri görmek için bir analiz başlatabilirsiniz."
         kicker="Akıllı Öneriler"
         title={appPageTitles.aiSuggestions}
       />
@@ -147,7 +147,7 @@ function SectionCard<TItem>({
         <div className="space-y-4">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/5 bg-white/1 py-12 text-center text-foreground/80">
-               <p className="text-[11px] font-bold tracking-[0.2em] text-foreground uppercase">Her şey güncel. Yeni bir bulgu bulunamadı.</p>
+               <p className="text-[11px] font-bold tracking-[0.2em] text-foreground uppercase">Tüm veriler analiz edildi. Yeni bir sonuç bulunamadı.</p>
             </div>
           ) : (
             items.map((item, index) => {
@@ -213,7 +213,7 @@ function StatItemView({
         </span>
       </div>
       <p className="text-[13px] leading-relaxed text-foreground">
-        Oran: %{item.percentage.toFixed(1)} | Ortalama puan: {item.avgRating ?? "N/A"}
+        Oran: %{item.percentage.toFixed(1)} | Ortalama Puan: {item.avgRating ?? "—"}
       </p>
     </div>
   );
@@ -251,7 +251,7 @@ function SuggestionsContent({
             </Button>
             <Button onClick={onOpenHistory} variant="ghost" className="h-14 rounded-2xl border border-white/5 bg-white/5 px-8 text-[11px] font-bold tracking-widest text-white uppercase transition-all hover:border-white/10 hover:bg-white/10">
               <History className="mr-2 h-4 w-4" />
-              Arşiv
+              Analiz Geçmişi
             </Button>
           </div>
         }
@@ -260,7 +260,7 @@ function SuggestionsContent({
           ? `Bu rapor ${new Date(report.generatedAt).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })} tarihinde oluşturulmuş bir arşiv kaydıdır.` 
           : report.libraryPanorama.summary
         }
-        kicker={isHistorical ? "Arşiv Raporu" : "Akıllı Öneriler"}
+        kicker={isHistorical ? "Analiz Arşivi" : "Akıllı Öneriler"}
         title={appPageTitles.aiSuggestions}
       />
 
@@ -272,7 +272,7 @@ function SuggestionsContent({
                </div>
                <div>
                   <h4 className="font-serif text-xl font-bold text-white">Geçmiş Analiz Görüntüleniyor</h4>
-                  <p className="text-[13px] text-foreground">Şu anki kütüphane durumunuz bu rapordan farklı olabilir.</p>
+                  <p className="text-[13px] text-foreground">Şu anki koleksiyon durumunuz bu rapordan farklı olabilir.</p>
                </div>
             </div>
          </div>
@@ -284,7 +284,7 @@ function SuggestionsContent({
             {[
               { label: "Analiz Tarihi", value: new Date(report.generatedAt).toLocaleDateString("tr-TR"), icon: Clock },
               { label: "Öneri Sayısı", value: report.curatedSelection.length + report.nextMonthRoute.connectedBooks.length, icon: Files },
-              { label: "Kütüphane Durumu", value: report.libraryPanorama.unreadStats.trendDescription.split(".")[0], icon: BarChart3 },
+              { label: "Koleksiyon Durumu", value: report.libraryPanorama.unreadStats.trendDescription.split(".")[0], icon: BarChart3 },
             ].map((stat) => (
               <div key={stat.label} className="glass-panel flex items-center gap-4 rounded-3xl border-white/5 bg-white/1 p-6 transition-all hover:border-white/10">
                 <div className="rounded-xl bg-primary/5 p-3 text-primary">
@@ -315,11 +315,11 @@ function SuggestionsContent({
           title={report.nextMonthRoute.theme}
         />
         <SectionCard
-          description="Türlere göre kitaplık dağılımı"
+          description="Türlere göre koleksiyon dağılımı"
           icon={BarChart3}
           items={report.libraryPanorama.categoryBreakdown}
           renderItem={(item) => <StatItemView item={item} />}
-          title="Kütüphane Panoraması"
+          title="Analiz Özeti"
         />
         <SectionCard
           description="Gelecek ay için önerilen adımlar"

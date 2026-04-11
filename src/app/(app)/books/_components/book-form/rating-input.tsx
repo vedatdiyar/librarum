@@ -69,7 +69,7 @@ export function RatingInput({
 
               {/* Star Fill (Letterboxd Orange/Gold) */}
               <div
-                className="absolute inset-0 overflow-hidden text-[#ff8000] transition-all duration-300 ease-out"
+                className="absolute inset-0 overflow-hidden text-primary transition-all duration-300 ease-out"
                 style={{ width: `${fillPercentage}%` }}
               >
                 <Star
@@ -80,7 +80,7 @@ export function RatingInput({
 
               {/* Visual "Pulse" or subtle glow for the hovered value */}
               {hoveredValue !== null && hoveredValue >= index && (
-                <div className="absolute inset-0 -z-10 rounded-full bg-[#ff8000]/5" />
+                <div className="absolute inset-0 -z-10 rounded-full bg-primary/5" />
               )}
             </button>
           );
@@ -110,7 +110,7 @@ export function RatingInput({
             <div className={cn(
                 "flex h-8 items-center gap-2 rounded-full border px-4 transition-all duration-500",
                 value 
-                    ? "border-[#ff8000]/20 bg-[#ff8000]/5 text-[#ff8000]" 
+                    ? "border-primary/20 bg-primary/5 text-primary" 
                     : "border-white/5 bg-white/2 text-white/20"
             )}>
                 <span className="text-[10px] font-bold tracking-[0.2em] uppercase">

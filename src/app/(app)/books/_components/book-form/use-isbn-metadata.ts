@@ -89,9 +89,9 @@ export function useIsbnMetadata(options: {
           signal: metadataAbortRef.current.signal
         });
         const result = await readJsonResponse<IsbnMetadataResponse>(response);
-        lastFetchedIsbnRef.current = normalizedIsbn;
 
         if (!result.found) {
+          lastFetchedIsbnRef.current = null;
           setMetadataState({
             status: "not_found",
             source: null,
@@ -102,6 +102,7 @@ export function useIsbnMetadata(options: {
           return;
         }
 
+        lastFetchedIsbnRef.current = normalizedIsbn;
         options.onMetadataFound(result.metadata, result.source, result.coverOptions);
         const hasAuthors = result.metadata.authors.length > 0;
 
@@ -119,6 +120,7 @@ export function useIsbnMetadata(options: {
           return;
         }
 
+        lastFetchedIsbnRef.current = null;
         setMetadataState({
           status: "error",
           source: null,

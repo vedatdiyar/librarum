@@ -7,6 +7,8 @@ import {
   books,
   categories,
   createDb,
+  publishers,
+  publisherAliases,
   series
 } from "@/db";
 import type {
@@ -22,7 +24,9 @@ import type {
   SeriesDetail,
   SeriesListItem,
   SeriesOwnedVolume,
-  SeriesOption
+  SeriesOption,
+  PublisherOption,
+  PublisherResolutionResponse
 } from "@/types";
 import { ApiError, assertFound } from "@/server/api";
 import {
@@ -31,6 +35,7 @@ import {
   normalizeCount,
   normalizeFloat
 } from "@/lib/shared";
+import { toCoverDeliveryUrl } from "@/server/r2";
 import {
   isAuthorNameAvailable,
   resolveAuthorIdentity,
@@ -144,19 +149,28 @@ function computeCompletionPercentage(
 export async function listAuthors(query: string | null | undefined): Promise<AuthorListItem[]> {
   const db = createDb();
   const normalizedQuery = query?.trim() ?? "";
-  const likePattern = `%${normalizedQuery}%`;
-  const likeClause = normalizedQuery
-    ? sql`where (
-        ${authors.name} ilike ${likePattern}
-        or exists (
-          select 1
-          from ${authorAliases}
-          where ${authorAliases.authorId} = ${authors.id}
-            and ${authorAliases.name} ilike ${likePattern}
-        )
-      )`
-    : sql``;
-  const limitClause = normalizedQuery ? sql`limit 20` : sql``;
+  
+  // Tokenize the query to search for individual parts (e.g. "Fyodor" and "Dostoyevski")
+  const queryTokens = normalizedQuery
+    .split(/[\s.]+/)
+    .filter(token => token.length >= 2);
+
+  let likeClause = sql``;
+  if (queryTokens.length > 0) {
+    // Search for authors that match at least two tokens if available, or just one if only one exists
+    const conditions = queryTokens.map(token => {
+      const p = `%${token}%`;
+      return sql`(${authors.name} ilike ${p} or exists (select 1 from ${authorAliases} where ${authorAliases.authorId} = ${authors.id} and ${authorAliases.name} ilike ${p}))`;
+    });
+    
+    // Join with AND to narrow down results (e.g. must have both Fyodor and Dostoyevski)
+    likeClause = sql`where ${sql.join(conditions, sql` and `)}`;
+  } else if (normalizedQuery) {
+    // Fallback for short queries
+    const p = `%${normalizedQuery}%`;
+    likeClause = sql`where (${authors.name} ilike ${p} or exists (select 1 from ${authorAliases} where ${authorAliases.authorId} = ${authors.id} and ${authorAliases.name} ilike ${p}))`;
+  }
+
   const result = await db.execute(sql`
     select
       ${authors.id} as id,
@@ -170,16 +184,33 @@ export async function listAuthors(query: string | null | undefined): Promise<Aut
     ${likeClause}
     group by ${authors.id}, ${authors.name}, ${authors.slug}
     order by ${authors.name} asc
-    ${limitClause}
+    limit 40
   `);
 
-  return result.rows.map((row) => ({
+  const items = result.rows.map((row) => ({
     id: String(row.id),
     name: String(row.name),
     slug: String(row.slug),
     bookCount: normalizeCount(row.book_count as number | string),
     averageRating: toNullableFloat(row.average_rating as number | string | null)
   }));
+
+  // If we have a query, use our smart matching to rank the best results at the top
+  if (normalizedQuery && items.length > 0) {
+    const { isAutoMergeMatch, normalizeAuthorNameKey } = await import("./author-identity");
+    
+    // Sort items by similarity to the query
+    // This is optional but helps when there are many similar authors
+    return items.sort((a, b) => {
+      const aMatch = isAutoMergeMatch(normalizeAuthorNameKey(a.name), normalizeAuthorNameKey(normalizedQuery));
+      const bMatch = isAutoMergeMatch(normalizeAuthorNameKey(b.name), normalizeAuthorNameKey(normalizedQuery));
+      if (aMatch && !bMatch) return -1;
+      if (!aMatch && bMatch) return 1;
+      return 0;
+    });
+  }
+
+  return items;
 }
 
 export async function createAuthor(name: string): Promise<AuthorOption> {
@@ -337,7 +368,7 @@ export async function getAuthorDetail(authorId: string): Promise<AuthorDetail> {
     id: String(row.id),
     title: String(row.title),
     slug: String(row.slug),
-    coverUrl: row.cover_url ? String(row.cover_url) : null,
+    coverUrl: toCoverDeliveryUrl(row.cover_url ? String(row.cover_url) : null),
     status: String(row.status) as AuthorDetailBook["status"],
     rating: row.rating == null ? null : normalizeFloat(row.rating as number | string),
     series: row.series_id
@@ -426,6 +457,70 @@ export async function deleteCategory(categoryId: string) {
 
   assertFound(existing[0], "Category not found.");
   await db.delete(categories).where(eq(categories.id, categoryId));
+}
+
+export async function listPublishers(query: string | null | undefined): Promise<PublisherOption[]> {
+  const db = createDb();
+  const normalizedQuery = query?.trim() ?? "";
+  
+  const queryTokens = normalizedQuery
+    .split(/[\s.]+/)
+    .filter(token => token.length >= 2);
+
+  let likeClause = sql``;
+  if (queryTokens.length > 0) {
+    const conditions = queryTokens.map(token => {
+      const p = `%${token}%`;
+      return sql`(${publishers.name} ilike ${p} or exists (select 1 from ${publisherAliases} where ${publisherAliases.publisherId} = ${publishers.id} and ${publisherAliases.name} ilike ${p}))`;
+    });
+    likeClause = sql`where ${sql.join(conditions, sql` and `)}`;
+  } else if (normalizedQuery) {
+    const p = `%${normalizedQuery}%`;
+    likeClause = sql`where (${publishers.name} ilike ${p} or exists (select 1 from ${publisherAliases} where ${publisherAliases.publisherId} = ${publishers.id} and ${publisherAliases.name} ilike ${p}))`;
+  }
+
+  const result = await db.execute(sql`
+    select
+      ${publishers.id} as id,
+      ${publishers.name} as name,
+      ${publishers.slug} as slug
+    from ${publishers}
+    ${likeClause}
+    order by ${publishers.name} asc
+    limit 40
+  `);
+
+  const items = result.rows.map((row) => ({
+    id: String(row.id),
+    name: String(row.name),
+    slug: String(row.slug)
+  }));
+
+  if (normalizedQuery && items.length > 0) {
+    const { isAutoMergeMatch, normalizePublisherNameKey } = await import("./publisher-identity");
+    return items.sort((a, b) => {
+      const aMatch = isAutoMergeMatch(normalizePublisherNameKey(a.name), normalizePublisherNameKey(normalizedQuery));
+      const bMatch = isAutoMergeMatch(normalizePublisherNameKey(b.name), normalizePublisherNameKey(normalizedQuery));
+      if (aMatch && !bMatch) return -1;
+      if (!aMatch && bMatch) return 1;
+      return 0;
+    });
+  }
+
+  return items;
+}
+
+export async function createPublisher(name: string): Promise<PublisherOption> {
+  const db = createDb();
+  const { resolveOrCreatePublisher } = await import("./publisher-identity");
+  const resolution = await resolveOrCreatePublisher(db, name);
+  return resolution.status === "suggested-merge" ? resolution.suggestedPublisher : resolution.publisher;
+}
+
+export async function resolvePublisherName(name: string): Promise<PublisherResolutionResponse> {
+  const db = createDb();
+  const { resolveOrCreatePublisher } = await import("./publisher-identity");
+  return resolveOrCreatePublisher(db, name);
 }
 
 
@@ -580,7 +675,7 @@ export async function getSeriesDetail(seriesId: string): Promise<SeriesDetail> {
     bookId: String(row.book_id),
     slug: String(row.slug),
     title: String(row.title),
-    coverUrl: row.cover_url ? String(row.cover_url) : null,
+    coverUrl: toCoverDeliveryUrl(row.cover_url ? String(row.cover_url) : null),
     seriesOrder:
       row.series_order == null
         ? null

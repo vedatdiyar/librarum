@@ -24,7 +24,13 @@ export const BOOK_FORM_SCHEMA = z
     subtitle: z.string().trim().optional(),
     authorIds: z.array(z.string().uuid()).default([]),
     authorNames: z.array(z.string().trim().min(1)).default([]),
-    publisher: z.string().trim().optional(),
+    publisher: z
+      .union([
+        z.object({ id: z.string().uuid() }),
+        z.object({ name: z.string().trim().min(1) })
+      ])
+      .nullable()
+      .optional(),
     publicationYear: z
       .string()
       .trim()
@@ -135,7 +141,7 @@ export function defaultValuesFromBook(book?: BookDetail | null): BookFormValues 
     subtitle: book?.subtitle ?? "",
     authorIds: book?.authors.map((author) => author.id) ?? [],
     authorNames: [],
-    publisher: book?.publisher ?? "",
+    publisher: book?.publisher ? { id: book.publisher.id } : null,
     publicationYear: book?.publicationYear?.toString() ?? "",
     pageCount: book?.pageCount?.toString() ?? "",
     categoryId: book?.category?.id ?? "",
@@ -163,7 +169,7 @@ export function defaultValuesFromBook(book?: BookDetail | null): BookFormValues 
 export function buildBookPayload(values: BookFormValues): BookWriteInput {
   const isbn = values.isbn ?? "";
   const subtitle = values.subtitle ?? "";
-  const publisher = values.publisher ?? "";
+  const publisher = values.publisher;
   const locationName = values.locationName ?? "";
   const shelfRow = values.shelfRow ?? "";
   const personalNote = values.personalNote ?? "";
@@ -182,7 +188,7 @@ export function buildBookPayload(values: BookFormValues): BookWriteInput {
       ...(values.authorNames ?? []).map((name) => ({ name }))
     ],
     isbn: isbn.trim() || null,
-    publisher: publisher.trim() || null,
+    publisher: publisher || null,
     publicationYear: toOptionalInteger(values.publicationYear),
     pageCount: toOptionalInteger(values.pageCount),
     status: values.status,

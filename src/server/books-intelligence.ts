@@ -2,6 +2,7 @@ import { and, asc, desc, eq, inArray, ne, sql } from "drizzle-orm";
 import { authors, bookAuthors, books, createDb } from "@/db";
 import { normalizeIsbn } from "@/lib/shared";
 export { normalizeIsbn };
+import { normalizeBibliographicMetadata } from "@/server/bibliographic-normalizer";
 import type {
   CreateBookResponse,
   DuplicateBookSummary,
@@ -15,6 +16,7 @@ import type {
   IsbnMetadataSource
 } from "@/types";
 import { ApiError } from "@/server/api";
+import { toCoverDeliveryUrl } from "@/server/r2";
 
 const DUPLICATE_SUGGESTIONS: DuplicateSuggestion[] = [
   "increase_copy",
@@ -476,19 +478,33 @@ function hasEnrichment(metadata: IsbnMetadata) {
   );
 }
 
-async function fetchJson(url: string) {
-  const response = await fetch(url, {
-    cache: "no-store",
-    headers: {
-      accept: "application/json"
+async function fetchJson(url: string, timeoutMs = 10_000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+      headers: {
+        accept: "application/json"
+      },
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      throw new Error(`External fetch failed with status ${response.status}`);
     }
-  });
 
-  if (!response.ok) {
-    throw new Error(`External fetch failed with status ${response.status}`);
+    return response.json();
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("External fetch timed out.");
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  return response.json();
 }
 
 async function fetchOpenLibraryAuthorNamesByKeys(authorKeys: string[] | undefined) {
@@ -855,16 +871,21 @@ export async function fetchMetadataByIsbn(isbn: string): Promise<IsbnMetadataRes
       const metadata = openLibraryMetadata
         ? mergeMetadata(googleMetadata, openLibraryMetadata)
         : googleMetadata;
+      const normalizedMetadata = await normalizeBibliographicMetadata({
+        isbn: normalizedIsbn,
+        metadata,
+        source: "google_books"
+      });
 
       return {
         found: true,
         source: "google_books",
-        metadata,
+        metadata: normalizedMetadata,
         coverOptions: buildCoverOptions({
           googleMetadata,
           openLibraryMetadata,
           selectedSource: "google_books",
-          selectedCoverUrl: metadata.coverMetadataUrl
+          selectedCoverUrl: normalizedMetadata.coverMetadataUrl
         })
       };
     }
@@ -880,15 +901,21 @@ export async function fetchMetadataByIsbn(isbn: string): Promise<IsbnMetadataRes
     );
 
     if (openLibraryMetadata) {
+      const normalizedMetadata = await normalizeBibliographicMetadata({
+        isbn: normalizedIsbn,
+        metadata: openLibraryMetadata,
+        source: "open_library"
+      });
+
       return {
         found: true,
         source: "open_library",
-        metadata: openLibraryMetadata,
+        metadata: normalizedMetadata,
         coverOptions: buildCoverOptions({
           googleMetadata,
           openLibraryMetadata,
           selectedSource: "open_library",
-          selectedCoverUrl: openLibraryMetadata.coverMetadataUrl
+          selectedCoverUrl: normalizedMetadata.coverMetadataUrl
         })
       };
     }
@@ -941,7 +968,7 @@ async function loadDuplicateSummary(bookId: string): Promise<DuplicateBookSummar
     isbn: existingBook.isbn,
     copyCount: existingBook.copyCount,
     status: existingBook.status,
-    coverUrl: existingBook.coverUrl
+    coverUrl: toCoverDeliveryUrl(existingBook.coverUrl)
   };
 }
 

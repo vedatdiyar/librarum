@@ -46,9 +46,9 @@
   --radius-2xl: calc(var(--radius) + 12px);
   --radius-3xl: calc(var(--radius) + 20px);
 
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --shadow-panel: 0 12px 48px -12px rgba(0, 0, 0, 0.5);
-  --shadow-shell: 0 24px 64px -16px rgba(0, 0, 0, 0.7);
+  --shadow-glass: 0 8px 32px 0 #0000005e;
+  --shadow-panel: 0 12px 48px -12px #00000080;
+  --shadow-shell: 0 24px 64px -16px #000000b3;
 
   --animate-spin-slow: spin 3s linear infinite;
 }
@@ -61,23 +61,23 @@
   :root {
     --background: #171717;
     --foreground: #f8f9fa;
-    --card: rgba(13, 15, 17, 0.7);
+    --card: #1a1a1a;
     --card-foreground: #f8f9fa;
-    --popover: rgba(13, 15, 17, 0.95);
+    --popover: #0d0f11f2;
     --popover-foreground: #f8f9fa;
     --primary: #c5a059;
     --primary-hover: #d4af37;
     --primary-foreground: #050607;
-    --secondary: rgba(30, 35, 40, 0.5);
+    --secondary: #1e232880;
     --secondary-foreground: #e9ecef;
-    --muted: rgba(20, 25, 30, 0.5);
+    --muted: #14191e80;
     --muted-foreground: #adb5bd;
-    --accent: rgba(197, 160, 89, 0.1);
+    --accent: #c5a0591a;
     --accent-foreground: #c5a059;
     --destructive: #ff4d4d;
     --destructive-foreground: #ffffff;
-    --border: rgba(255, 255, 255, 0.08);
-    --input: rgba(255, 255, 255, 0.05);
+    --border: #ffffff14;
+    --input: #ffffff0d;
     --ring: #c5a059;
     
 
@@ -107,8 +107,8 @@
     @apply min-h-screen bg-background text-foreground antialiased;
     font-family: var(--font-sans);
     background-image: 
-      radial-gradient(circle at 20% 20%, rgba(197, 160, 89, 0.05) 0%, transparent 40%),
-      radial-gradient(circle at 80% 80%, rgba(197, 160, 89, 0.03) 0%, transparent 40%),
+      radial-gradient(circle at 20% 20%, #c5a0590d 0%, transparent 40%),
+      radial-gradient(circle at 80% 80%, #c5a05908 0%, transparent 40%),
       linear-gradient(to bottom, #050607, #0a0c0e);
     background-attachment: fixed;
     /* Use clip instead of hidden to prevent horizontal scroll without breaking sticky */
@@ -155,7 +155,7 @@
   }
 
   .glass-panel-hover {
-    @apply hover:border-white/20 hover:bg-white/8 hover:shadow-[0_8px_48px_0_rgba(197,160,89,0.15)] hover:-translate-y-0.5;
+    @apply hover:border-white/20 hover:bg-white/8 hover:shadow-[0_8px_48px_0_#c5a05926] hover:-translate-y-0.5;
   }
 
   .luminous-text {
@@ -177,11 +177,11 @@
 
 @layer utilities {
   .shadow-glow {
-    box-shadow: 0 0 0 1px rgba(197, 160, 89, 0.16), 0 0 24px rgba(197, 160, 89, 0.22), 0 0 48px rgba(197, 160, 89, 0.12);
+    box-shadow: 0 0 0 1px #c5a05929, 0 0 24px #c5a05938, 0 0 48px #c5a0591f;
   }
 
   .markdown-content {
-    color: rgba(248, 249, 250, 0.92);
+    color: #f8f9faeb;
   }
 
   .markdown-content :is(h1, h2, h3, h4, h5, h6, p, ul, ol, blockquote, pre, code) {
@@ -223,14 +223,14 @@
       width: 5px;
     }
     &::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.02);
+      background: #ffffff05;
     }
     &::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.05);
+      background: #ffffff0d;
       border-radius: 10px;
     }
     &::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: #ffffff1a;
     }
   }
 
@@ -254,5 +254,24 @@
 
   .page-metric-value {
     @apply font-serif text-4xl font-bold tracking-tighter text-white;
+  }
+
+  .ambient-container {
+    @apply fixed inset-0 -z-50 overflow-hidden pointer-events-none;
+  }
+
+  .ambient-glow {
+    @apply absolute inset-0 opacity-20 blur-[120px] saturate-150 transition-opacity duration-1000;
+  }
+
+  .book-card-shadow {
+    box-shadow: 
+      0 20px 50px #00000080,
+      0 10px 20px #0000004d,
+      -5px 0 15px #00000033;
+  }
+
+  .text-balance {
+    text-wrap: balance;
   }
 }

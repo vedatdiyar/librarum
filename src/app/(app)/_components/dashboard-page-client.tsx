@@ -7,7 +7,6 @@ import { PageHero } from "@/components/page-hero";
 import { appPageTitles } from "@/lib/navigation";
 import { useDashboardData } from "../_hooks/use-dashboard-data";
 import {
-  AiSuggestionsWidget,
   BacklogWidget,
   CategoryDistributionWidget,
   FavoriteAuthorsWidget,
@@ -173,9 +172,6 @@ export function DashboardPageClient() {
         </div>
         <div className="min-w-0 delay-350 duration-300 animate-in fade-in slide-in-from-bottom-4 lg:col-span-6">
           <FavoriteAuthorsWidget favoriteAuthorsQuery={favoriteAuthorsQuery} />
-        </div>
-        <div className="min-w-0 delay-400 duration-300 animate-in fade-in slide-in-from-bottom-4 lg:col-span-12">
-          <AiSuggestionsWidget />
         </div>
       </div>
     </section>

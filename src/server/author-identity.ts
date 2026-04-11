@@ -64,23 +64,26 @@ function transliterateCyrillic(value: string) {
     .join("");
 }
 
-function normalizeAuthorNameKey(name: string) {
-  return normalizeText(transliterateCyrillic(name.toLocaleLowerCase("tr-TR")));
+export function normalizeAuthorNameKey(name: string) {
+  // Transliterate then perform robust normalization
+  const transliterated = transliterateCyrillic(name.toLocaleLowerCase("tr-TR"));
+  
+  // Standardize Turkish characters before they get stripped or messed up by generic NFD
+  // In TR locale: İ -> i, I -> ı. We want everything to be 'i' if possible for maximum matching
+  return normalizeText(transliterated)
+    .replace(/ı/g, "i") // Double check normalization side
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function tokenizeAuthorName(name: string) {
   return normalizeAuthorNameKey(name)
     .split(" ")
-    .map((part) => part.trim())
     .filter(Boolean);
 }
 
 function buildCompactAuthorName(name: string) {
-  const parts = name
-    .trim()
-    .split(/\s+/)
-    .map((part) => part.trim())
-    .filter(Boolean);
+  const parts = tokenizeAuthorName(name);
 
   if (parts.length < 3) {
     return null;
@@ -131,7 +134,7 @@ function countSharedTokens(leftTokens: string[], rightTokens: string[]) {
   return matchCount;
 }
 
-function isAutoMergeMatch(leftName: string, rightName: string) {
+export function isAutoMergeMatch(leftName: string, rightName: string) {
   if (leftName === rightName) {
     return true;
   }
@@ -143,28 +146,52 @@ function isAutoMergeMatch(leftName: string, rightName: string) {
     return false;
   }
 
-  if (leftTokens.length !== rightTokens.length) {
+  // Token weights: help distinguish between "Real Matches" and "Random common names"
+  const isTokenMatch = (t1: string, t2: string) => {
+    if (t1 === t2) return true;
+    // Initial handling: "m" matches "mihaylovic"
+    if (t1.length === 1 && t2.startsWith(t1)) return true;
+    if (t2.length === 1 && t1.startsWith(t2)) return true;
+    // Tiny typo handling for longer names
+    if (t1.length > 4 && t2.length > 4 && levenshteinDistance(t1, t2) <= 1) return true;
     return false;
+  };
+
+  // If pairwise order matches (most common case)
+  if (leftTokens.length === rightTokens.length) {
+    const allMatch = leftTokens.every((token, i) => isTokenMatch(token, rightTokens[i]));
+    if (allMatch) return true;
   }
 
-  if (leftTokens.length === 1) {
-    const distance = levenshteinDistance(leftTokens[0], rightTokens[0]);
-    return leftTokens[0].length >= 6 && distance <= 2;
-  }
+  // Position-independent checks (e.g. "Dostoyevski, Fyodor" vs "Fyodor Dostoyevski")
+  const findMatches = (source: string[], target: string[]) => {
+    const tPool = [...target];
+    let count = 0;
+    source.forEach(sToken => {
+      const idx = tPool.findIndex(tToken => isTokenMatch(sToken, tToken));
+      if (idx !== -1) {
+        count++;
+        tPool.splice(idx, 1);
+      }
+    });
+    return count;
+  };
 
-  let totalDistance = 0;
+  const sharedCount = findMatches(leftTokens, rightTokens);
+  const minRequired = Math.min(leftTokens.length, rightTokens.length);
 
-  for (let index = 0; index < leftTokens.length; index += 1) {
-    const distance = levenshteinDistance(leftTokens[index], rightTokens[index]);
-
-    if (distance > 2) {
-      return false;
+  // If everything in the shorter name is found in the longer name, it's a match
+  if (sharedCount >= minRequired && Math.abs(leftTokens.length - rightTokens.length) <= 1) {
+    // Ensure the first and last "significant" parts match (avoiding false positives like "J. Doe" vs "A. Doe")
+    const longestLeft = [...leftTokens].sort((a, b) => b.length - a.length)[0];
+    const longestRight = [...rightTokens].sort((a, b) => b.length - a.length)[0];
+    
+    if (isTokenMatch(longestLeft, longestRight)) {
+      return true;
     }
-
-    totalDistance += distance;
   }
 
-  return totalDistance <= Math.max(2, leftTokens.length);
+  return false;
 }
 
 function isSuggestedMergeMatch(leftName: string, rightName: string) {
@@ -175,13 +202,38 @@ function isSuggestedMergeMatch(leftName: string, rightName: string) {
     return false;
   }
 
-  const sharedTokens = countSharedTokens(leftTokens, rightTokens);
-  const overlapRatio = sharedTokens / Math.max(leftTokens.length, rightTokens.length);
-  const sharesBoundaryToken =
-    leftTokens[0] === rightTokens[0] ||
-    leftTokens[leftTokens.length - 1] === rightTokens[rightTokens.length - 1];
+  // Helper for initial-aware token matching
+  const isTokenMatch = (t1: string, t2: string) => {
+    if (t1 === t2) return true;
+    if (t1.length === 1 && t2.startsWith(t1)) return true;
+    if (t2.length === 1 && t1.startsWith(t2)) return true;
+    // Allow small typos in longer tokens
+    if (t1.length > 3 && t2.length > 3 && levenshteinDistance(t1, t2) <= 1) return true;
+    return false;
+  };
 
-  return overlapRatio >= 0.66 && sharesBoundaryToken;
+  const countMatches = () => {
+    const rightPool = [...rightTokens];
+    let matchCount = 0;
+    leftTokens.forEach((token) => {
+      const index = rightPool.findIndex((candidate) => isTokenMatch(token, candidate));
+      if (index >= 0) {
+        matchCount += 1;
+        rightPool.splice(index, 1);
+      }
+    });
+    return matchCount;
+  };
+
+  const sharedCount = countMatches();
+  const maxTokens = Math.max(leftTokens.length, rightTokens.length);
+  const overlapRatio = sharedCount / maxTokens;
+  
+  const sharesBoundaryToken =
+    isTokenMatch(leftTokens[0], rightTokens[0]) ||
+    isTokenMatch(leftTokens[leftTokens.length - 1], rightTokens[rightTokens.length - 1]);
+
+  return overlapRatio >= 0.6 && sharesBoundaryToken;
 }
 
 async function loadAuthorCandidates(db: DbExecutor) {
@@ -308,9 +360,9 @@ export async function resolveAuthorIdentity(
 
   if (suggestedCandidate) {
     return {
-      status: "suggested-merge",
+      status: "auto-merge",
       inputName: trimmedName,
-      suggestedAuthor: suggestedCandidate.author
+      author: suggestedCandidate.author
     };
   }
 

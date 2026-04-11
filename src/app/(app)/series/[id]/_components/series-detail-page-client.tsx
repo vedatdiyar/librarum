@@ -27,7 +27,7 @@ function BookThumb({ title, coverUrl }: { title: string; coverUrl: string | null
   if (coverUrl) {
     return (
       <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/2 shadow-xl transition-transform duration-500 group-hover:scale-110">
-        <Image alt="" className="object-cover opacity-30 blur-lg" fill src={coverUrl} />
+        <Image alt="" className="object-cover opacity-30 blur-lg" fill sizes="64px" src={coverUrl} />
         <Image alt={`${title} cover`} className="relative object-contain" fill sizes="64px" src={coverUrl} />
       </div>
     );
@@ -78,12 +78,12 @@ export function SeriesDetailPageClient({ seriesId }: { seriesId: string }) {
     return (
       <section className="pt-24 text-center">
         <div className="glass-panel rounded-[40px] border-rose-400/20 bg-rose-400/5 p-12">
-            <h2 className="mb-4 font-serif text-3xl font-bold text-white">Dizi Eşitleme Hatası</h2>
+            <h2 className="mb-4 font-serif text-3xl font-bold text-white">Seri Verisi Yükleme Hatası</h2>
             <p className="mx-auto max-w-md text-sm text-foreground italic">
-                {detailQuery.error instanceof Error ? detailQuery.error.message : "Bu dizi sürekliliğine ait arşiv kaydı alınamadı."}
+                {detailQuery.error instanceof Error ? detailQuery.error.message : "Bu seriye ait bilgiler alınamadı."}
             </p>
             <Button asChild className="mt-8 rounded-xl bg-white text-black transition-all hover:bg-primary" variant="ghost">
-                <Link href="/series">Sürekliliklere Dön</Link>
+                <Link href="/series">Seri Listesine Dön</Link>
             </Button>
         </div>
       </section>
@@ -98,14 +98,14 @@ export function SeriesDetailPageClient({ seriesId }: { seriesId: string }) {
         <Button asChild variant="ghost" className="group rounded-xl px-0 hover:bg-transparent">
             <Link href="/series" className="flex items-center gap-2 text-foreground transition-colors group-hover:text-primary">
                 <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-                <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Arşivsel Süreklilikler</span>
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Tüm Seriler</span>
             </Link>
         </Button>
       </div>
 
       <PageHero
-        description="Bu sürekli çok ciltli arşivin detaylı bir eşlemesi. Edinim kilometre taşlarını takip edin, parçalanmış dizileri tanımlayın ve arşiv tamamlanmasına yönelik eşitlemeyi izleyin."
-        kicker="Süreklilik Protokolü"
+        description="Bu seri kapsamındaki tüm kitaplar. Serinin tamamlanma durumunu ve eksik ciltleri buradan takip edebilirsiniz."
+        kicker="Seri Detayı"
         title={detail.name}
       />
 
@@ -114,8 +114,8 @@ export function SeriesDetailPageClient({ seriesId }: { seriesId: string }) {
             <div className="glass-panel overflow-hidden rounded-[40px] border-white/5 bg-white/1 shadow-2xl delay-300 duration-1000 animate-in fade-in fill-mode-both slide-in-from-bottom-12">
                 <div className="flex flex-col items-start justify-between gap-8 border-b border-white/3 bg-white/1 px-8 py-10 md:flex-row md:items-center md:px-12">
                     <div>
-                        <h3 className="font-serif text-3xl font-bold tracking-tight text-white">Arşivlenmiş Parçalar</h3>
-                        <p className="mt-2 text-[13px] leading-relaxed text-foreground italic">Şu anda yerel matriste bulunan ardışık girişler.</p>
+                        <h3 className="font-serif text-3xl font-bold tracking-tight text-white">Koleksiyondaki Ciltler</h3>
+                        <p className="mt-2 text-[13px] leading-relaxed text-foreground italic">Koleksiyonunuzda bulunan seri kitapları.</p>
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-8 md:gap-12">
@@ -128,7 +128,7 @@ export function SeriesDetailPageClient({ seriesId }: { seriesId: string }) {
                                   <LibraryBig className="h-5.5 w-5.5" />
                                 </div>
                               </div>
-                              <p className="line-clamp-1 text-[10px] font-bold tracking-[0.2em] text-primary/80 uppercase">Hedef Derinlik</p>
+                              <p className="line-clamp-1 text-[10px] font-bold tracking-[0.2em] text-primary/80 uppercase">Toplam Cilt Sayısı</p>
                             </div>
                           </div>
 
@@ -141,7 +141,7 @@ export function SeriesDetailPageClient({ seriesId }: { seriesId: string }) {
                                   <History className="h-5.5 w-5.5" />
                                 </div>
                               </div>
-                              <p className="line-clamp-1 text-[10px] font-bold tracking-[0.2em] text-primary/80 uppercase">Arşivlenen Cilt</p>
+                              <p className="line-clamp-1 text-[10px] font-bold tracking-[0.2em] text-primary/80 uppercase">Mevcut Cilt Sayısı</p>
                             </div>
                           </div>
 
@@ -154,7 +154,7 @@ export function SeriesDetailPageClient({ seriesId }: { seriesId: string }) {
                                   <Trophy className="h-5.5 w-5.5" />
                                 </div>
                               </div>
-                              <p className="line-clamp-1 text-[10px] font-bold tracking-[0.2em] text-primary/80 uppercase">Eşitleme Oranı</p>
+                              <p className="line-clamp-1 text-[10px] font-bold tracking-[0.2em] text-primary/80 uppercase">Tamamlanma Oranı</p>
                             </div>
                           </div>
                     </div>
@@ -164,7 +164,7 @@ export function SeriesDetailPageClient({ seriesId }: { seriesId: string }) {
                     {detail.ownedVolumes.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-24 text-center text-foreground/40">
                             <LibraryBig className="mb-6 h-12 w-12 opacity-20" />
-                            <p className="font-serif text-xl font-bold italic">Hiçbir ardışık parça arşivlenmedi.</p>
+                            <p className="font-serif text-xl font-bold italic">Bu seriden henüz bir kitap eklenmemiş.</p>
                         </div>
                     ) : (
                         <div className="grid gap-4">
@@ -204,19 +204,19 @@ export function SeriesDetailPageClient({ seriesId }: { seriesId: string }) {
         <div className="space-y-12 delay-500 duration-1000 animate-in fade-in fill-mode-both slide-in-from-right-12">
           <div className="glass-panel overflow-hidden rounded-[40px] border-white/5 bg-white/1 shadow-2xl">
             <div className="border-b border-white/3 px-8 py-10">
-              <h3 className="font-serif text-2xl font-bold tracking-tight text-white">Boşluk Manifestosu</h3>
-              <p className="mt-1 text-[12px] leading-relaxed text-foreground italic">Süreklilik kaydı içinde tanımlanmış ardışık boşluklar.</p>
+              <h3 className="font-serif text-2xl font-bold tracking-tight text-white">Eksik Ciltler</h3>
+              <p className="mt-1 text-[12px] leading-relaxed text-foreground italic">Seri içinde henüz koleksiyona eklenmemiş olan ciltler.</p>
             </div>
             <div className="p-8">
               {detail.totalVolumes == null ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center text-foreground/80">
                    <CircleDashed className="mb-4 h-10 w-10 animate-spin-slow" />
-                   <p className="text-[11px] font-bold tracking-[0.2em] uppercase">Hedef Derinlik Atanmamış</p>
+                   <p className="text-[11px] font-bold tracking-[0.2em] uppercase">Toplam Cilt Sayısı Belirtilmemiş</p>
                 </div>
               ) : detail.missingVolumes.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center text-emerald-400/40">
                    <Trophy className="mb-4 h-10 w-10" />
-                   <p className="text-[11px] font-bold tracking-[0.2em] uppercase">Süreklilik Eşitlendi</p>
+                   <p className="text-[11px] font-bold tracking-[0.2em] uppercase">Seri Tamamlandı</p>
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2.5">
@@ -225,7 +225,7 @@ export function SeriesDetailPageClient({ seriesId }: { seriesId: string }) {
                       className="group/chip relative rounded-xl border border-white/5 bg-white/2 px-4 py-2 transition-all duration-500 hover:border-white/10 hover:bg-white/5"
                       key={volume}
                     >
-                      <span className="text-[11px] font-bold tracking-widest text-foreground uppercase transition-colors group-hover/chip:text-primary">Vol. {volume}</span>
+                      <span className="text-[11px] font-bold tracking-widest text-foreground uppercase transition-colors group-hover/chip:text-primary">Cilt {volume}</span>
                     </div>
                   ))}
                 </div>
@@ -235,8 +235,8 @@ export function SeriesDetailPageClient({ seriesId }: { seriesId: string }) {
 
           <div className="glass-panel overflow-hidden rounded-[40px] border-white/5 bg-white/1 shadow-2xl">
             <div className="border-b border-white/3 px-8 py-10">
-              <h3 className="font-serif text-2xl font-bold tracking-tight text-white">Eşitleme Durumu</h3>
-              <p className="mt-1 text-[12px] leading-relaxed text-foreground italic">Hesaplanan dizinler genelinde orkestrasyon durumu.</p>
+              <h3 className="font-serif text-2xl font-bold tracking-tight text-white">Tamamlanma Durumu</h3>
+              <p className="mt-1 text-[12px] leading-relaxed text-foreground italic">Serinin genel tamamlanma metriği.</p>
             </div>
             <div className="p-8">
                 <div className="group glass-panel relative overflow-hidden rounded-3xl border-white/5 bg-white/1 p-8 shadow-inner transition-all duration-700 hover:border-white/10">
@@ -246,7 +246,7 @@ export function SeriesDetailPageClient({ seriesId }: { seriesId: string }) {
                                 <BookMarked className="h-6 w-6" />
                             </div>
                             <div className="space-y-1">
-                                <p className="text-[10px] font-bold tracking-[0.2em] text-foreground uppercase">Tamamlanma Metriği</p>
+                                <p className="text-[10px] font-bold tracking-[0.2em] text-foreground uppercase">Tamamlanma Oranı</p>
                                 <p className="font-serif text-4xl font-bold tracking-tighter text-white">
                                     {detail.completionPercentage == null ? "0" : detail.completionPercentage}<span className="ml-1 text-xl text-foreground">%</span>
                                 </p>
@@ -270,15 +270,15 @@ export function SeriesDetailPageClient({ seriesId }: { seriesId: string }) {
                             />
                         </div>
                         <div className="flex items-center justify-between px-1 text-[9px] font-bold tracking-widest text-foreground uppercase">
-                            <span>Matris Başlangıcı</span>
-                            <span>Hedef Ufuk</span>
+                            <span>Başlangıç</span>
+                            <span>Hedef</span>
                         </div>
                    </div>
                 </div>
 
                 <div className="mt-8 flex items-center gap-3 px-1 text-foreground">
                     <Terminal className="h-3 w-3" />
-                    <p className="text-[9px] font-bold tracking-[0.15em] uppercase">Ardışık süreklilik metrikleri dizinler genelinde doğrulandı.</p>
+                    <p className="text-[9px] font-bold tracking-[0.15em] uppercase">Seri bilgileri günceldir.</p>
                 </div>
             </div>
           </div>

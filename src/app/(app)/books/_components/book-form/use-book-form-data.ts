@@ -2,11 +2,12 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { readJsonResponse } from "@/lib/shared";
+import { normalizeText, readJsonResponse } from "@/lib/shared";
 import type {
   AuthorOption,
   BookDetail,
   CategoryOption,
+  PublisherOption,
   SeriesOption
 } from "@/types";
 import { toOptionalInteger } from "./use-book-form";
@@ -18,6 +19,7 @@ interface UseBookFormDataOptions {
     authorNames?: string[];
     seriesId?: string | null;
     seriesTotalVolumes?: string;
+    publisher?: { id: string } | { name: string } | null;
   };
   setValue: (name: any, value: any, options?: any) => void;
   invalidateCollections: () => void;
@@ -29,7 +31,7 @@ type PendingAuthorSuggestion = {
 };
 
 function normalizeAuthorKey(value: string) {
-  return value.trim().toLocaleLowerCase("tr-TR");
+  return normalizeText(value);
 }
 
 export function useBookFormData({
@@ -38,15 +40,59 @@ export function useBookFormData({
   setValue,
   invalidateCollections
 }: UseBookFormDataOptions) {
-  const [authorQuery, setAuthorQuery] = React.useState("");
-  const [seriesQuery, setSeriesQuery] = React.useState("");
-  const [categoryQuery, setCategoryQuery] = React.useState("");
-  const [pendingAuthorSuggestions, setPendingAuthorSuggestions] = React.useState<
-    PendingAuthorSuggestion[]
-  >([]);
-  const [resolvedAuthors, setResolvedAuthors] = React.useState<AuthorOption[]>([]);
+  const [queries, setQueries] = React.useState({
+    authorQuery: "",
+    seriesQuery: "",
+    categoryQuery: "",
+    publisherQuery: ""
+  });
+  const [authorState, setAuthorState] = React.useState<{
+    pendingAuthorSuggestions: PendingAuthorSuggestion[];
+    resolvedAuthors: AuthorOption[];
+  }>({
+    pendingAuthorSuggestions: [],
+    resolvedAuthors: []
+  });
 
-  const deferredAuthorQuery = React.useDeferredValue(authorQuery);
+  const setAuthorQuery = React.useCallback((value: string) => {
+    setQueries((current) => ({ ...current, authorQuery: value }));
+  }, []);
+
+  const setSeriesQuery = React.useCallback((value: string) => {
+    setQueries((current) => ({ ...current, seriesQuery: value }));
+  }, []);
+
+  const setCategoryQuery = React.useCallback((value: string) => {
+    setQueries((current) => ({ ...current, categoryQuery: value }));
+  }, []);
+
+  const setPublisherQuery = React.useCallback((value: string) => {
+    setQueries((current) => ({ ...current, publisherQuery: value }));
+  }, []);
+
+  const authorQuery = queries.authorQuery;
+  const seriesQuery = queries.seriesQuery;
+  const categoryQuery = queries.categoryQuery;
+  const publisherQuery = queries.publisherQuery;
+  const pendingAuthorSuggestions = authorState.pendingAuthorSuggestions;
+  const resolvedAuthors = authorState.resolvedAuthors;
+
+  const deferredAuthorQuery = React.useDeferredValue(queries.authorQuery);
+  const deferredPublisherQuery = React.useDeferredValue(queries.publisherQuery);
+
+  const publishersQuery = useQuery({
+    queryKey: ["book-form", "publishers", deferredPublisherQuery],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (deferredPublisherQuery.trim()) {
+        params.set("q", deferredPublisherQuery.trim());
+      }
+      return readJsonResponse<PublisherOption[]>(
+        await fetch(`/api/publishers${params.toString() ? `?${params.toString()}` : ""}`)
+      );
+    },
+    staleTime: 60_000
+  });
 
   const categoriesQuery = useQuery({
     queryKey: ["book-form", "categories"],
@@ -75,13 +121,21 @@ export function useBookFormData({
   });
 
   const rememberResolvedAuthor = React.useCallback((author: AuthorOption) => {
-    setResolvedAuthors((current) => {
-      const exists = current.some((item) => item.id === author.id);
+    setAuthorState((current) => {
+      const exists = current.resolvedAuthors.some((item) => item.id === author.id);
       if (exists) {
-        return current.map((item) => (item.id === author.id ? author : item));
+        return {
+          ...current,
+          resolvedAuthors: current.resolvedAuthors.map((item) =>
+            item.id === author.id ? author : item
+          )
+        };
       }
 
-      return [...current, author];
+      return {
+        ...current,
+        resolvedAuthors: [...current.resolvedAuthors, author]
+      };
     });
   }, []);
 
@@ -190,11 +244,34 @@ export function useBookFormData({
       }
     );
   }
+  
+  function updateDraftAuthorName(oldName: string, newName: string) {
+    const trimmedOld = oldName.trim();
+    const trimmedNew = newName.trim();
+    
+    if (!trimmedNew || normalizeAuthorKey(trimmedOld) === normalizeAuthorKey(trimmedNew)) {
+      return;
+    }
+
+    setValue(
+      "authorNames",
+      (values.authorNames ?? []).map((name) =>
+        normalizeAuthorKey(name) === normalizeAuthorKey(trimmedOld) ? trimmedNew : name
+      ),
+      { shouldDirty: true, shouldValidate: true }
+    );
+
+    // After manual edit, try to resolve again in case it now matches an existing DB record
+    void resolveAuthorIdsFromNames([trimmedNew]);
+  }
 
   function removePendingSuggestion(inputName: string) {
-    setPendingAuthorSuggestions((current) =>
-      current.filter((item) => item.inputName !== inputName)
-    );
+    setAuthorState((current) => ({
+      ...current,
+      pendingAuthorSuggestions: current.pendingAuthorSuggestions.filter(
+        (item) => item.inputName !== inputName
+      )
+    }));
   }
 
   async function createAuthor(name: string) {
@@ -216,16 +293,20 @@ export function useBookFormData({
     removePendingSuggestion(suggestion.inputName);
   }
 
-  async function resolveAuthorIdsFromNames(names: string[]) {
+  async function resolveAuthorIdsFromNames(names: string[]): Promise<{
+    resolvedIds: string[];
+    unresolvedNames: string[];
+  }> {
     const uniqueNames = Array.from(
       new Set(names.map((name) => name.trim()).filter((name) => name.length > 0))
     );
 
     if (uniqueNames.length === 0) {
-      return [];
+      return { resolvedIds: [], unresolvedNames: [] };
     }
 
     const resolvedIds: string[] = [];
+    const unresolvedNames: string[] = [];
     const nextSuggestions: PendingAuthorSuggestion[] = [];
 
     for (const name of uniqueNames) {
@@ -252,19 +333,17 @@ export function useBookFormData({
 
       const bestSuggestion = candidates[0];
       if (bestSuggestion) {
-        nextSuggestions.push({
-          inputName: name,
-          suggestedAuthor: bestSuggestion
-        });
+        rememberResolvedAuthor(bestSuggestion);
+        resolvedIds.push(bestSuggestion.id);
         continue;
       }
 
-      addDraftAuthorName(name);
+      unresolvedNames.push(name);
     }
 
     if (nextSuggestions.length > 0) {
-      setPendingAuthorSuggestions((current) => {
-        const merged = [...current];
+      setAuthorState((current) => {
+        const merged = [...current.pendingAuthorSuggestions];
 
         nextSuggestions.forEach((suggestion) => {
           const alreadyExists = merged.some(
@@ -278,11 +357,30 @@ export function useBookFormData({
           }
         });
 
-        return merged;
+        return {
+          ...current,
+          pendingAuthorSuggestions: merged
+        };
       });
     }
 
-    return resolvedIds;
+    return { resolvedIds, unresolvedNames };
+  }
+
+  async function resolvePublisherIdFromName(name: string): Promise<string | null> {
+    if (!name.trim()) return null;
+
+    // Check backend resolution
+    const response = await fetch(`/api/publishers?q=${encodeURIComponent(name.trim())}`);
+    const candidates = await readJsonResponse<PublisherOption[]>(response);
+    
+    // Auto-resolve to first candidate if available (fuzzy matching already handled on backend)
+    const bestMatch = candidates[0];
+    if (bestMatch) {
+      return bestMatch.id;
+    }
+
+    return null;
   }
 
   async function createSeries(name: string) {
@@ -299,6 +397,19 @@ export function useBookFormData({
     setValue("seriesId", series.id, { shouldDirty: true, shouldValidate: true });
     setValue("seriesName", series.name, { shouldDirty: true });
     setSeriesQuery("");
+    invalidateCollections();
+  }
+
+  async function createPublisher(name: string) {
+    const response = await fetch("/api/publishers", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name })
+    });
+    const publisher = await readJsonResponse<PublisherOption>(response);
+    setValue("publisher", { id: publisher.id }, { shouldDirty: true, shouldValidate: true });
+    setPublisherQuery("");
+    void publishersQuery.refetch();
     invalidateCollections();
   }
 
@@ -339,7 +450,20 @@ export function useBookFormData({
         cat.name.toLocaleLowerCase("tr-TR") === categoryQuery.trim().toLocaleLowerCase("tr-TR")
     );
 
+  const canCreatePublisher =
+    publisherQuery.trim().length > 0 &&
+    !(publishersQuery.data ?? []).some(
+      (pub) =>
+        pub.name.toLocaleLowerCase("tr-TR") === publisherQuery.trim().toLocaleLowerCase("tr-TR")
+    );
+
   return {
+    publisherQuery,
+    setPublisherQuery,
+    publishersQuery,
+    createPublisher,
+    resolvePublisherIdFromName,
+    canCreatePublisher,
     authorQuery,
     setAuthorQuery,
     seriesQuery,
@@ -356,6 +480,7 @@ export function useBookFormData({
     pendingAuthorSuggestions,
     addAuthorById,
     removeDraftAuthorName,
+    updateDraftAuthorName,
     createAuthor,
     createSeries,
     createCategory,

@@ -120,11 +120,11 @@ export function BooksTable({
               />
             </TableHead>
             <TableHead className="w-24 px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">KAPAK</TableHead>
-            <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Başlık ve Kimlik</TableHead>
-            <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Yazarlar</TableHead>
-            <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Durum</TableHead>
-            <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Konum</TableHead>
-            <TableHead className="px-4 py-4 text-right text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Puan</TableHead>
+            <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">BAŞLIK VE KİMLİK</TableHead>
+            <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">YAZARLAR</TableHead>
+            <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">DURUM</TableHead>
+            <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">KONUM</TableHead>
+            <TableHead className="px-4 py-4 text-right text-[9px] font-bold tracking-wider text-foreground/40 uppercase">PUAN</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -236,7 +236,7 @@ export function BooksGrid({
         >
           <div className="absolute top-4 right-4 z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
             <Checkbox
-                aria-label={`Select ${book.title}`}
+                aria-label={`Seç: ${book.title}`}
                 checked={selectedIds.includes(book.id)}
                 id={`grid-select-book-${book.id}`}
                 name={`select-book-${book.id}`}

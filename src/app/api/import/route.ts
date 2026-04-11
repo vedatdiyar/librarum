@@ -217,7 +217,7 @@ function normalizeCsvRow(headers: string[], row: string[], rowNumber: number): C
       title: record.title,
       authors,
       isbn: record.isbn || undefined,
-      publisher: record.publisher || undefined,
+      publisher: record.publisher ? { name: record.publisher } : undefined,
       publicationYear: parsePositiveInteger(
         record.publicationYear ?? "",
         "publicationYear",
@@ -341,7 +341,7 @@ function normalizeJsonItem(item: unknown, rowNumber: number): CreateBookInput {
       title: record.title.trim(),
       authors,
       isbn: typeof record.isbn === "string" ? record.isbn : undefined,
-      publisher: typeof record.publisher === "string" ? record.publisher : undefined,
+      publisher: typeof record.publisher === "string" && record.publisher.trim() ? { name: record.publisher.trim() } : undefined,
       publicationYear:
         typeof record.publicationYear === "number" ? record.publicationYear : undefined,
       pageCount: typeof record.pageCount === "number" ? record.pageCount : undefined,

@@ -5,11 +5,13 @@ import { exportAllBooks } from "@/server/books-service";
 
 export const dynamic = "force-dynamic";
 
-function escapeCSV(value: string | number | boolean | null | undefined): string {
+import { PublisherOption } from "@/types";
+
+function escapeCSV(value: string | number | boolean | PublisherOption | null | undefined): string {
   if (value === null || value === undefined) {
     return "";
   }
-  const str = String(value);
+  const str = typeof value === "object" ? value.name : String(value);
   if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
     return `"${str.replace(/"/g, '""')}"`;
   }

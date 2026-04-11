@@ -14,12 +14,79 @@ export function MobileBarcodeScanner({
   onDetected
 }: MobileBarcodeScannerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
+  const [isTransitioning, setIsTransitioning] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const scannerId = React.useId().replace(/:/g, "");
+  const onDetectedRef = React.useRef(onDetected);
+  const isMountedRef = React.useRef(true);
+  const shutdownPromiseRef = React.useRef<Promise<void> | null>(null);
   const scannerRef = React.useRef<{
+    getState: () => number;
     stop: () => Promise<void>;
     clear: () => void;
   } | null>(null);
+
+  React.useEffect(() => {
+    onDetectedRef.current = onDetected;
+  }, [onDetected]);
+
+  React.useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const stopAndClearScanner = React.useCallback(async () => {
+    if (shutdownPromiseRef.current) {
+      await shutdownPromiseRef.current;
+      return;
+    }
+
+    const scanner = scannerRef.current;
+
+    if (!scanner) {
+      return;
+    }
+
+    const shutdownPromise = (async () => {
+      let canClear = false;
+
+      try {
+        await scanner.stop();
+        canClear = true;
+      } catch (stopError) {
+        const message = stopError instanceof Error ? stopError.message : String(stopError);
+
+        if (message.includes("not running") || message.includes("not paused")) {
+          canClear = true;
+        } else {
+          console.error(stopError);
+        }
+      }
+
+      if (canClear) {
+        try {
+          scanner.clear();
+        } catch (clearError) {
+          console.error(clearError);
+        }
+      }
+
+      if (scannerRef.current === scanner) {
+        scannerRef.current = null;
+      }
+    })();
+
+    shutdownPromiseRef.current = shutdownPromise;
+
+    try {
+      await shutdownPromise;
+    } finally {
+      if (shutdownPromiseRef.current === shutdownPromise) {
+        shutdownPromiseRef.current = null;
+      }
+    }
+  }, []);
 
   React.useEffect(() => {
     if (!isOpen) {
@@ -30,6 +97,24 @@ export function MobileBarcodeScanner({
 
     async function startScanner() {
       try {
+        if (isMountedRef.current) {
+          setIsTransitioning(true);
+        }
+
+        if (!window.isSecureContext) {
+          setError(
+            "Kamera erişimi için güvenli bağlantı gerekli (HTTPS). Geliştirmede tünel (ngrok/cloudflared) veya güvenli origin kullanın."
+          );
+          return;
+        }
+
+        if (!navigator.mediaDevices?.getUserMedia) {
+          setError("Tarayıcı kamera akışını desteklemiyor. Lütfen Safari veya Chrome kullanın.");
+          return;
+        }
+
+        await stopAndClearScanner();
+
         const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import(
           "html5-qrcode"
         );
@@ -65,16 +150,38 @@ export function MobileBarcodeScanner({
               return;
             }
 
-            onDetected(decodedText);
+            onDetectedRef.current(decodedText);
             setIsOpen(false);
           },
           () => undefined
         );
 
+        if (disposed) {
+          await stopAndClearScanner();
+          return;
+        }
+
         setError(null);
       } catch (scannerError) {
         console.error(scannerError);
-        setError("Optic sensor initialization failed. Verify peripheral permissions.");
+
+        if (scannerError instanceof DOMException) {
+          if (scannerError.name === "NotAllowedError") {
+            setError("Kamera izni reddedildi. Tarayıcı ayarlarından kamera iznini açın.");
+            return;
+          }
+
+          if (scannerError.name === "NotFoundError") {
+            setError("Kamera bulunamadı. Farklı bir cihaz veya tarayıcı deneyin.");
+            return;
+          }
+        }
+
+        setError("Optik sensör başlatılamadı. Kamera izinlerini ve bağlantıyı kontrol edin.");
+      } finally {
+        if (isMountedRef.current) {
+          setIsTransitioning(false);
+        }
       }
     }
 
@@ -83,15 +190,17 @@ export function MobileBarcodeScanner({
     return () => {
       disposed = true;
 
-      if (!scannerRef.current) {
-        return;
+      if (isMountedRef.current) {
+        setIsTransitioning(true);
       }
 
-      void scannerRef.current.stop().catch(() => undefined);
-      scannerRef.current.clear();
-      scannerRef.current = null;
+      void stopAndClearScanner().finally(() => {
+        if (isMountedRef.current) {
+          setIsTransitioning(false);
+        }
+      });
     };
-  }, [isOpen, onDetected, scannerId]);
+  }, [isOpen, scannerId, stopAndClearScanner]);
 
   return (
     <div className="md:hidden">
@@ -100,19 +209,19 @@ export function MobileBarcodeScanner({
             "h-14 w-full rounded-2xl text-[10px] font-bold tracking-widest uppercase transition-all duration-500",
             isOpen ? "border-rose-400/20 bg-rose-400/10 text-rose-400 hover:bg-rose-400/20" : "border-white/5 bg-white/3 text-white/40 hover:text-white"
         )}
-        disabled={disabled}
+        disabled={disabled || isTransitioning}
         onClick={() => setIsOpen((current) => !current)}
         variant="ghost"
       >
         {isOpen ? (
           <>
             <X className="mr-2 h-4 w-4" />
-            Deactivate Optic Sensor
+            Optik Sensörü Kapat
           </>
         ) : (
           <>
             <Barcode className="mr-2 h-4 w-4" />
-            Initiate Optic Acquisition
+            Barkod Taramayı Başlat
           </>
         )}
       </Button>
@@ -124,8 +233,8 @@ export function MobileBarcodeScanner({
                     <Scan className="h-5 w-5" />
                 </div>
                 <div className="space-y-1">
-                    <h3 className="font-serif text-xl font-bold tracking-tight text-white">Universal Peripheral Scanner</h3>
-                    <p className="text-[11px] leading-relaxed text-foreground italic">Align the ISBN sequence with the focal grid. Synchronization is automatic upon detection.</p>
+                    <h3 className="font-serif text-xl font-bold tracking-tight text-white">Barkod Tarayıcı</h3>
+                    <p className="text-[11px] leading-relaxed text-foreground italic">ISBN barkodunu çerçeveye hizalayın. Algılandığında otomatik olarak taranacaktır.</p>
                 </div>
             </div>
 
@@ -147,7 +256,7 @@ export function MobileBarcodeScanner({
                 ) : (
                     <div className="flex items-center gap-2 px-1 text-primary">
                         <Zap className="h-3 w-3" />
-                        <span className="text-[9px] font-bold tracking-[0.2em] uppercase">Acquisition sequence active</span>
+                        <span className="text-[9px] font-bold tracking-[0.2em] uppercase">Tarama işlemi aktif</span>
                     </div>
                 )}
             </div>

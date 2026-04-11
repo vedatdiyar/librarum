@@ -22,17 +22,17 @@ const RETURN_STATUS_OPTIONS: Array<{ value: Exclude<BookStatus, "loaned" | "lost
   { 
     value: "owned", 
     label: BOOK_STATUS_LABELS.owned, 
-    description: "Eseri ana koleksiyon durumuna döndürür." 
+    description: "Kitabı ana koleksiyon durumuna döndürür." 
   },
   { 
     value: "completed", 
     label: BOOK_STATUS_LABELS.completed, 
-    description: "Eseri okundu/hakimiyet sağlandı olarak işaretler." 
+    description: "Kitabı okundu/değerlendirildi olarak işaretler." 
   },
   { 
     value: "abandoned", 
     label: BOOK_STATUS_LABELS.abandoned, 
-    description: "Eseri yarım bırakılmış olarak arşive kaldırır." 
+    description: "Kitabı yarım bırakılmış olarak arşive kaldırır." 
   }
 ];
 
@@ -97,7 +97,7 @@ export function BookReturnDialog({
                             İade İşlemi
                         </DialogTitle>
                         <DialogDescription className="text-[13px] leading-relaxed text-foreground italic">
-                            Eserin ödünç kaydını kapatın. Kişi verileri ve tarih markerları senkronizasyonun ardından temizlenecektir.
+                            Kitabın ödünç kaydını kapatın. Kişi verileri ve tarih markerları senkronizasyonun ardından temizlenecektir.
                         </DialogDescription>
                     </div>
                 </div>

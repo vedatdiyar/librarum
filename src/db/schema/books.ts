@@ -13,7 +13,7 @@ import {
   uniqueIndex,
   uuid
 } from "drizzle-orm/pg-core";
-import { authors, categories, series } from "./catalog.ts";
+import { authors, categories, publishers, series } from "./catalog.ts";
 
 export const bookStatusEnum = pgEnum("book_status", [
   "owned",
@@ -55,6 +55,10 @@ export const books = pgTable(
     coverCustomUrl: text("cover_custom_url"),
     coverMetadataUrl: text("cover_metadata_url"),
     categoryId: uuid("category_id").references(() => categories.id, {
+      onDelete: "set null",
+      onUpdate: "cascade"
+    }),
+    publisherId: uuid("publisher_id").references(() => publishers.id, {
       onDelete: "set null",
       onUpdate: "cascade"
     }),

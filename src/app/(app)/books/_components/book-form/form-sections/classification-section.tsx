@@ -58,13 +58,13 @@ export function ClassificationSection({
   }, [currentSeriesId, series, seriesQuery]);
 
   return (
-    <div className="space-y-10 duration-700 animate-in fade-in">
+    <div className="space-y-10">
       <div className="grid gap-8 lg:grid-cols-2">
         <Field
           description="Kitabın katalog kategorisini belirleyin."
           error={errors.categoryId?.message as string}
           id="categoryId"
-          label="KATEGORI"
+          label="KATEGORİ"
         >
           <div className="space-y-3">
             <select
@@ -90,8 +90,10 @@ export function ClassificationSection({
             <div className="flex flex-col gap-3 sm:flex-row">
               <Input
                 className="h-12 rounded-xl border-white/5 bg-white/2 shadow-inner hover:bg-white/4 focus:bg-white/8"
+                id="categoryQuery"
+                name="categoryQuery"
                 onChange={(event) => setCategoryQuery(event.target.value)}
-                placeholder="Yeni kategori adi..."
+                placeholder="Yeni kategori adı..."
                 value={categoryQuery}
               />
               <Button
@@ -107,14 +109,15 @@ export function ClassificationSection({
         </Field>
 
         <Field
-          description="Bu kitap bir seriye aitse seriyi secin veya yeni seri olusturun."
+          description="Bu kitap bir seriye aitse seriyi seçin veya yeni seri oluşturun."
           error={errors.seriesName?.message as string}
-          label="SERI"
+          id="seriesName"
+          label="SERİ"
         >
           <div className="space-y-4 rounded-2xl border border-white/8 bg-white/3 p-4">
             <label className="flex items-center gap-3">
               <Checkbox
-                aria-label="Bu bir seri kitabi"
+                aria-label="Bu bir seri kitabı"
                 checked={isSeries}
                 onCheckedChange={(checked) => {
                   setValue("isSeries", checked, { shouldDirty: true });
@@ -129,7 +132,7 @@ export function ClassificationSection({
                 }}
               />
               <span className="text-xs font-bold tracking-widest text-foreground uppercase">
-                Bu bir seri kitabi
+                Bu kitap bir seriye ait
               </span>
             </label>
 
@@ -155,11 +158,13 @@ export function ClassificationSection({
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <Input
                     className="h-12 rounded-xl border-white/5 bg-white/2 shadow-inner hover:bg-white/4 focus:bg-white/8"
+                    id="seriesName"
+                    name="seriesName"
                     onChange={(event) => {
                       setSeriesQuery(event.target.value);
                       setValue("seriesName", event.target.value, { shouldDirty: true });
                     }}
-                    placeholder="Seri ara veya olustur..."
+                    placeholder="Seri ara veya oluştur..."
                     value={selectedSeries ? selectedSeries.name : seriesQuery}
                   />
                   <Button
@@ -193,26 +198,30 @@ export function ClassificationSection({
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <Field
-                    description="Serideki toplam kitap sayisi (opsiyonel)."
+                    description="Serideki toplam kitap sayısı (opsiyonel)."
                     error={errors.seriesTotalVolumes?.message as string}
-                    label="TOPLAM CILT"
+                    id="seriesTotalVolumes"
+                    label="TOPLAM CİLT"
                   >
                     <Input
                       className="h-12 rounded-xl border-white/5 bg-white/2 text-sm shadow-inner hover:bg-white/4 focus:bg-white/8"
                       {...register("seriesTotalVolumes")}
+                      id="seriesTotalVolumes"
                       inputMode="numeric"
                       placeholder="Opsiyonel"
                     />
                   </Field>
 
                   <Field
-                    description="Bu kitabin seri sirasini belirtin."
+                    description="Bu kitabın serideki sırasını belirtin."
                     error={errors.seriesOrder?.message as string}
-                    label="SIRA NO"
+                    id="seriesOrder"
+                    label="SERİ SIRASI"
                   >
                     <Input
                       className="h-12 rounded-xl border-white/5 bg-white/2 text-sm shadow-inner hover:bg-white/4 focus:bg-white/8"
                       {...register("seriesOrder")}
+                      id="seriesOrder"
                       inputMode="numeric"
                       placeholder="1"
                     />

@@ -1,9 +1,9 @@
 import type { BookStatus } from "@/types";
 
 export const BOOK_STATUS_LABELS: Record<BookStatus, string> = {
-  owned: "Arşivde",
-  completed: "Tamamlandı",
-  abandoned: "Bırakıldı",
+  owned: "Koleksiyonda",
+  completed: "Okundu",
+  abandoned: "Yarım Bırakıldı",
   loaned: "Ödünç Verildi",
   lost: "Kayıp"
 };

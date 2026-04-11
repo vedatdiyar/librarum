@@ -12,7 +12,7 @@ export function NewBookForm() {
   const router = useRouter();
 
   return (
-    <section className="space-y-10 pb-24">
+    <section className="space-y-6 pb-24 md:space-y-10">
       <PageHero
         action={
           <Button

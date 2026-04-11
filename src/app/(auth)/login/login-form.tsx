@@ -60,7 +60,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
                 {...register("email")}
                 autoComplete="email"
                 id="email"
-                placeholder="authority@librarum.io"
+                placeholder="email@örnek.com"
                 type="email"
                 className="h-14 rounded-2xl border-white/5 bg-white/2 shadow-inner transition-all placeholder:italic hover:bg-white/4 focus:border-primary/40 focus:bg-white/8"
             />

@@ -59,6 +59,27 @@ export type AuthorResolutionResponse =
       suggestedAuthor: AuthorOption;
     };
 
+export type PublisherOption = EntityOption & {
+  slug: string;
+};
+
+export type PublisherResolutionStatus =
+  | "auto-merge"
+  | "suggested-merge"
+  | "created";
+
+export type PublisherResolutionResponse =
+  | {
+      status: "auto-merge" | "created";
+      inputName: string;
+      publisher: PublisherOption;
+    }
+  | {
+      status: "suggested-merge";
+      inputName: string;
+      suggestedPublisher: PublisherOption;
+    };
+
 export type CategoryOption = EntityOption & {
   bookCount?: number;
 };
@@ -165,6 +186,8 @@ export type ApiBookListItem = {
   series: BookSeriesReference | null;
   location: BookLocation | null;
   isSeries: boolean;
+  publisherId: string | null;
+  publisher: PublisherOption | null;
   loanedTo: string | null;
   loanedAt: string | null;
   createdAt: string;
@@ -172,7 +195,8 @@ export type ApiBookListItem = {
 };
 
 export type BookDetail = ApiBookListItem & {
-  publisher: string | null;
+  publisherId: string | null;
+  publisher: PublisherOption | null;
   publicationYear: number | null;
   pageCount: number | null;
   personalNote: string | null;
@@ -228,7 +252,7 @@ export type BookWriteInput = {
   subtitle?: string | null;
   authors: EntityReferenceInput[];
   isbn?: string | null;
-  publisher?: string | null;
+  publisher?: EntityReferenceInput | null;
   publicationYear?: number | null;
   pageCount?: number | null;
   status: BookStatus;

@@ -160,7 +160,7 @@ export function SeriesTab() {
               <div className="grid grid-cols-[1fr_120px_120px_100px] border-b border-white/5 bg-white/2 px-6 py-2">
                 <span className="text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Seri</span>
                 <span className="text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Cilt Sayısı</span>
-                <span className="text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Eser Sayısı</span>
+                <span className="text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Kitap Sayısı</span>
                 <span className="sr-only">İşlemler</span>
               </div>
               <div className="divide-y divide-white/2">
@@ -204,7 +204,7 @@ export function SeriesTab() {
                         </div>
 
                         <div>
-                           <p className="text-[10px] font-medium text-foreground/50">{series.bookCount} eser</p>
+                           <p className="text-[10px] font-medium text-foreground/50">{series.bookCount} kitap</p>
                         </div>
 
                         <div className="flex justify-end gap-1">
@@ -286,8 +286,8 @@ export function SeriesTab() {
                   <div className="flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-destructive">
                     <AlertCircle className="h-5 w-5 shrink-0 opacity-60" />
                     <p className="text-[11px] leading-relaxed font-bold tracking-tight uppercase">
-                       Uyarı: Bu seri şu anda <strong>{deleteConfirm.bookCount}</strong> eser ile ilişkilendirilmiş durumda. 
-                       Silme işlemi, bu eserlerin seri bilgisini kaldıracaktır.
+                       Uyarı: Bu seri şu anda <strong>{deleteConfirm.bookCount}</strong> kitap ile ilişkilendirilmiş durumda. 
+                       Silme işlemi, bu kitapların seri bilgisini kaldıracaktır.
                     </p>
                   </div>
                   <p><strong>{deleteConfirm.name}</strong> serisinin listeden silinmesini onaylıyor musunuz?</p>

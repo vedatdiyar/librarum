@@ -32,15 +32,6 @@ export const POST = withApiHandler(
 
     assertCoverFile(file);
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const isJpeg = buffer.length >= 3 && buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF;
-    const isPng = buffer.length >= 4 && buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47;
-    const isWebp = buffer.length >= 4 && buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46; // RIFF header
-
-    if (!isJpeg && !isPng && !isWebp) {
-      throw new ApiError(400, "Invalid image format. Only JPEG, PNG, and WebP are allowed.");
-    }
-
     const { key, url } = await uploadCoverToR2(file);
 
     const db = createDb();

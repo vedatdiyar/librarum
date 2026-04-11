@@ -25,7 +25,10 @@ import {
 import type {
   BookDetail,
   BookFormMode,
-  BookStatus
+  BookStatus,
+  IsbnCoverOption,
+  IsbnMetadata,
+  IsbnMetadataSource
 } from "@/types";
 
 import { useBookForm, buildBookPayload, type BookFormValues } from "./use-book-form";
@@ -49,7 +52,7 @@ const STATUS_META: Record<
   }
 > = {
   owned: {
-    label: "Kütüphanede",
+    label: "Koleksiyonda",
     className: "border-primary/20 bg-primary/8 text-primary"
   },
   completed: {
@@ -57,7 +60,7 @@ const STATUS_META: Record<
     className: "border-emerald-400/20 bg-emerald-400/8 text-emerald-300"
   },
   abandoned: {
-    label: "Yarım Kaldı",
+    label: "Yarım Bırakıldı",
     className: "border-amber-400/20 bg-amber-400/8 text-amber-300"
   },
   loaned: {
@@ -69,6 +72,37 @@ const STATUS_META: Record<
     className: "border-rose-400/20 bg-rose-400/8 text-rose-300"
   }
 };
+
+function toSafeCoverPreviewUrl(url: string | null) {
+  if (!url) {
+    return null;
+  }
+
+  if (url.startsWith("/api/books/cover/")) {
+    return url;
+  }
+
+  try {
+    const parsed = new URL(url);
+    const key = parsed.pathname.startsWith("/")
+      ? parsed.pathname.slice(1)
+      : parsed.pathname;
+
+    // R2 object paths are stored as books/covers/<id>.<ext>; proxy through our API route.
+    if (!key.startsWith("books/covers/")) {
+      return url;
+    }
+
+    const encodedKey = key
+      .split("/")
+      .map((segment) => encodeURIComponent(segment))
+      .join("/");
+
+    return `/api/books/cover/${encodedKey}`;
+  } catch {
+    return url;
+  }
+}
 
 function Section({
   title,
@@ -85,7 +119,12 @@ function Section({
 }) {
   return (
     <div 
-        className="group glass-panel relative flex flex-col overflow-hidden rounded-[40px] border-white/5 bg-white/1 p-8 transition-all duration-300 animate-in fade-in fill-mode-both slide-in-from-bottom-6 hover:border-white/10"
+        className={cn(
+          "group glass-panel relative flex flex-col overflow-hidden transition-all duration-300 hover:border-white/10",
+          "rounded-[32px] p-6 md:rounded-[40px] md:p-8",
+          "duration-700 animate-in fade-in fill-mode-both",
+          "border-white/5 bg-white/1 xl:slide-in-from-bottom-6"
+        )}
         style={{ animationDelay: `${index * 50}ms` }}
     >
       <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/5 opacity-0 blur-[120px] transition-opacity duration-1000 group-hover:opacity-100" />
@@ -93,11 +132,11 @@ function Section({
       <div className="relative space-y-8">
         <div className="flex items-start justify-between gap-6">
           <div className="space-y-1">
-            <h3 className="font-serif text-3xl font-bold tracking-tight text-white">{title}</h3>
-            <p className="max-w-sm text-[13px] leading-relaxed text-foreground italic">{description}</p>
+            <h3 className="font-serif text-2xl font-bold tracking-tight text-white md:text-3xl">{title}</h3>
+            <p className="max-w-sm text-[11px] leading-relaxed text-foreground italic md:text-[13px]">{description}</p>
           </div>
-          <div className="shrink-0 rounded-2xl border border-white/10 bg-white/3 p-3.5 text-foreground transition-all duration-700 group-hover:bg-primary/10 group-hover:text-primary">
-            <Icon className="h-6 w-6" />
+          <div className="shrink-0 rounded-2xl border border-white/10 bg-white/3 p-3 text-foreground transition-all duration-700 group-hover:bg-primary/10 group-hover:text-primary md:p-3.5">
+            <Icon className="h-5 w-5 md:h-6 md:w-6" />
           </div>
         </div>
         <div className="pt-0">{children}</div>
@@ -127,6 +166,7 @@ function BookFormSections(props: any) {
     mode,
     pendingAuthorSuggestions,
     removeDraftAuthorName,
+    updateDraftAuthorName,
     resolveSuggestedAuthor,
     selectedAuthors,
     selectedMetadataCoverUrl,
@@ -142,7 +182,12 @@ function BookFormSections(props: any) {
     onSelectMetadataCover,
     onUploadClick,
     uploadCover,
-    values
+    values,
+    publishers,
+    publisherQuery,
+    setPublisherQuery,
+    canCreatePublisher,
+    createPublisher
   } = props;
 
   return (
@@ -150,12 +195,13 @@ function BookFormSections(props: any) {
       <Section
         index={0}
         icon={Cpu}
-        description="Kitap adı, yazar ve temel yayın bilgileri."
-        title="1. Bölüm — Kitap Bilgileri"
+        description="Kitap başlığı, yazar ve temel yayın bilgileri."
+        title="1. Bölüm — Kitap Detayları"
       >
         <PublicationSection
           addAuthorById={addAuthorById}
           removeDraftAuthorName={removeDraftAuthorName}
+          updateDraftAuthorName={updateDraftAuthorName}
           availableAuthors={availableAuthors}
           authorQuery={authorQuery}
           authors={selectedAuthors}
@@ -168,13 +214,18 @@ function BookFormSections(props: any) {
           pendingAuthorSuggestions={pendingAuthorSuggestions}
           resolveSuggestedAuthor={resolveSuggestedAuthor}
           setAuthorQuery={setAuthorQuery}
+          publishers={publishers}
+          publisherQuery={publisherQuery}
+          setPublisherQuery={setPublisherQuery}
+          canCreatePublisher={canCreatePublisher}
+          createPublisher={createPublisher}
         />
       </Section>
 
       <Section
         index={1}
         icon={Layers}
-        description="Kategori ve seri alanlariyla kitabin siniflandirmasini tamamlayin."
+        description="Koleksiyon kategorisi ve seri alanlarıyla kitabın sınıflandırmasını tamamlayın."
         title="2. Bölüm — Sınıflandırma"
       >
         <ClassificationSection
@@ -196,7 +247,7 @@ function BookFormSections(props: any) {
       <Section
         index={2}
         icon={MapPin}
-        description="Kitap durumu, kütüphanedeki konumu ve kopya sayısı."
+        description="Kitap durumu, koleksiyondaki konumu ve kopya sayısı."
         title="3. Bölüm — Durum ve Konum"
       >
         <StatusLocationSection />
@@ -205,8 +256,8 @@ function BookFormSections(props: any) {
       <Section
         index={3}
         icon={User}
-        description="Kişisel değerlendirme, hâkimiyet seviyesi ve özel notlar."
-        title="4. Bölüm — Değerlendirme"
+        description="Kişisel değerlendirme, okuma puanı ve kitap notları."
+        title="4. Bölüm — Kişisel Değerlendirme"
       >
         <PersonalSection />
       </Section>
@@ -233,6 +284,8 @@ function BookFormSections(props: any) {
           aria-label="Özel kapak yükle"
           className="hidden"
           accept="image/*"
+          id="coverImage"
+          name="coverImage"
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) void uploadCover(file);
@@ -255,18 +308,25 @@ function BookFormSidebar(props: any) {
     summarySeries,
     summaryStatus,
     summaryTitle,
-    values
+    values,
+    publishers
   } = props;
 
   return (
-    <aside className="order-first xl:order-last xl:self-start" style={props.stickyStyle}>
+    <aside className="order-first hidden xl:order-last xl:block xl:self-start" style={props.stickyStyle}>
       <div className="space-y-6">
         <div className="glass-panel overflow-hidden rounded-[32px] border-white/8 bg-white/3 transition-transform duration-500 hover:scale-[1.01]">
           <div className="relative aspect-2/3 overflow-hidden border-b border-white/8 bg-linear-to-b from-white/5 to-transparent">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(197,160,89,0.16),transparent_58%)]" />
             {coverPreviewUrl ? (
               <>
-                <Image alt="" className="shrink-0 object-cover opacity-40 blur-2xl" fill src={coverPreviewUrl} />
+                <Image
+                  alt=""
+                  className="shrink-0 object-cover opacity-40 blur-2xl"
+                  fill
+                  sizes="(max-width: 767px) 100vw, (max-width: 1279px) 70vw, 420px"
+                  src={coverPreviewUrl}
+                />
                 <Image
                   alt={summaryTitle.title || "Başlık henüz girilmedi"}
                   className="relative rounded-xl object-contain transition-transform duration-1000 hover:scale-105"
@@ -301,7 +361,7 @@ function BookFormSidebar(props: any) {
               <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/10 bg-black/45 px-3 py-1.5 backdrop-blur-xl">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                 <span className="truncate text-[10px] font-bold tracking-[0.2em] text-white/80 uppercase">
-                  {mode === "add" ? "Yeni kayıt taslağı" : "Güncellenen kayıt"}
+                  {mode === "add" ? "Yeni kitap taslağı" : "Güncellenen kitap"}
                 </span>
               </div>
             </div>
@@ -341,14 +401,19 @@ function BookFormSidebar(props: any) {
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
               {[
                 {
-                  label: "Bibliyografya",
+                  label: "Yayın Bilgisi",
                   value:
-                    values.publisher?.trim() || values.publicationYear?.trim()
-                      ? [values.publisher?.trim(), values.publicationYear?.trim()].filter(Boolean).join(" • ")
+                    values.publisher || values.publicationYear?.trim()
+                      ? [
+                          "id" in (values.publisher ?? {}) 
+                            ? (publishers as any[])?.find((p: any) => p.id === (values.publisher as any).id)?.name 
+                            : (values.publisher as any)?.name,
+                          values.publicationYear?.trim()
+                        ].filter(Boolean).join(" • ")
                       : "Yayınevi ve yayın yılı bekleniyor"
                 },
                 {
-                  label: "Konum",
+                  label: "Kitaplık Konumu",
                   value:
                     summaryLocation ||
                     (values.status === "loaned" ? values.loanedTo?.trim() || "Dış dolaşım bilgisi bekleniyor" : "Konum bilgisi eklenmedi")
@@ -377,8 +442,8 @@ function BookFormSidebar(props: any) {
               <ScrollText className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-[10px] font-bold tracking-[0.24em] text-primary uppercase">Kayıt notları</p>
-              <p className="text-sm text-foreground/70">Formu doldururken şekillenen kısa okuma.</p>
+              <p className="text-[10px] font-bold tracking-[0.24em] text-primary uppercase">Koleksiyon Özeti</p>
+              <p className="text-sm text-foreground/70">Formu doldururken şekillenen analiz özeti.</p>
             </div>
           </div>
 
@@ -387,7 +452,7 @@ function BookFormSidebar(props: any) {
               <div className="rounded-2xl border border-white/8 bg-white/3 px-4 py-3 transition-colors duration-300 hover:border-white/12 hover:bg-white/5">
                 <div className="mb-2 flex items-center gap-2 text-foreground/55">
                   <Library className="h-4 w-4" />
-                  <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Arşiv hissi</span>
+                  <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Koleksiyon hissi</span>
                 </div>
                 <p className="text-sm leading-relaxed text-white/80">
                   {values.isbn?.trim()
@@ -399,12 +464,12 @@ function BookFormSidebar(props: any) {
               <div className="rounded-2xl border border-white/8 bg-white/3 px-4 py-3 transition-colors duration-300 hover:border-white/12 hover:bg-white/5">
                 <div className="mb-2 flex items-center gap-2 text-foreground/55">
                   <Quote className="h-4 w-4" />
-                  <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Kişisel katman</span>
+                  <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Kişisel değerlendirme</span>
                 </div>
                 <p className="text-sm leading-relaxed text-white/80">
                   {values.personalNote?.trim()
                     ? values.personalNote.trim()
-                    : "Değerlendirme ve notlar eklendiğinde kayıt yalnızca envanter değil, kişisel bir iz de taşıyacak."}
+                    : "Kişisel değerlendirme ve notlar eklendiğinde kayıt yalnızca bir koleksiyon verisi değil, okuma deneyiminizi de yansıtacak."}
                 </p>
               </div>
             </div>
@@ -478,6 +543,45 @@ function BookFormActions(props: any) {
   );
 }
 
+type BookFormSectionsProps = React.ComponentProps<typeof BookFormSections>;
+type BookFormSidebarProps = React.ComponentProps<typeof BookFormSidebar>;
+type BookFormActionsProps = React.ComponentProps<typeof BookFormActions>;
+
+function BookFormPageContent({
+  sectionsProps,
+  sidebarProps,
+  actionsProps
+}: {
+  sectionsProps: BookFormSectionsProps;
+  sidebarProps: BookFormSidebarProps;
+  actionsProps: BookFormActionsProps;
+}) {
+  return (
+    <div className="flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1fr)_320px]">
+      <BookFormSidebar {...sidebarProps} />
+      <div className="min-w-0 space-y-8">
+        <BookFormSections {...sectionsProps} />
+        <BookFormActions {...actionsProps} />
+      </div>
+    </div>
+  );
+}
+
+function BookFormModalContent({
+  sectionsProps,
+  actionsProps
+}: {
+  sectionsProps: BookFormSectionsProps;
+  actionsProps: BookFormActionsProps;
+}) {
+  return (
+    <>
+      <BookFormSections {...sectionsProps} />
+      <BookFormActions {...actionsProps} />
+    </>
+  );
+}
+
 type BookFormProps = {
   mode: BookFormMode;
   initialBook?: BookDetail | null;
@@ -487,13 +591,13 @@ type BookFormProps = {
   layout?: "modal" | "page";
 };
 
-export function BookForm({
+function useBookFormLogic({
   mode,
   initialBook,
   onOpenChange,
   onSuccess,
   onCancel,
-  layout = "modal"
+  layout
 }: BookFormProps) {
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
@@ -530,10 +634,17 @@ export function BookForm({
     availableAuthors,
     selectedAuthors,
     draftAuthorNames,
+    publishersQuery,
+    resolvePublisherIdFromName,
+    createPublisher,
+    publisherQuery,
+    setPublisherQuery,
+    canCreatePublisher,
     selectedSeries,
     pendingAuthorSuggestions,
     addAuthorById,
     removeDraftAuthorName,
+    updateDraftAuthorName,
     createAuthor,
     createSeries,
     createCategory,
@@ -551,12 +662,28 @@ export function BookForm({
     invalidateCollections
   });
 
-  const { metadataState, fetchMetadata } = useIsbnMetadata({
-    onMetadataFound: (metadata, _source, coverOptions) => {
+  const applyMetadataToForm = React.useCallback(
+    (
+      metadata: IsbnMetadata,
+      _source: IsbnMetadataSource,
+      coverOptions: IsbnCoverOption[]
+    ) => {
       void (async () => {
         setValue("title", metadata.title ?? "", { shouldDirty: true });
         setValue("subtitle", metadata.subtitle ?? "", { shouldDirty: true });
-        setValue("publisher", metadata.publisher ?? "", { shouldDirty: true });
+
+        if (metadata.publisher) {
+          const resolvedId = await resolvePublisherIdFromName(metadata.publisher);
+          if (resolvedId) {
+            setValue("publisher", { id: resolvedId }, { shouldDirty: true });
+          } else {
+            setValue("publisher", { name: metadata.publisher }, { shouldDirty: true });
+            setPublisherQuery(metadata.publisher);
+          }
+        } else {
+          setValue("publisher", null, { shouldDirty: true });
+        }
+
         setValue("publicationYear", metadata.publicationYear?.toString() ?? "", {
           shouldDirty: true
         });
@@ -569,10 +696,11 @@ export function BookForm({
         }
 
         if (metadata.authors.length > 0) {
-          const authorIds = await resolveAuthorIdsFromNames(metadata.authors);
-          if (authorIds.length > 0) {
+          const { resolvedIds, unresolvedNames } = await resolveAuthorIdsFromNames(metadata.authors);
+
+          if (resolvedIds.length > 0) {
             const mergedAuthorIds = Array.from(
-              new Set([...(values.authorIds ?? []), ...authorIds])
+              new Set([...(values.authorIds ?? []), ...resolvedIds])
             );
 
             setValue("authorIds", mergedAuthorIds, {
@@ -580,9 +708,27 @@ export function BookForm({
               shouldValidate: true
             });
           }
+
+          if (unresolvedNames.length > 0 && !authorQuery.trim()) {
+            setAuthorQuery(unresolvedNames[0]);
+          }
         }
       })();
-    }
+    },
+    [
+      authorQuery,
+      resolveAuthorIdsFromNames,
+      resolvePublisherIdFromName,
+      setAuthorQuery,
+      setPublisherQuery,
+      setValue,
+      values.authorIds,
+      values.coverCustomUrl
+    ]
+  );
+
+  const { metadataState, fetchMetadata } = useIsbnMetadata({
+    onMetadataFound: applyMetadataToForm
   });
 
   const { isUploadingCover, uploadCover, revertCoverToDefault } = useCoverUpload({
@@ -601,7 +747,7 @@ export function BookForm({
     onError: setSubmitError
   });
 
-  const coverPreviewUrl = values.coverCustomUrl || values.coverMetadataUrl || null;
+  const coverPreviewUrl = toSafeCoverPreviewUrl(values.coverCustomUrl || values.coverMetadataUrl || null);
   const summaryStatus = STATUS_META[values.status];
   const summaryAuthors = [
     ...selectedAuthors.map((author) => author.name),
@@ -618,7 +764,7 @@ export function BookForm({
   const hasSummaryContent = Boolean(
     values.title?.trim() ||
       summaryAuthors.length ||
-      values.publisher?.trim() ||
+      values.publisher ||
       values.publicationYear?.trim() ||
       values.personalNote?.trim() ||
       coverPreviewUrl
@@ -634,131 +780,134 @@ export function BookForm({
     await runDuplicateCheck(submittedValues, payload);
   });
   const canCreateSeriesExt = values.isSeries && canCreateSeries;
+  const sectionsProps: BookFormSectionsProps = {
+    addAuthorById,
+    availableAuthors,
+    authorQuery,
+    canCreateAuthor,
+    canCreateCategory,
+    canCreateSeries: canCreateSeriesExt,
+    categoryQuery,
+    categories: categoriesQuery.data ?? [],
+    createAuthor,
+    createCategory,
+    createSeries,
+    createPublisher,
+    draftAuthorNames,
+    fileInputRef,
+    fetchMetadata,
+    hasCustomCover: Boolean(values.coverCustomUrl),
+    isSubmitting,
+    isUploadingCover,
+    metadataState,
+    mode,
+    onRevertClick: () => void revertCoverToDefault(),
+    onSelectMetadataCover: (url: string) => {
+      setValue("coverMetadataUrl", url, { shouldDirty: true });
+    },
+    onUploadClick: () => fileInputRef.current?.click(),
+    pendingAuthorSuggestions,
+    removeDraftAuthorName,
+    updateDraftAuthorName,
+    resolveSuggestedAuthor,
+    selectedAuthors,
+    selectedMetadataCoverUrl: values.coverMetadataUrl || null,
+    selectedSeries,
+    series: seriesQueryResult.data ?? [],
+    seriesQuery,
+    setAuthorQuery,
+    setCategoryQuery,
+    setSeriesQuery,
+    setPublisherQuery,
+    publishers: publishersQuery.data ?? [],
+    publisherQuery,
+    canCreatePublisher,
+    coverPreviewUrl,
+    uploadCover,
+    values
+  };
+
+  const sidebarProps: BookFormSidebarProps = {
+    categoryLabel,
+    coverPreviewUrl,
+    hasSummaryContent,
+    mode,
+    selectedSeries,
+    stickyStyle,
+    summaryAuthors,
+    summaryLocation,
+    summarySeries,
+    summaryStatus,
+    summaryTitle,
+    values,
+    publishers: publishersQuery.data ?? []
+  };
+
+  const actionsProps: BookFormActionsProps = {
+    isSubmitting,
+    layout,
+    mode,
+    onCancel,
+    onOpenChange,
+    submitError
+  };
+
+  return {
+    actionsProps,
+    duplicateResult,
+    form,
+    isSubmitting,
+    onSubmit,
+    pendingSubmitRef,
+    performSubmit,
+    sectionsProps,
+    setDuplicateResult,
+    sidebarProps
+  };
+}
+
+export function BookForm({
+  mode,
+  initialBook,
+  onOpenChange,
+  onSuccess,
+  onCancel,
+  layout = "modal"
+}: BookFormProps) {
+  const {
+    actionsProps,
+    duplicateResult,
+    form,
+    isSubmitting,
+    onSubmit,
+    pendingSubmitRef,
+    performSubmit,
+    sectionsProps,
+    setDuplicateResult,
+    sidebarProps
+  } = useBookFormLogic({
+    mode,
+    initialBook,
+    onOpenChange,
+    onSuccess,
+    onCancel,
+    layout
+  });
 
   return (
     <FormProvider {...form}>
-      <form className={cn("pb-12", layout === "page" ? "space-y-8" : "space-y-12 pb-16")} onSubmit={onSubmit}>
+      <form className={cn("pb-12", layout === "page" ? "space-y-6 md:space-y-8" : "space-y-8 pb-16 md:space-y-12")} onSubmit={onSubmit}>
         {layout === "page" ? (
-          <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
-            <BookFormSidebar
-              categoryLabel={categoryLabel}
-              coverPreviewUrl={coverPreviewUrl}
-              hasSummaryContent={hasSummaryContent}
-              mode={mode}
-              selectedSeries={selectedSeries}
-              stickyStyle={stickyStyle}
-              summaryAuthors={summaryAuthors}
-              summaryLocation={summaryLocation}
-              summarySeries={summarySeries}
-              summaryStatus={summaryStatus}
-              summaryTitle={summaryTitle}
-              values={values}
-            />
-
-            <div className="min-w-0 space-y-8">
-              <BookFormSections
-                addAuthorById={addAuthorById}
-                availableAuthors={availableAuthors}
-                authorQuery={authorQuery}
-                canCreateAuthor={canCreateAuthor}
-                canCreateCategory={canCreateCategory}
-                canCreateSeries={canCreateSeriesExt}
-                categoryQuery={categoryQuery}
-                categories={categoriesQuery.data ?? []}
-                createAuthor={createAuthor}
-                createCategory={createCategory}
-                createSeries={createSeries}
-                draftAuthorNames={draftAuthorNames}
-                fileInputRef={fileInputRef}
-                fetchMetadata={fetchMetadata}
-                hasCustomCover={Boolean(values.coverCustomUrl)}
-                isSubmitting={isSubmitting}
-                isUploadingCover={isUploadingCover}
-                metadataState={metadataState}
-                mode={mode}
-                onRevertClick={() => void revertCoverToDefault()}
-                onSelectMetadataCover={(url: string) => {
-                  setValue("coverMetadataUrl", url, { shouldDirty: true });
-                }}
-                onUploadClick={() => fileInputRef.current?.click()}
-                pendingAuthorSuggestions={pendingAuthorSuggestions}
-                removeDraftAuthorName={removeDraftAuthorName}
-                resolveSuggestedAuthor={resolveSuggestedAuthor}
-                selectedAuthors={selectedAuthors}
-                selectedMetadataCoverUrl={values.coverMetadataUrl || null}
-                selectedSeries={selectedSeries}
-                series={seriesQueryResult.data ?? []}
-                seriesQuery={seriesQuery}
-                setAuthorQuery={setAuthorQuery}
-                setCategoryQuery={setCategoryQuery}
-                setSeriesQuery={setSeriesQuery}
-                coverPreviewUrl={coverPreviewUrl}
-                uploadCover={uploadCover}
-                values={values}
-              />
-
-              <BookFormActions
-                isSubmitting={isSubmitting}
-                layout={layout}
-                mode={mode}
-                onCancel={onCancel}
-                onOpenChange={onOpenChange}
-                submitError={submitError}
-              />
-            </div>
-          </div>
+          <BookFormPageContent
+            actionsProps={actionsProps}
+            sectionsProps={sectionsProps}
+            sidebarProps={sidebarProps}
+          />
         ) : (
-          <>
-            <BookFormSections
-              addAuthorById={addAuthorById}
-              availableAuthors={availableAuthors}
-              authorQuery={authorQuery}
-              canCreateAuthor={canCreateAuthor}
-              canCreateCategory={canCreateCategory}
-              canCreateSeries={canCreateSeriesExt}
-              categoryQuery={categoryQuery}
-              categories={categoriesQuery.data ?? []}
-              createAuthor={createAuthor}
-              createCategory={createCategory}
-              createSeries={createSeries}
-              draftAuthorNames={draftAuthorNames}
-              fileInputRef={fileInputRef}
-              fetchMetadata={fetchMetadata}
-              hasCustomCover={Boolean(values.coverCustomUrl)}
-              isSubmitting={isSubmitting}
-              isUploadingCover={isUploadingCover}
-              metadataState={metadataState}
-              mode={mode}
-              onRevertClick={() => void revertCoverToDefault()}
-              onSelectMetadataCover={(url: string) => {
-                setValue("coverMetadataUrl", url, { shouldDirty: true });
-              }}
-              onUploadClick={() => fileInputRef.current?.click()}
-              pendingAuthorSuggestions={pendingAuthorSuggestions}
-              removeDraftAuthorName={removeDraftAuthorName}
-              resolveSuggestedAuthor={resolveSuggestedAuthor}
-              selectedAuthors={selectedAuthors}
-              selectedMetadataCoverUrl={values.coverMetadataUrl || null}
-              selectedSeries={selectedSeries}
-              series={seriesQueryResult.data ?? []}
-              seriesQuery={seriesQuery}
-              setAuthorQuery={setAuthorQuery}
-              setCategoryQuery={setCategoryQuery}
-              setSeriesQuery={setSeriesQuery}
-              coverPreviewUrl={coverPreviewUrl}
-              uploadCover={uploadCover}
-              values={values}
-            />
-
-            <BookFormActions
-              isSubmitting={isSubmitting}
-              layout={layout}
-              mode={mode}
-              onCancel={onCancel}
-              onOpenChange={onOpenChange}
-              submitError={submitError}
-            />
-          </>
+          <BookFormModalContent
+            actionsProps={actionsProps}
+            sectionsProps={sectionsProps}
+          />
         )}
       </form>
 

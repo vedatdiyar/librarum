@@ -4,8 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { ComponentType, ReactNode } from "react";
-import { ArrowRight, BookCopy, BookOpen, BrainCircuit, Clock3, LoaderCircle, UserRound, Waypoints } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, cn } from "@/components/ui";
+import { ArrowRight, BookCopy, BookOpen, Clock3, LoaderCircle, UserRound, Waypoints } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, ChartFrame, cn } from "@/components/ui";
 import { StatCard } from "@/components/stat-card";
 import type { CategoryDistributionPoint, StatsSnapshot } from "@/types";
 
@@ -96,7 +96,7 @@ function BookThumb({
 
   return (
     <div className="flex h-16 w-12 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-white/2 p-2 transition-all duration-500 group-hover:scale-105">
-      <span className="line-clamp-3 text-center text-[8px] font-medium tracking-tighter text-foreground uppercase">{title}</span>
+      <span className="line-clamp-3 text-center text-[11px] font-medium tracking-tight text-foreground">{title}</span>
     </div>
   );
 }
@@ -119,7 +119,7 @@ export function DashboardSection({
       <div className="flex flex-row items-center justify-between border-b border-white/5 px-6 py-5">
         <div className="space-y-1">
           <h3 className="font-serif text-lg font-bold tracking-tight text-foreground">{title}</h3>
-          <p className="text-[11px] font-medium tracking-widest text-foreground uppercase">{description}</p>
+          <p className="text-[11px] font-medium tracking-wide text-foreground">{description}</p>
         </div>
         {action}
       </div>
@@ -138,9 +138,9 @@ export function SummaryStats({ stats }: { stats: StatsSnapshot }) {
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <SnapshotCard
         delayClass="stagger-1"
-        helper={`${stats.totals.totalCopies} kayıtlı eser.`}
+        helper={`${stats.totals.totalCopies} kayıtlı kitap.`}
         icon={BookCopy}
-        label="Kütüphane"
+        label="Koleksiyon"
         value={stats.totals.totalBooks}
       />
       <SnapshotCard
@@ -159,7 +159,7 @@ export function SummaryStats({ stats }: { stats: StatsSnapshot }) {
       />
       <SnapshotCard
         delayClass="stagger-4"
-        helper={`Kütüphane dışındaki kitaplar.`}
+        helper={`Koleksiyon dışındaki kitaplar.`}
         icon={Waypoints}
         label="Ödünçte"
         value={stats.totals.loanedBooks}
@@ -179,7 +179,7 @@ export function BacklogWidget({
     <DashboardSection
       action={
         <Link
-          className="group flex items-center gap-1.5 text-[11px] font-bold tracking-widest text-primary uppercase transition-colors hover:text-primary"
+          className="group flex items-center gap-1.5 text-[11px] font-bold tracking-wide text-primary transition-colors hover:text-primary"
           href="/books"
         >
           Hepsini Gör
@@ -223,47 +223,8 @@ export function BacklogWidget({
           ))}
         </div>
       ) : (
-        <WidgetState message="Bekleyen kitap yok. Yeni bir eser eklemeye ne dersiniz?" />
+        <WidgetState message="Bekleyen kitap yok. Yeni bir kitap eklemeye ne dersiniz?" />
       )}
-    </DashboardSection>
-  );
-}
-
-export function AiSuggestionsWidget() {
-  return (
-    <DashboardSection
-      action={
-        <Link
-          className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-widest text-primary uppercase transition-colors hover:text-white"
-          href="/ai-suggestions"
-        >
-          Aç
-          <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
-      }
-      description="Eksik eserler, okuma önceliği ve tavsiyeler"
-      title="Akıllı Öneriler"
-    >
-      <div className="grid gap-5 lg:grid-cols-[auto_1fr_auto] lg:items-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-primary">
-          <BrainCircuit className="h-8 w-8" />
-        </div>
-        <div className="space-y-2">
-          <p className="text-[10px] font-bold tracking-[0.3em] text-primary uppercase">
-            Akıllı Öneriler
-          </p>
-          <p className="max-w-2xl text-sm leading-relaxed text-foreground/80">
-            Kütüphanenizdeki eksikleri tamamlayın, okuma önceliklerinizi belirleyin ve akıllı koleksiyon önerilerine göz atın.
-          </p>
-        </div>
-        <Link
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-black transition-all hover:bg-primary hover:text-white"
-          href="/ai-suggestions"
-        >
-          Önerileri İncele
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-      </div>
     </DashboardSection>
   );
 }
@@ -271,7 +232,7 @@ export function AiSuggestionsWidget() {
 export function RecentBooksWidget({ recentBooksQuery }: { recentBooksQuery: any }) {
   return (
     <DashboardSection
-      description="Koleksiyonunuza son eklenen eserler"
+      description="Koleksiyonunuza son eklenen kitaplar"
       title="Son Eklenenler"
     >
       {recentBooksQuery.isLoading ? (
@@ -296,7 +257,7 @@ export function RecentBooksWidget({ recentBooksQuery }: { recentBooksQuery: any 
                     <p className="line-clamp-1 text-xs font-bold tracking-tight text-foreground/90 transition-colors group-hover:text-primary">
                         {book.title}
                     </p>
-                    <p className="mt-1 line-clamp-1 text-[10px] font-medium tracking-tighter text-foreground uppercase">
+                    <p className="mt-1 line-clamp-1 text-[11px] font-medium tracking-tight text-foreground">
                         {formatAuthors(book.authors)}
                     </p>
                 </div>
@@ -340,7 +301,7 @@ export function FavoriteAuthorsWidget({ favoriteAuthorsQuery }: { favoriteAuthor
                   <p className="truncate text-sm font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
                     {author.name}
                   </p>
-                  <p className="mt-0.5 text-[10px] font-bold tracking-widest text-foreground uppercase">
+                  <p className="mt-0.5 text-[11px] font-bold tracking-wide text-foreground">
                     {author.ratedBooks} değerlendirme
                   </p>
                 </div>
@@ -350,7 +311,7 @@ export function FavoriteAuthorsWidget({ favoriteAuthorsQuery }: { favoriteAuthor
                 <div className="font-serif text-lg font-bold text-primary transition-transform group-hover:scale-110">
                     {author.averageRating.toFixed(1)}
                 </div>
-                <div className="text-[10px] font-bold tracking-tighter text-foreground uppercase">Puan</div>
+                <div className="text-[11px] font-bold tracking-tight text-foreground">Puan</div>
               </div>
             </Link>
           ))}
@@ -382,14 +343,14 @@ export function CategoryDistributionWidget({
         />
       ) : categoryChartData.length > 0 ? (
         <div className="space-y-8">
-          <div className="h-[240px] w-full min-w-0 rounded-2xl border border-white/5 bg-white/1 p-4 shadow-inner">
+          <ChartFrame className="rounded-2xl border border-white/5 bg-white/1 p-4 shadow-inner" height={240}>
             <ResponsiveContainer height="100%" minHeight={240} minWidth={0} width="100%">
               <BarChart data={categoryChartData} margin={CHART_MARGIN}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.03)" vertical={false} />
                 <XAxis
                   axisLine={false}
                   dataKey="name"
-                  tick={{ fill: "var(--foreground)", fontSize: 9, fontWeight: 700, style: { textTransform: 'uppercase', letterSpacing: '0.1em' } }}
+                  tick={{ fill: "var(--foreground)", fontSize: 10, fontWeight: 700, style: { textTransform: 'none', letterSpacing: '0.05em' } }}
                   tickLine={false}
                 />
                 <YAxis
@@ -410,7 +371,7 @@ export function CategoryDistributionWidget({
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </ChartFrame>
 
           <div className="grid gap-3 sm:grid-cols-2">
             {categoryChartData.map((entry, index) => (

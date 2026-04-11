@@ -10,6 +10,7 @@ import {
 } from "@/db";
 import type { BookStatus, SearchResultItem } from "@/types";
 import { normalizeText } from "@/lib/shared";
+import { toCoverDeliveryUrl } from "@/server/r2";
 
 type ParsedSearchQuery = {
   status?: BookStatus;
@@ -183,7 +184,7 @@ async function searchStructuredResults(parsed: ParsedSearchQuery): Promise<BookR
     id: row.id,
     slug: row.slug,
     title: row.title,
-    coverUrl: row.coverUrl,
+    coverUrl: toCoverDeliveryUrl(row.coverUrl),
     updatedAt: row.updatedAt.toISOString(),
     authors: authorsByBookId.get(row.id) ?? [],
     score: 100
@@ -247,7 +248,7 @@ async function searchTokenResults(tokens: string[]): Promise<BookRow[]> {
       id: row.id,
       slug: row.slug,
       title: row.title,
-      coverUrl: row.coverUrl,
+      coverUrl: toCoverDeliveryUrl(row.coverUrl),
       updatedAt: row.updatedAt.toISOString(),
       authors: authorsByBookId.get(row.id) ?? [],
       score

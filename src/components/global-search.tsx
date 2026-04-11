@@ -87,7 +87,7 @@ export function GlobalSearch({ compact = false, expandable = false, className }:
     <div className={cn("group relative", className)} ref={rootRef}>
       {isCollapsedExpandable ? (
         <button
-          aria-label="Arşivlerde ara"
+          aria-label="Koleksiyonda ara"
           className={cn(
             "flex h-11 w-11 items-center justify-center rounded-xl border border-white/5 bg-white/2 transition-all duration-300 hover:scale-105 hover:border-white/10 hover:bg-white/5 active:scale-95",
             compact ? "h-10 w-10" : ""
@@ -115,9 +115,12 @@ export function GlobalSearch({ compact = false, expandable = false, className }:
             <Search className="h-5 w-5" />
           </div>
 
+          <label className="sr-only" htmlFor="globalSearchQuery">Koleksiyonda ara</label>
           <input
-            aria-label="Arşivlerde ara"
+            aria-label="Koleksiyonda ara"
             ref={inputRef}
+            id="globalSearchQuery"
+            name="globalSearchQuery"
             className="ml-3 w-full bg-transparent text-[14px] font-medium text-white/90 transition-all duration-500 outline-none placeholder:text-foreground"
             onBlur={() => {
               if (query === "") {
@@ -133,7 +136,7 @@ export function GlobalSearch({ compact = false, expandable = false, className }:
                 setIsExpanded(false);
               }
             }}
-            placeholder="Eserlerde, yazarlarda ara..."
+            placeholder="Kitaplarda, yazarlarda ara..."
             value={query}
           />
 
@@ -162,13 +165,13 @@ export function GlobalSearch({ compact = false, expandable = false, className }:
                 </div>
               ) : searchQuery.isError ? (
                 <div className="px-6 py-8 text-sm font-medium text-rose-400 italic">
-                  Eşitleme hatası oluştu.
+                  Sonuçlara ulaşılamadı.
                 </div>
               ) : (
                 <>
-                  <CommandEmpty className="px-6 py-12 text-center text-sm text-foreground italic">Matriste eşleşen eser bulunamadı.</CommandEmpty>
+                  <CommandEmpty className="px-6 py-12 text-center text-sm text-foreground italic">Eşleşen kitap bulunamadı.</CommandEmpty>
                   <CommandGroup 
-                    heading={<span className="mb-2 block border-b border-white/5 px-2 py-4 text-[10px] font-bold tracking-[0.3em] text-foreground uppercase">Keşif Matrisi</span>}
+                    heading={<span className="mb-2 block border-b border-white/5 px-2 py-4 text-[10px] font-bold tracking-[0.3em] text-foreground uppercase">Keşif Dizini</span>}
                   >
                     {(searchQuery.data ?? []).map((result, idx) => (
                       <CommandItem

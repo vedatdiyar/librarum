@@ -1,9 +1,11 @@
 const r2PublicUrl = process.env.LIBRARUM_R2_PUBLIC_URL
   ? new URL(process.env.LIBRARUM_R2_PUBLIC_URL)
   : null;
+const disableImageOptimizationInDev = process.env.NODE_ENV === "development";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  allowedDevOrigins: ["10.152.140.195"],
   experimental: {
     optimizePackageImports: [
       "lucide-react",
@@ -13,6 +15,7 @@ const nextConfig = {
     ]
   },
   images: {
+    unoptimized: disableImageOptimizationInDev,
     qualities: [70, 75, 90],
     remotePatterns: [
       {
@@ -30,6 +33,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "*.archive.org"
+      },
+      {
+        protocol: "https",
+        hostname: "*.r2.dev"
       },
       ...(r2PublicUrl
         ? [

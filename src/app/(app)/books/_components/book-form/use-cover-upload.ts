@@ -15,6 +15,12 @@ export function useCoverUpload(options: {
 }) {
   const [isUploadingCover, setIsUploadingCover] = React.useState(false);
 
+  const resolveEndpoint = React.useCallback(() => {
+    return options.mode === "edit" && options.initialBook?.id
+      ? `/api/books/${options.initialBook.id}/cover`
+      : "/api/books/cover";
+  }, [options.initialBook?.id, options.mode]);
+
   const uploadCover = React.useCallback(
     async (file: File) => {
       if (file.size > 5 * 1024 * 1024) {
@@ -32,12 +38,7 @@ export function useCoverUpload(options: {
         const formData = new FormData();
         formData.append("file", file);
 
-        const endpoint =
-          options.mode === "edit" && options.initialBook?.id
-            ? `/api/books/${options.initialBook.id}/cover`
-            : "/api/books/cover";
-
-        const response = await fetch(endpoint, {
+        const response = await fetch(resolveEndpoint(), {
           method: "POST",
           body: formData
         });
@@ -50,19 +51,14 @@ export function useCoverUpload(options: {
         setIsUploadingCover(false);
       }
     },
-    [options]
+    [options, resolveEndpoint]
   );
 
   const revertCoverToDefault = React.useCallback(async () => {
     setIsUploadingCover(true);
     try {
       if (options.currentCoverCustomUrl) {
-        const endpoint =
-          options.mode === "edit" && options.initialBook?.id
-            ? `/api/books/${options.initialBook.id}/cover`
-            : "/api/books/cover";
-
-        await fetch(endpoint, {
+        await fetch(resolveEndpoint(), {
           method: "DELETE",
           headers: {
             "content-type": "application/json"
@@ -78,7 +74,7 @@ export function useCoverUpload(options: {
     } finally {
       setIsUploadingCover(false);
     }
-  }, [options]);
+  }, [options, resolveEndpoint]);
 
   return {
     isUploadingCover,

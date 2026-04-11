@@ -102,8 +102,12 @@ export const listBooksQuerySchema = z.object({
   location: nullableStringSchema
 });
 
-export const authorListQuerySchema = z.object({
+export const entityListQuerySchema = z.object({
   q: nullableStringSchema
+});
+
+export const createEntitySchema = z.object({
+  name: z.string().trim().min(1)
 });
 
 export const searchQuerySchema = z.object({
@@ -139,7 +143,7 @@ export const createBookSchema = z
     subtitle: nullableStringSchema,
     authors: z.array(entityReferenceSchema).min(1),
     isbn: nullableStringSchema,
-    publisher: nullableStringSchema,
+    publisher: entityReferenceSchema.nullable().optional(),
     publicationYear: nullablePositiveIntSchema,
     pageCount: nullablePositiveIntSchema,
     status: z.enum(bookStatusValues),
@@ -199,7 +203,7 @@ export const updateBookSchema = z
     subtitle: nullableStringSchema,
     authors: z.array(entityReferenceSchema).min(1).optional(),
     isbn: nullableStringSchema,
-    publisher: nullableStringSchema,
+    publisher: entityReferenceSchema.nullable().optional(),
     publicationYear: nullablePositiveIntSchema,
     pageCount: nullablePositiveIntSchema,
     status: z.enum(bookStatusValues).optional(),

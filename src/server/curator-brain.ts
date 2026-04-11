@@ -140,7 +140,7 @@ function buildGeminiThinkingConfig(modelName: string, thinkingMode: CuratorThink
 // ============================================================
 
 const LibraryPanoramaSchema = z.object({
-  summary: z.string().describe("Kütüphane hakkında 2-3 cümlelik akıcı bir küratör özeti"),
+  summary: z.string().describe("Koleksiyon hakkında 2-3 cümlelik akıcı bir küratör özeti"),
   categoryBreakdown: z.array(
     z.object({
       category: z.string(),
@@ -314,7 +314,7 @@ const CURATOR_NARRATIVE_RESPONSE_SCHEMA = {
 
 function createCuratorPromptContext(libraryDNA: LibraryDNA): string {
   return `
-## Kütüphane DNA Profili
+## Koleksiyon DNA Profili
 
 - Toplam Kitap: ${libraryDNA.totalBooks}
 - Okunmamış: ${libraryDNA.unreadCount} (${libraryDNA.unreadPercentage.toFixed(1)}%)
@@ -357,7 +357,7 @@ ${createCuratorPromptContext(libraryDNA)}
 
 Araştırma ilkeleri:
 - Google Search kullanmak zorundasın.
-- Kitap adı, yazar adı ve eser-yazar eşleşmesini doğrulamadan spesifik öneri verme.
+- Kitap adı, yazar adı ve kitap-yazar eşleşmesini doğrulamadan spesifik öneri verme.
 - Doğrulayamıyorsan genel öneri ver.
 - Gerçek olmayan bibliyografik bilgi uydurma.
 - Kütüphane içgörüsü ile dış dünya bulgularını açık biçimde ayır.
@@ -577,10 +577,10 @@ Verilen kütüphane verisini analiz et ve mutlaka Google Search kullanarak doğr
 
 Zorunlu kurallar:
 - Google Search'ü kullanmak zorundasın.
-- Kitap adı, yazar adı ve eser-yazar eşleşmesini Google Search ile doğrula.
+- Kitap adı, yazar adı ve kitap-yazar eşleşmesini Google Search ile doğrula.
 - Doğrulayamadığın hiçbir kitabı veya yazarı spesifik öneri olarak yazma.
 - Emin olmadığın durumda genel öneri ver.
-- Gerçek olmayan kitap, yazar, eser, ödül, seri veya yayın bilgisi uydurma.
+- Gerçek olmayan kitap, yazar, ödül, seri veya yayın bilgisi uydurma.
 - Kütüphane verisi ile dış dünya bilgisini birbirine karıştırma.
 - Çıktı JSON değil, araştırma notu olsun.
 - Yalnızca araştırma notu üret; ekstra açıklama ekleme.

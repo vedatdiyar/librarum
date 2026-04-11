@@ -35,14 +35,14 @@ export function EditBookFormTrigger({
         {buttonLabel}
       </Button>
       <BookFormShell
-        description="Arşivdeki eser kaydını güncelleyin."
+        description="Arşivdeki kitap kaydını güncelleyin."
         onOpenChange={setOpen}
         open={open}
-        title="Eseri Düzenle"
+        title="Kitabı Düzenle"
       >
         {bookQuery.isLoading || !bookQuery.data ? (
           <div className="rounded-2xl border border-border bg-surface p-6 text-sm text-text-secondary">
-            Eser detayları yükleniyor...
+            Kitap detayları yükleniyor...
           </div>
         ) : (
           <BookForm

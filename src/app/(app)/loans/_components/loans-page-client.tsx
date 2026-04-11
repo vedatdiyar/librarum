@@ -42,7 +42,7 @@ function BookThumb({ title, coverUrl }: { title: string; coverUrl: string | null
   if (coverUrl) {
     return (
       <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/2 shadow-xl transition-transform duration-500 group-hover:scale-110">
-        <Image alt="" className="object-cover opacity-30 blur-lg" fill src={coverUrl} />
+        <Image alt="" className="object-cover opacity-30 blur-lg" fill sizes="64px" src={coverUrl} />
         <Image alt={`${title} cover`} className="relative object-contain" fill sizes="64px" src={coverUrl} />
       </div>
     );
@@ -121,7 +121,7 @@ export function LoansPageClient() {
     <>
       <section className="space-y-10 pb-20">
         <PageHero
-          description="Şu anda kütüphane dışında olan tüm eserlerin listesi. Kimde olduklarını ve iade tarihlerini buradan takip edebilirsiniz."
+          description="Şu anda kütüphane dışında olan tüm kitapların listesi. Kimde olduklarını ve iade tarihlerini buradan takip edebilirsiniz."
           kicker="Ödünç Listesi"
           title={appPageTitles.loans}
         />
@@ -130,7 +130,7 @@ export function LoansPageClient() {
             <div className="flex flex-col items-start justify-between gap-6 border-b border-white/3 bg-white/3 px-6 py-6 md:flex-row md:items-center md:px-8">
                 <div>
                    <h3 className="font-serif text-xl font-bold tracking-tight text-white">Aktif Ödünçler</h3>
-                   <p className="mt-1 text-[12px] leading-relaxed text-foreground/60 italic">Kütüphane dışında bulunan kitapların listesi.</p>
+                   <p className="mt-1 text-[12px] leading-relaxed text-foreground/60 italic">Koleksiyon dışında bulunan kitapların listesi.</p>
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="hidden h-10 w-px bg-white/5 md:block" />
@@ -156,7 +156,7 @@ export function LoansPageClient() {
                     <Table>
                         <TableHeader>
                             <TableRow className="border-b border-white/5 hover:bg-transparent">
-                                <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Eser Bilgisi</TableHead>
+                                <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Kitap Bilgisi</TableHead>
                                 <TableHead className="text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Kimde?</TableHead>
                                 <TableHead className="text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Verildiği Tarih</TableHead>
                                 <TableHead className="w-40 text-right text-[9px] font-bold tracking-wider text-foreground/40 uppercase">İşlem</TableHead>
@@ -208,7 +208,7 @@ export function LoansPageClient() {
                                             className="h-10 rounded-xl bg-white px-6 text-[9px] font-bold tracking-widest text-black uppercase shadow-2xl transition-all hover:bg-primary"
                                         >
                                             <BookOpenText className="mr-2 h-3.5 w-3.5" />
-                                            Eseri İade Edildi
+                                            Kitap İade Edildi
                                         </Button>
                                     </TableCell>
                                 </TableRow>

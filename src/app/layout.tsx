@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: "%s | Librarum",
     default: "Librarum",
   },
-  description: "Kişisel kitap arşivi ve kütüphane yönetim sistemi",
+  description: "Dijital kitap koleksiyonu ve kütüphane yönetim sistemi",
 };
 
 export const viewport: Viewport = {

@@ -89,7 +89,7 @@ export function SeriesPageClient() {
   return (
     <section className="space-y-10 pb-20">
       <PageHero
-        description="Kitaplığınızdaki tüm serilerin ve çok ciltli setlerin derlenmiş bir özeti. Koleksiyonunuzun gelişimini buradan takip edebilirsiniz."
+        description="Koleksiyonunuzdaki tüm serilerin ve çok ciltli setlerin derlenmiş bir özeti. Koleksiyonunuzun gelişimini buradan takip edebilirsiniz."
         kicker="Seri Koleksiyonu"
         title={appPageTitles.series}
       />
@@ -126,7 +126,7 @@ export function SeriesPageClient() {
                 <TableRow className="border-b border-white/5 hover:bg-transparent">
                   <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Seri</TableHead>
                   <TableHead className="w-48 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Toplam</TableHead>
-                  <TableHead className="w-48 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Kitaplıkta</TableHead>
+                  <TableHead className="w-48 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Koleksiyonda</TableHead>
                   <TableHead className="w-48 text-right text-[9px] font-bold tracking-wider text-foreground/40 uppercase">İlerleme</TableHead>
                 </TableRow>
               </TableHeader>

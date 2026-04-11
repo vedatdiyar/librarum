@@ -1,14 +1,15 @@
+CREATE TYPE "public"."recommendation_preference_type" AS ENUM('author', 'category');--> statement-breakpoint
 CREATE TYPE "public"."book_status" AS ENUM('owned', 'completed', 'abandoned', 'loaned', 'lost');--> statement-breakpoint
-CREATE TYPE "public"."recommendation_preference_type" AS ENUM('author', 'category', 'tag');--> statement-breakpoint
 CREATE TABLE "ai_suggestions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"generated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"content" jsonb NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "authors" (
+CREATE TABLE "recommendation_preferences" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"name" text NOT NULL
+	"type" "recommendation_preference_type" NOT NULL,
+	"value" text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "book_authors" (
@@ -27,6 +28,8 @@ CREATE TABLE "book_series" (
 CREATE TABLE "books" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"title" text NOT NULL,
+	"slug" text NOT NULL,
+	"subtitle" text,
 	"isbn" text,
 	"publisher" text,
 	"publication_year" integer,
@@ -34,7 +37,6 @@ CREATE TABLE "books" (
 	"status" "book_status" NOT NULL,
 	"location_name" text,
 	"shelf_row" text,
-	"shelf_column" integer,
 	"copy_count" integer DEFAULT 1 NOT NULL,
 	"donatable" boolean DEFAULT false NOT NULL,
 	"rating" numeric(2, 1),
@@ -46,15 +48,28 @@ CREATE TABLE "books" (
 	"cover_custom_url" text,
 	"cover_metadata_url" text,
 	"category_id" uuid,
+	"publisher_id" uuid,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "books_copy_count_positive_check" CHECK ("books"."copy_count" >= 1),
 	CONSTRAINT "books_publication_year_positive_check" CHECK ("books"."publication_year" is null or "books"."publication_year" > 0),
 	CONSTRAINT "books_page_count_positive_check" CHECK ("books"."page_count" is null or "books"."page_count" > 0),
-	CONSTRAINT "books_shelf_column_positive_check" CHECK ("books"."shelf_column" is null or "books"."shelf_column" >= 1),
 	CONSTRAINT "books_read_month_range_check" CHECK ("books"."read_month" is null or ("books"."read_month" >= 1 and "books"."read_month" <= 12)),
 	CONSTRAINT "books_read_month_requires_year_check" CHECK ("books"."read_month" is null or "books"."read_year" is not null),
 	CONSTRAINT "books_rating_half_step_check" CHECK ("books"."rating" is null or ("books"."rating" >= 0.5 and "books"."rating" <= 5.0 and mod((("books"."rating" * 10)::int), 5) = 0))
+);
+--> statement-breakpoint
+CREATE TABLE "author_aliases" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"author_id" uuid NOT NULL,
+	"name" text NOT NULL,
+	"normalized_name" text NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "authors" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"name" text NOT NULL,
+	"slug" text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "categories" (
@@ -62,10 +77,17 @@ CREATE TABLE "categories" (
 	"name" text NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "recommendation_preferences" (
+CREATE TABLE "publisher_aliases" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"type" "recommendation_preference_type" NOT NULL,
-	"value" text NOT NULL
+	"publisher_id" uuid NOT NULL,
+	"name" text NOT NULL,
+	"normalized_name" text NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "publishers" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"name" text NOT NULL,
+	"slug" text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "series" (
@@ -75,20 +97,37 @@ CREATE TABLE "series" (
 	CONSTRAINT "series_total_volumes_positive_check" CHECK ("series"."total_volumes" is null or "series"."total_volumes" >= 1)
 );
 --> statement-breakpoint
-
+CREATE TABLE "users" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"email" text NOT NULL,
+	"password_hash" text NOT NULL,
+	"display_name" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 ALTER TABLE "book_authors" ADD CONSTRAINT "book_authors_book_id_books_id_fk" FOREIGN KEY ("book_id") REFERENCES "public"."books"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "book_authors" ADD CONSTRAINT "book_authors_author_id_authors_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."authors"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "book_series" ADD CONSTRAINT "book_series_book_id_books_id_fk" FOREIGN KEY ("book_id") REFERENCES "public"."books"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "book_series" ADD CONSTRAINT "book_series_series_id_series_id_fk" FOREIGN KEY ("series_id") REFERENCES "public"."series"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "books" ADD CONSTRAINT "books_category_id_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-CREATE UNIQUE INDEX "authors_name_ci_unique" ON "authors" USING btree (lower("name"));--> statement-breakpoint
+ALTER TABLE "books" ADD CONSTRAINT "books_publisher_id_publishers_id_fk" FOREIGN KEY ("publisher_id") REFERENCES "public"."publishers"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "author_aliases" ADD CONSTRAINT "author_aliases_author_id_authors_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."authors"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "publisher_aliases" ADD CONSTRAINT "publisher_aliases_publisher_id_publishers_id_fk" FOREIGN KEY ("publisher_id") REFERENCES "public"."publishers"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE UNIQUE INDEX "recommendation_preferences_type_value_ci_unique" ON "recommendation_preferences" USING btree ("type",lower("value"));--> statement-breakpoint
 CREATE INDEX "book_authors_author_id_idx" ON "book_authors" USING btree ("author_id");--> statement-breakpoint
 CREATE INDEX "book_series_series_id_idx" ON "book_series" USING btree ("series_id");--> statement-breakpoint
 CREATE INDEX "books_status_idx" ON "books" USING btree ("status");--> statement-breakpoint
+CREATE UNIQUE INDEX "books_slug_unique" ON "books" USING btree ("slug");--> statement-breakpoint
 CREATE INDEX "books_category_id_idx" ON "books" USING btree ("category_id");--> statement-breakpoint
 CREATE INDEX "books_read_year_idx" ON "books" USING btree ("read_year");--> statement-breakpoint
 CREATE INDEX "books_read_month_idx" ON "books" USING btree ("read_month");--> statement-breakpoint
+CREATE UNIQUE INDEX "author_aliases_normalized_name_unique" ON "author_aliases" USING btree ("normalized_name");--> statement-breakpoint
+CREATE UNIQUE INDEX "authors_name_ci_unique" ON "authors" USING btree (lower("name"));--> statement-breakpoint
+CREATE UNIQUE INDEX "authors_slug_unique" ON "authors" USING btree ("slug");--> statement-breakpoint
 CREATE UNIQUE INDEX "categories_name_ci_unique" ON "categories" USING btree (lower("name"));--> statement-breakpoint
-CREATE UNIQUE INDEX "recommendation_preferences_type_value_ci_unique" ON "recommendation_preferences" USING btree ("type",lower("value"));--> statement-breakpoint
+CREATE UNIQUE INDEX "publisher_aliases_normalized_name_unique" ON "publisher_aliases" USING btree ("normalized_name");--> statement-breakpoint
+CREATE UNIQUE INDEX "publishers_name_ci_unique" ON "publishers" USING btree (lower("name"));--> statement-breakpoint
+CREATE UNIQUE INDEX "publishers_slug_unique" ON "publishers" USING btree ("slug");--> statement-breakpoint
 CREATE UNIQUE INDEX "series_name_ci_unique" ON "series" USING btree (lower("name"));--> statement-breakpoint
-CREATE UNIQUE INDEX "tags_name_ci_unique" ON "tags" USING btree (lower("name"));
+CREATE UNIQUE INDEX "users_email_ci_unique" ON "users" USING btree (lower("email"));

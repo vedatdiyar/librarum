@@ -184,20 +184,23 @@ export function BulkActionDialog({
         </DialogHeader>
         <DialogBody className="space-y-4">
           {action === "category" ? (
-            <FilterSelect
-              ariaLabel="Toplu kategori"
-              id="bulk-category"
-              onChange={(val) => updateField("categoryId", val)}
-              value={formState.categoryId}
-            >
-              <option value="">Kategori seç</option>
-              <option value="__none__">Kategoriyi temizle</option>
-              {categories.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.name}
-                </option>
-              ))}
-            </FilterSelect>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-bold tracking-[0.3em] text-foreground uppercase" htmlFor="bulk-category">Kategori</label>
+              <FilterSelect
+                ariaLabel="Toplu kategori"
+                id="bulk-category"
+                onChange={(val) => updateField("categoryId", val)}
+                value={formState.categoryId}
+              >
+                <option value="">Kategori seç</option>
+                <option value="__none__">Kategoriyi temizle</option>
+                {categories.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.name}
+                  </option>
+                ))}
+              </FilterSelect>
+            </div>
           ) : null}
 
           {action === "location" ? (
@@ -229,57 +232,69 @@ export function BulkActionDialog({
           ) : null}
 
           {action === "status" ? (
-            <FilterSelect
-              ariaLabel="Toplu durum"
-              id="bulk-status"
-              onChange={(val) => updateField("status", val)}
-              value={formState.status}
-            >
-              {BULK_STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </FilterSelect>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-bold tracking-[0.3em] text-foreground uppercase" htmlFor="bulk-status">Durum</label>
+              <FilterSelect
+                ariaLabel="Toplu durum"
+                id="bulk-status"
+                onChange={(val) => updateField("status", val)}
+                value={formState.status}
+              >
+                {BULK_STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </FilterSelect>
+            </div>
           ) : null}
 
           {action === "donatable" ? (
-            <FilterSelect
-              ariaLabel="Toplu bağışlanabilirlik"
-              id="bulk-donatable"
-              onChange={(val) => updateField("donatable", val)}
-              value={formState.donatable}
-            >
-              <option value="true">Bağışlanabilir yap</option>
-              <option value="false">Bağışlanamaz yap</option>
-            </FilterSelect>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-bold tracking-[0.3em] text-foreground uppercase" htmlFor="bulk-donatable">Bağışlanabilirlik</label>
+              <FilterSelect
+                ariaLabel="Toplu bağışlanabilirlik"
+                id="bulk-donatable"
+                onChange={(val) => updateField("donatable", val)}
+                value={formState.donatable}
+              >
+                <option value="true">Bağışlanabilir yap</option>
+                <option value="false">Bağışlanamaz yap</option>
+              </FilterSelect>
+            </div>
           ) : null}
 
           {action === "series" ? (
             <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_140px]">
-              <FilterSelect
-                ariaLabel="Toplu seri"
-                id="bulk-series"
-                onChange={(val) => updateField("seriesId", val)}
-                value={formState.seriesId}
-              >
-                <option value="">Seri seç</option>
-                <option value="__none__">Seriyi kaldır</option>
-                {series.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.name}
-                  </option>
-                ))}
-              </FilterSelect>
-              <Input
-                aria-label="Cilt numarası"
-                id="bulk-series-order"
-                inputMode="numeric"
-                name="seriesOrder"
-                onChange={(event) => updateField("seriesOrder", event.target.value)}
-                placeholder="Cilt no"
-                value={formState.seriesOrder}
-              />
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold tracking-[0.3em] text-foreground uppercase" htmlFor="bulk-series">Seri</label>
+                <FilterSelect
+                  ariaLabel="Toplu seri"
+                  id="bulk-series"
+                  onChange={(val) => updateField("seriesId", val)}
+                  value={formState.seriesId}
+                >
+                  <option value="">Seri seç</option>
+                  <option value="__none__">Seriyi kaldır</option>
+                  {series.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.name}
+                    </option>
+                  ))}
+                </FilterSelect>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold tracking-[0.3em] text-foreground uppercase" htmlFor="bulk-series-order">Cilt no</label>
+                <Input
+                  aria-label="Cilt numarası"
+                  id="bulk-series-order"
+                  inputMode="numeric"
+                  name="seriesOrder"
+                  onChange={(event) => updateField("seriesOrder", event.target.value)}
+                  placeholder="Cilt no"
+                  value={formState.seriesOrder}
+                />
+              </div>
             </div>
           ) : null}
 

@@ -60,7 +60,7 @@ export function DuplicateDialog({
                 </p>
                 <div className="mt-4 border-t border-white/3 pt-4">
                     <p className="text-[12px] leading-relaxed text-foreground italic">
-                        Mevcut kayda ait envanter sayısını artırmak mı istersiniz, yoksa bağımsız yeni bir kayıt mı oluşturmak istersiniz?
+                        Mevcut kayda ait kopya sayısını artırmak mı istersiniz, yoksa bağımsız yeni bir kayıt mı oluşturmak istersiniz?
                     </p>
                 </div>
             </div>

@@ -47,8 +47,8 @@ export function PersonalSection() {
   const rating = watch("rating");
 
   return (
-    <div className="space-y-12 duration-700 animate-in fade-in">
-      <Field id="rating" label="BİLGİ / HÂKİMİYET SEVİYESİ" description="Bu eserle olan ilginizi veya konuya hâkimiyetinizi 0.0 ile 5.0 arasında değerlendirin.">
+    <div className="space-y-12">
+      <Field id="rating" label="DEĞERLENDİRME PUANI" description="Kitabı 0.0 ile 5.0 arasında puanlayın.">
         <div className="pt-2">
           <RatingInput
             onChange={(val) => setValue("rating", val, { shouldDirty: true })}
@@ -98,7 +98,7 @@ export function PersonalSection() {
         </Field>
       </div>
 
-      <Field id="personalNote" label="OKUMA NOTLARI" description="Kitap hakkındaki düşüncelerinizi, favori alıntılarınızı veya önemli notlarınızı buraya ekleyin.">
+      <Field id="personalNote" label="KİTAP NOTLARI" description="Kitap hakkındaki düşüncelerinizi, favori alıntılarınızı veya önemli notlarınızı buraya ekleyin.">
         <div className="relative">
             <Quote className="absolute top-6 left-6 h-5 w-5 text-primary" />
             <textarea
@@ -106,7 +106,7 @@ export function PersonalSection() {
                 {...register("personalNote")}
                 className="flex min-h-[160px] w-full resize-none rounded-[32px] border border-white/5 bg-white/2 py-6 pr-8 pl-16 text-sm text-white shadow-inner transition-all outline-none placeholder:text-foreground placeholder:italic focus:border-primary/40 focus:bg-white/4"
                 id="personalNote"
-                placeholder="Kitap hakkındaki düşüncelerinizi veya önemli pasajları buraya aktarın..."
+                placeholder="Kitap hakkındaki düşüncelerinizi veya önemli alıntıları buraya ekleyin..."
             />
         </div>
       </Field>
@@ -139,7 +139,7 @@ export function CoverSection({
   const title = watch("title");
 
   return (
-    <div className="grid gap-12 duration-1000 animate-in fade-in lg:grid-cols-[280px_1fr]">
+    <div className="grid gap-12 lg:grid-cols-[280px_1fr]">
       <div className="group/cover relative aspect-2/3 overflow-hidden rounded-[32px] border border-white/10 bg-white/2 shadow-[0_32px_64px_-24px_rgba(0,0,0,0.6)] transition-all duration-700 hover:scale-[1.02] hover:border-white/20">
         <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-white/10 to-transparent opacity-30" />
         {coverPreviewUrl ? (

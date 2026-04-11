@@ -4,7 +4,7 @@ import { resolveBookIdentifier } from "@/server/books-service";
 import { BookDetailPageClient } from "./_components/book-detail-page-client";
 
 export const metadata: Metadata = {
-  title: "Eser Detayı",
+  title: "Kitap Detayı",
 };
 
 type BookDetailPageProps = {

@@ -30,7 +30,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <div className="mb-12 space-y-4 text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/5 bg-white/3 px-4 py-1.5 backdrop-blur-md">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-                <span className="text-[10px] font-bold tracking-[0.3em] text-white/40 uppercase">Güvenli Arşiv</span>
+                <span className="text-[10px] font-bold tracking-[0.3em] text-white/40 uppercase">Dijital Arşiv</span>
             </div>
             <h1 className="font-serif text-6xl font-bold tracking-tighter text-white">Librarum</h1>
             <p className="text-[11px] font-bold tracking-[0.5em] text-foreground uppercase italic">Kütüphane Yönetim Sistemi</p>
@@ -40,9 +40,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             
             <div className="relative space-y-8">
                 <div className="space-y-2">
-                    <h2 className="font-serif text-2xl font-bold tracking-tight text-white">Kütüphaneye Erişin</h2>
-                    <p className="text-[13px] leading-relaxed text-foreground italic">
-                        Yönetim paneli koruma altındadır. Kütüphanenize erişmek için kimlik bilgilerinizi girin.
+            <head>
+        <meta name="apple-mobile-web-app-title" content="Librarum" />
+      </head>              <p className="text-[13px] leading-relaxed text-foreground italic">
+                        Yönetim paneli korama altındadır. Koleksiyonunuza erişmek için kimlik bilgilerinizi girin.
                     </p>
                 </div>
 
@@ -51,7 +52,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </div>
 
         <div className="mt-12 text-center">
-            <p className="text-[10px] font-bold tracking-[0.2em] text-foreground uppercase">&copy; 2024 Librarum Kütüphane Yönetimi</p>
+            <p className="text-[10px] font-bold tracking-[0.2em] text-foreground uppercase">&copy; 2026 Librarum Arşiv Sistemi</p>
         </div>
       </div>
     </main>

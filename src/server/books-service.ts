@@ -15,6 +15,8 @@ import {
   books,
   categories,
   createDb,
+  publishers,
+  publisherAliases,
   series
 } from "@/db";
 import type {
@@ -28,7 +30,8 @@ import type {
   CategoryOption,
   CreateBookResponse,
   EntityReferenceInput,
-  SeriesReferenceInput
+  SeriesReferenceInput,
+  PublisherOption
 } from "@/types";
 import { ApiError, assertFound } from "@/server/api";
 import { buildBookSlugSource } from "@/lib/shared/book-title";
@@ -41,6 +44,10 @@ import {
 import {
   resolveOrCreateAuthor
 } from "@/server/author-identity";
+import {
+  resolveOrCreatePublisher
+} from "@/server/publisher-identity";
+import { toCoverDeliveryUrl } from "@/server/r2";
 import type {
   BulkBooksPatchInputSchema,
   CreateBookInput,
@@ -65,6 +72,7 @@ type BookRelations = {
   authorsByBookId: Map<string, AuthorOption[]>;
   seriesByBookId: Map<string, BookSeriesReference>;
   categoriesById: Map<string, CategoryRow>;
+  publishersById: Map<string, PublisherOption>;
 };
 
 function toIsoString(value: Date | null) {
@@ -115,7 +123,7 @@ function mapBookListItem(book: BookRow, relations: BookRelations): ApiBookListIt
     isbn: book.isbn,
     status: book.status,
     rating: book.rating,
-    coverUrl: book.coverCustomUrl ?? book.coverMetadataUrl,
+    coverUrl: toCoverDeliveryUrl(book.coverCustomUrl ?? book.coverMetadataUrl),
     copyCount: book.copyCount,
     donatable: book.donatable,
     authors: relations.authorsByBookId.get(book.id) ?? [],
@@ -128,6 +136,8 @@ function mapBookListItem(book: BookRow, relations: BookRelations): ApiBookListIt
     series: seriesReference,
     location: buildLocation(book),
     isSeries: Boolean(seriesReference),
+    publisherId: book.publisherId,
+    publisher: book.publisherId ? relations.publishersById.get(book.publisherId) ?? null : null,
     loanedTo: book.loanedTo,
     loanedAt: toIsoString(book.loanedAt),
     createdAt: book.createdAt.toISOString(),
@@ -140,7 +150,8 @@ function mapBookDetail(book: BookRow, relations: BookRelations): BookDetail {
 
   return {
     ...listItem,
-    publisher: book.publisher,
+    publisherId: book.publisherId,
+    publisher: book.publisherId ? relations.publishersById.get(book.publisherId) ?? null : null,
     publicationYear: book.publicationYear,
     pageCount: book.pageCount,
     personalNote: book.personalNote,
@@ -170,11 +181,20 @@ async function loadBookRelations(
     return {
       authorsByBookId: new Map(),
       seriesByBookId: new Map(),
-      categoriesById: new Map()
+      categoriesById: new Map(),
+      publishersById: new Map()
     };
   }
 
-  const [authorRows, seriesRows, categoryRows] = await Promise.all([
+  const publisherIds = Array.from(
+    new Set(
+      bookRows
+        .map((book) => book.publisherId)
+        .filter((id): id is string => Boolean(id))
+    )
+  );
+
+  const [authorRows, seriesRows, categoryRows, publisherRows] = await Promise.all([
     db
       .select({
         bookId: bookAuthors.bookId,
@@ -199,12 +219,21 @@ async function loadBookRelations(
       .where(inArray(bookSeries.bookId, bookIds)),
     categoryIds.length > 0
       ? db.select().from(categories).where(inArray(categories.id, categoryIds))
+      : Promise.resolve([]),
+    publisherIds.length > 0
+      ? db.select().from(publishers).where(inArray(publishers.id, publisherIds))
       : Promise.resolve([])
   ]);
 
   const authorsByBookId = new Map<string, AuthorOption[]>();
   const seriesByBookId = new Map<string, BookSeriesReference>();
   const categoriesById = new Map(categoryRows.map((category) => [category.id, category]));
+  const publishersById = new Map(
+    publisherRows.map((pub) => [
+      pub.id,
+      { id: pub.id, name: pub.name, slug: pub.slug }
+    ])
+  );
 
   authorRows.forEach((authorRow) => {
     const existingAuthors = authorsByBookId.get(authorRow.bookId) ?? [];
@@ -230,7 +259,8 @@ async function loadBookRelations(
   return {
     authorsByBookId,
     seriesByBookId,
-    categoriesById
+    categoriesById,
+    publishersById
   };
 }
 
@@ -259,6 +289,30 @@ async function getAuthorId(db: DbExecutor, reference: EntityReferenceInput) {
   }
 
   return resolution.author.id;
+}
+
+async function getPublisherId(db: DbExecutor, reference: EntityReferenceInput | null | undefined) {
+  if (reference === undefined) return undefined;
+  if (reference === null) return null;
+
+  if ("id" in reference) {
+    const existing = await db
+      .select({ id: publishers.id })
+      .from(publishers)
+      .where(eq(publishers.id, reference.id))
+      .limit(1);
+    if (!existing[0]) throw new ApiError(400, "Publisher does not exist.");
+    return existing[0].id;
+  }
+
+  const normalizedName = reference.name.trim();
+  const resolution = await resolveOrCreatePublisher(db, normalizedName);
+  
+  if (resolution.status === "suggested-merge") {
+    return resolution.suggestedPublisher.id;
+  }
+  
+  return resolution.publisher.id;
 }
 
 async function getCategoryId(
@@ -577,7 +631,7 @@ function computeBookValues(
     ...(input.title !== undefined ? { title: input.title } : {}),
     ...(input.subtitle !== undefined ? { subtitle: input.subtitle } : {}),
     ...(input.isbn !== undefined ? { isbn: normalizedIsbn ?? null } : {}),
-    ...(input.publisher !== undefined ? { publisher: input.publisher ?? null } : {}),
+    ...(categoryId !== undefined ? { categoryId } : {}),
     ...(input.publicationYear !== undefined
       ? { publicationYear: input.publicationYear ?? null }
       : {}),
@@ -604,8 +658,7 @@ function computeBookValues(
       : {}),
     ...(input.coverMetadataUrl !== undefined
       ? { coverMetadataUrl: input.coverMetadataUrl ?? null }
-      : {}),
-    ...(categoryId !== undefined ? { categoryId } : {})
+      : {})
   };
 }
 
@@ -742,6 +795,7 @@ export async function createBook(input: CreateBookInput): Promise<CreateBookResp
     }
 
     const categoryId = await getCategoryId(tx, input.category);
+    const publisherId = await getPublisherId(tx, input.publisher);
     const seriesRecord = await getSeriesRecord(tx, input.series);
 
     const duplicateCheck = await checkDuplicateBook({
@@ -780,6 +834,7 @@ export async function createBook(input: CreateBookInput): Promise<CreateBookResp
     const bookId = crypto.randomUUID();
     const bookValues = {
       ...computeBookValues(input, undefined, categoryId),
+      publisherId,
       id: bookId,
       title: input.title,
       subtitle: input.subtitle ?? null,
@@ -821,6 +876,8 @@ export async function updateBook(bookId: string, input: UpdateBookInput) {
       input.category !== undefined ? await getCategoryId(tx, input.category) : undefined;
     const seriesRecord =
       input.series !== undefined ? await getSeriesRecord(tx, input.series) : undefined;
+    const publisherId =
+      input.publisher !== undefined ? await getPublisherId(tx, input.publisher) : undefined;
     const nextTitle = input.title ?? existingBook.title;
     const nextSubtitle =
       input.subtitle !== undefined ? input.subtitle ?? null : existingBook.subtitle;
@@ -829,6 +886,7 @@ export async function updateBook(bookId: string, input: UpdateBookInput) {
       .update(books)
       .set({
         ...computeBookValues(input, existingBook, categoryId),
+        ...(publisherId !== undefined ? { publisherId } : {}),
         slug: await computeBookSlug(nextTitle, nextSubtitle, bookId)
       })
       .where(eq(books.id, bookId))

@@ -133,7 +133,7 @@ export function BooksPageClientContent({
   return (
     <section className="space-y-10 pb-20">
       <PageHero
-        description="Eserlerinizin kapsamlı dökümü. Gelişmiş filtrelerle aramanızı özelleştirin, liste veya galeri görünümü arasında geçiş yapın ve koleksiyonunuzu toplu işlemlerle yönetin."
+        description="Kitaplarınızın kapsamlı dökümü. Gelişmiş filtrelerle aramanızı özelleştirin, liste veya galeri görünümü arasında geçiş yapın ve koleksiyonunuzu toplu işlemlerle yönetin."
         kicker="Koleksiyon"
         title={appPageTitles.books}
       />
@@ -162,8 +162,8 @@ export function BooksPageClientContent({
         <div className="glass-panel overflow-hidden rounded-3xl border-white/5 bg-white/2 shadow-[0_24px_80px_-24px_rgba(0,0,0,0.5)] delay-150 duration-1000 animate-in fade-in fill-mode-both slide-in-from-bottom-8">
             <div className="flex flex-col items-start justify-between gap-6 border-b border-white/3 bg-white/3 px-6 py-6 md:flex-row md:items-center md:px-8">
                 <div>
-                  <h3 className="font-serif text-xl font-bold tracking-tight text-white">Kayıtlı Eserler</h3>
-                  <p className="mt-1 text-[12px] leading-relaxed text-foreground/60 italic">Kütüphanenizdeki kitapların ve genel durumun özeti.</p>
+                  <h3 className="font-serif text-xl font-bold tracking-tight text-white">Kayıtlı Kitaplar</h3>
+                  <p className="mt-1 text-[12px] leading-relaxed text-foreground/60 italic">Koleksiyonunuzdaki kitapların ve genel durumun özeti.</p>
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="hidden h-10 w-px bg-white/5 md:block" />
@@ -174,7 +174,7 @@ export function BooksPageClientContent({
                         <BookCopy className="h-5 w-5" />
                       </div>
                     </div>
-                    <p className="line-clamp-1 text-[9px] font-bold tracking-wider text-primary/70 uppercase">Toplam Eser</p>
+                    <p className="line-clamp-1 text-[9px] font-bold tracking-wider text-primary/70 uppercase">Toplam Kitap</p>
                   </div>
                 </div>
             </div>
@@ -207,7 +207,7 @@ export function BooksPageClientContent({
             <LayoutGrid className="h-8 w-8 text-foreground/20" />
           </div>
           <p className="mb-2 font-serif text-xl font-bold text-foreground">Kayıtlar Sessiz.</p>
-          <p className="text-sm text-foreground italic">Mevcut arama parametrelerine uygun eser bulunamadı.</p>
+          <p className="text-sm text-foreground italic">Mevcut arama parametrelerine uygun kitap bulunamadı.</p>
         </div>
       )}
 
@@ -221,7 +221,7 @@ export function BooksPageClientContent({
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
                 <span className="text-xs font-bold text-primary">{selectedIds.length}</span>
               </div>
-              <span className="text-xs font-bold tracking-tight text-white/80">Eser Seçildi</span>
+              <span className="text-xs font-bold tracking-tight text-white/80">Kitap Seçildi</span>
             </div>
             
             <div className="flex items-center gap-2">
