@@ -156,10 +156,10 @@ export function LoansPageClient() {
                     <Table>
                         <TableHeader>
                             <TableRow className="border-b border-white/5 hover:bg-transparent">
-                                <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Kitap Bilgisi</TableHead>
-                                <TableHead className="text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Kimde?</TableHead>
-                                <TableHead className="text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Verildiği Tarih</TableHead>
-                                <TableHead className="w-40 text-right text-[9px] font-bold tracking-wider text-foreground/40 uppercase">İşlem</TableHead>
+                                <TableHead className="px-2 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase md:px-4">KİTAP</TableHead>
+                                <TableHead className="hidden text-[9px] font-bold tracking-wider text-foreground/40 uppercase sm:table-cell">KİMDE?</TableHead>
+                                <TableHead className="hidden text-[9px] font-bold tracking-wider text-foreground/40 uppercase md:table-cell">TARİH</TableHead>
+                                <TableHead className="w-24 text-right text-[9px] font-bold tracking-wider text-foreground/40 uppercase md:w-40">İŞLEM</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -169,32 +169,38 @@ export function LoansPageClient() {
                                     className="group border-b border-white/2 transition-all duration-500 animate-in fade-in fill-mode-both slide-in-from-left-4 last:border-0 hover:bg-white/3"
                                     style={{ animationDelay: `${idx * 40}ms` }}
                                 >
-                                    <TableCell className="px-4 py-3">
-                                        <div className="flex items-center gap-6">
-                                            <BookThumb coverUrl={book.coverUrl} title={book.title} />
-                                            <div className="flex flex-col space-y-1.5">
+                                    <TableCell className="px-2 py-3 md:px-4">
+                                        <div className="flex items-center gap-3 md:gap-6">
+                                            <div className="hidden shrink-0 sm:block">
+                                                <BookThumb coverUrl={book.coverUrl} title={book.title} />
+                                            </div>
+                                            <div className="flex flex-col space-y-1 md:space-y-1.5">
                                                 <Link
-                                                    className="flex items-center gap-3 font-serif text-2xl leading-tight font-bold tracking-tight text-white transition-colors group-hover:text-primary"
+                                                    className="flex items-center gap-2 font-serif text-lg leading-tight font-bold tracking-tight text-white transition-colors group-hover:text-primary md:gap-3 md:text-2xl"
                                                     href={`/books/${book.slug}`}
                                                 >
                                                     {book.title}
-                                                    <ArrowRight className="h-4 w-4 -translate-x-2 text-primary opacity-0 transition-all duration-700 group-hover:translate-x-0 group-hover:opacity-100" />
+                                                    <ArrowRight className="h-3 w-3 -translate-x-1 text-primary opacity-0 transition-all duration-700 group-hover:translate-x-0 group-hover:opacity-100 md:h-4 md:w-4 md:-translate-x-2" />
                                                 </Link>
-                                                <p className="text-[10px] font-bold tracking-[0.2em] text-foreground uppercase">
+                                                <p className="text-[9px] font-bold tracking-wider text-foreground uppercase md:text-[10px] md:tracking-[0.2em]">
                                                     {book.authors.map((author) => author.name).join(", ") || "Bilinmeyen Yazar"}
                                                 </p>
+                                                <div className="flex flex-col gap-1 sm:hidden">
+                                                    <span className="text-[9px] font-medium text-foreground/50">Kimde: {book.loanedTo ?? "İsimsiz"}</span>
+                                                    <span className="text-[9px] font-medium text-foreground/50">Tarih: {formatLoanDate(book.loanedAt)}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-6">
+                                    <TableCell className="hidden px-2 sm:table-cell md:px-6">
                                         <div className="flex items-center gap-2">
-                                            <div className="rounded-lg border border-white/5 bg-white/2 p-2 text-foreground">
-                                                <User className="h-3.5 w-3.5" />
+                                            <div className="rounded-lg border border-white/5 bg-white/2 p-1.5 text-foreground md:p-2">
+                                                <User className="h-3 w-3 md:h-3.5 md:w-3.5" />
                                             </div>
-                                            <span className="text-base font-bold tracking-tight text-foreground">{book.loanedTo ?? "İsimsiz"}</span>
+                                            <span className="text-sm font-bold tracking-tight text-foreground md:text-base">{book.loanedTo ?? "İsimsiz"}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-6">
+                                    <TableCell className="hidden px-2 md:table-cell md:px-6">
                                         <div className="flex items-center gap-2">
                                             <div className="rounded-lg border border-white/5 bg-white/2 p-2 text-foreground">
                                                 <Calendar className="h-3.5 w-3.5" />
@@ -202,13 +208,13 @@ export function LoansPageClient() {
                                             <span className="text-sm font-medium text-foreground">{formatLoanDate(book.loanedAt)}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-6 text-right">
+                                    <TableCell className="px-2 text-right md:px-6">
                                         <Button 
                                             onClick={() => setSelectedBookId(book.id)} 
-                                            className="h-10 rounded-xl bg-white px-6 text-[9px] font-bold tracking-widest text-black uppercase shadow-2xl transition-all hover:bg-primary"
+                                            className="h-8 rounded-lg bg-white px-3 text-[8px] font-bold tracking-wider text-black uppercase shadow-none transition-all hover:translate-y-0 hover:bg-primary hover:shadow-none md:h-10 md:rounded-xl md:px-6 md:text-[9px] md:tracking-widest"
                                         >
-                                            <BookOpenText className="mr-2 h-3.5 w-3.5" />
-                                            Kitap İade Edildi
+                                            <BookOpenText className="mr-1.5 h-3 w-3 md:mr-2 md:h-3.5 md:w-3.5" />
+                                            İade
                                         </Button>
                                     </TableCell>
                                 </TableRow>

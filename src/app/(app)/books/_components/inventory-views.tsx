@@ -106,7 +106,7 @@ export function BooksTable({
   onToggleAllVisible: (checked: boolean) => void;
 }) {
   return (
-    <div className="relative overflow-hidden">
+    <div className="w-full">
       <Table>
         <TableHeader>
           <TableRow className="border-b border-white/5 hover:bg-transparent">
@@ -119,11 +119,11 @@ export function BooksTable({
                 onChange={(event) => onToggleAllVisible(event.target.checked)}
               />
             </TableHead>
-            <TableHead className="w-24 px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">KAPAK</TableHead>
-            <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">BAŞLIK VE KİMLİK</TableHead>
-            <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">YAZARLAR</TableHead>
-            <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">DURUM</TableHead>
-            <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">KONUM</TableHead>
+            <TableHead className="w-20 px-2 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase md:w-24 md:px-4">KAPAK</TableHead>
+            <TableHead className="px-2 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase md:px-4">BAŞLIK</TableHead>
+            <TableHead className="hidden px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase md:table-cell">YAZARLAR</TableHead>
+            <TableHead className="px-4 py-4 text-center text-[9px] font-bold tracking-wider text-foreground/40 uppercase">DURUM</TableHead>
+            <TableHead className="hidden px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase lg:table-cell">KONUM</TableHead>
             <TableHead className="px-4 py-4 text-right text-[9px] font-bold tracking-wider text-foreground/40 uppercase">PUAN</TableHead>
           </TableRow>
         </TableHeader>
@@ -148,17 +148,17 @@ export function BooksTable({
                   }
                 />
               </TableCell>
-              <TableCell className="px-4 py-3">
+              <TableCell className="px-2 py-3 md:px-4">
                 <Link href={`/books/${book.slug}`}>
                   <BookCover
-                    className="w-14 shadow-lg group-hover:scale-110"
+                    className="w-10 shadow-lg group-hover:scale-110 md:w-14"
                     coverUrl={book.coverUrl}
                     subtitle={book.subtitle}
                     title={book.title}
                   />
                 </Link>
               </TableCell>
-              <TableCell className="px-4 py-3">
+              <TableCell className="px-2 py-3 md:px-4">
                 <div className="space-y-1">
                   <Link
                     className="block"
@@ -166,12 +166,12 @@ export function BooksTable({
                   >
                     <BookTitleBlock subtitle={book.subtitle} title={book.title} />
                   </Link>
-                  <p className="font-mono text-[10px] font-bold tracking-widest text-foreground uppercase">
+                  <p className="hidden font-mono text-[10px] font-bold tracking-widest text-foreground uppercase md:block">
                     {book.isbn || "ISBN YOK"}
                   </p>
                 </div>
               </TableCell>
-              <TableCell className="px-4 py-3">
+              <TableCell className="hidden px-4 py-3 md:table-cell">
                 <div className="flex flex-wrap gap-2">
                   {book.authors.map((author) => (
                     <Link
@@ -184,12 +184,12 @@ export function BooksTable({
                   ))}
                 </div>
               </TableCell>
-              <TableCell className="px-4 py-3">
-                <div className={cn("inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold tracking-widest uppercase", STATUS_COLORS[book.status])}>
+              <TableCell className="px-4 py-3 text-center">
+                <div className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold tracking-widest uppercase md:px-2.5 md:py-1 md:text-[10px]", STATUS_COLORS[book.status])}>
                   {STATUS_LABELS[book.status]}
                 </div>
               </TableCell>
-              <TableCell className="px-4 py-3">
+              <TableCell className="hidden px-4 py-3 lg:table-cell">
                 <span className="text-[13px] font-medium text-foreground">
                   {book.status === "loaned" ? (
                     book.loanedTo || "—"

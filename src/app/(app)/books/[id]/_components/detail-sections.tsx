@@ -252,7 +252,7 @@ export function LogisticsInfo({ book }: { book: BookDetail }) {
         <span className="text-[11px] font-bold tracking-wide text-primary">Ödünç Durumu</span>
         <span className="text-xs font-bold text-white">
           {book.loanedTo ? (
-            <span className="text-violet-300">@{book.loanedTo}</span>
+            <span className="text-violet-300">{book.loanedTo}</span>
           ) : (
             <span>Koleksiyonda</span>
           )}

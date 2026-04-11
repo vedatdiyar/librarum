@@ -159,22 +159,22 @@ export function BooksPageClientContent({
           ))}
         </div>
       ) : items.length > 0 ? (
-        <div className="glass-panel overflow-hidden rounded-3xl border-white/5 bg-white/2 shadow-[0_24px_80px_-24px_rgba(0,0,0,0.5)] delay-150 duration-1000 animate-in fade-in fill-mode-both slide-in-from-bottom-8">
-            <div className="flex flex-col items-start justify-between gap-6 border-b border-white/3 bg-white/3 px-6 py-6 md:flex-row md:items-center md:px-8">
+        <div className="glass-panel rounded-3xl border-white/5 shadow-[0_24px_80px_-24px_rgba(0,0,0,0.5)] delay-150 duration-1000 animate-in fade-in fill-mode-both slide-in-from-bottom-8">
+            <div className="flex flex-col items-start justify-between gap-4 border-b border-white/3 px-4 py-6 md:flex-row md:items-center md:gap-6 md:px-8">
                 <div>
-                  <h3 className="font-serif text-xl font-bold tracking-tight text-white">Kayıtlı Kitaplar</h3>
-                  <p className="mt-1 text-[12px] leading-relaxed text-foreground/60 italic">Koleksiyonunuzdaki kitapların ve genel durumun özeti.</p>
+                  <h3 className="font-serif text-lg font-bold tracking-tight text-white md:text-xl">Kayıtlı Kitaplar</h3>
+                  <p className="mt-1 text-[11px] leading-relaxed text-foreground/60 italic md:text-[12px]">Koleksiyonunuzdaki kitapların ve genel durumun özeti.</p>
                 </div>
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4 md:gap-6">
                   <div className="hidden h-10 w-px bg-white/5 md:block" />
                   <div className="flex flex-col items-end gap-1">
-                    <div className="flex items-center gap-3">
-                      <span className="font-serif text-2xl font-bold tracking-tighter text-white">{booksQuery.data?.totalItems ?? 0}</span>
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-primary">
-                        <BookCopy className="h-5 w-5" />
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <span className="font-serif text-xl font-bold tracking-tighter text-white md:text-2xl">{booksQuery.data?.totalItems ?? 0}</span>
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-primary md:h-9 md:w-9 md:rounded-xl">
+                        <BookCopy className="h-4 w-4 md:h-5 md:w-5" />
                       </div>
                     </div>
-                    <p className="line-clamp-1 text-[9px] font-bold tracking-wider text-primary/70 uppercase">Toplam Kitap</p>
+                    <p className="line-clamp-1 text-[8px] font-bold tracking-wider text-primary/70 uppercase md:text-[9px]">Toplam Kitap</p>
                   </div>
                 </div>
             </div>
@@ -213,32 +213,32 @@ export function BooksPageClientContent({
 
       {selectedIds.length > 0 && (
           <div className={cn(
-            "fixed right-0 bottom-8 left-0 z-50 flex justify-center px-4 transition-all duration-500 animate-in fade-in fill-mode-both slide-in-from-bottom-5",
+            "fixed right-0 bottom-6 left-0 z-50 flex justify-center px-4 transition-all duration-500 animate-in fade-in fill-mode-both slide-in-from-bottom-5 md:bottom-8",
             isSidebarCollapsed ? "lg:pl-[84px]" : "lg:pl-[240px]"
           )}>
-            <div className="glass-panel flex items-center gap-6 rounded-2xl border-white/10 bg-white/1 p-4 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-            <div className="flex items-center gap-3 border-r border-white/10 pr-6">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
-                <span className="text-xs font-bold text-primary">{selectedIds.length}</span>
+            <div className="glass-panel flex flex-col items-center gap-4 rounded-2xl border-white/10 bg-white/1 p-3 shadow-[0_0_40px_rgba(0,0,0,0.5)] md:flex-row md:gap-6 md:p-4">
+            <div className="flex items-center gap-3 border-white/10 pr-0 md:border-r md:pr-6">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/20 md:h-8 md:w-8">
+                <span className="text-[10px] font-bold text-primary md:text-xs">{selectedIds.length}</span>
               </div>
-              <span className="text-xs font-bold tracking-tight text-white/80">Kitap Seçildi</span>
+              <span className="text-[10px] font-bold tracking-tight text-white/80 md:text-xs">Kitap Seçildi</span>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
               {BULK_ACTIONS.map(({ action, label }) => (
                 <Button
                   key={action}
                   onClick={() => setActiveBulkAction(action)}
-                  className="h-9 rounded-xl border-white/5 bg-white/5 px-4 text-[10px] font-bold tracking-widest text-foreground uppercase transition-all hover:bg-white/10 hover:text-primary active:scale-95"
+                  className="h-8 rounded-lg border-white/5 bg-white/5 px-3 text-[9px] font-bold tracking-wider text-foreground uppercase transition-all hover:bg-white/10 hover:text-primary active:scale-95 md:h-9 md:rounded-xl md:px-4 md:text-[10px] md:tracking-widest"
                   variant="ghost"
                 >
                   {label}
                 </Button>
               ))}
-              <div className="mx-2 h-4 w-px bg-white/10" />
+              <div className="mx-1 hidden h-4 w-px bg-white/10 md:mx-2 md:block" />
               <Button 
                 onClick={clearSelection} 
-                className="h-9 rounded-xl px-4 text-[10px] font-bold tracking-widest text-foreground uppercase transition-colors hover:text-destructive active:scale-95"
+                className="h-8 rounded-lg px-3 text-[9px] font-bold tracking-wider text-foreground uppercase transition-colors hover:text-destructive active:scale-95 md:h-9 md:rounded-xl md:px-4 md:text-[10px] md:tracking-widest"
                 variant="ghost"
               >
                 Temizle

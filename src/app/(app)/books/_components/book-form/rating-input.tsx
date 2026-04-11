@@ -36,7 +36,7 @@ export function RatingInput({
     <div className="relative flex flex-col gap-8 select-none">
       <div
         aria-label="Kitap puanı seçici"
-        className="flex items-center gap-2"
+        className="flex items-center gap-1 md:gap-2"
         onMouseLeave={() => setHoveredValue(null)}
         role="group"
       >
@@ -49,7 +49,7 @@ export function RatingInput({
               aria-pressed={value === index}
               aria-label={`Puan: ${index}`}
               key={index}
-              className="group relative h-12 w-12 transition-all duration-300 hover:scale-110 active:scale-95"
+              className="group relative h-10 w-10 transition-all duration-300 hover:scale-110 active:scale-95 md:h-12 md:w-12"
               onBlur={() => setHoveredValue(null)}
               onClick={() => handleRating(index)}
               onFocus={() => setHoveredValue(index)}
@@ -73,7 +73,7 @@ export function RatingInput({
                 style={{ width: `${fillPercentage}%` }}
               >
                 <Star
-                  className="h-12 w-12 stroke-[1px]"
+                  className="h-10 w-10 stroke-[1px] md:h-12 md:w-12"
                   fill="currentColor"
                 />
               </div>
@@ -89,20 +89,21 @@ export function RatingInput({
         {/* Clear Button */}
         <div 
             className={cn(
-                "ml-4 transition-all duration-500",
+                "ml-2 transition-all duration-500 md:ml-4",
                 value !== null ? "translate-x-0 opacity-100" : "pointer-events-none translate-x-4 opacity-0"
             )}
         >
             <button
                 onClick={() => onChange(null)}
-                className="group flex h-10 w-10 items-center justify-center rounded-2xl border border-white/5 bg-white/2 text-white/20 transition-all hover:border-white/10 hover:bg-white/5 hover:text-white"
+                className="group flex h-9 w-9 items-center justify-center rounded-xl border border-white/5 bg-white/2 text-white/20 transition-all hover:border-white/10 hover:bg-white/5 hover:text-white md:h-10 md:w-10 md:rounded-2xl"
                 title="Puanı Sıfırla"
                 type="button"
             >
-                <X className="h-4 w-4 transition-transform group-hover:rotate-90" />
+                <X className="h-3.5 w-3.5 transition-transform group-hover:rotate-90 md:h-4 md:w-4" />
             </button>
         </div>
       </div>
+
 
       {/* Info Footer */}
       <div className="flex items-center gap-6">

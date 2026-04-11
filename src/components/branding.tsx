@@ -38,7 +38,7 @@ export function Branding({ className, onClose, showSubtitle = true, isCollapsed 
       </div>
       {!isCollapsed && (
         <div className="flex min-w-0 flex-col justify-center duration-300 animate-in fade-in slide-in-from-left-2">
-          <p className={cn("mt-1 text-xl font-medium tracking-wider whitespace-nowrap text-[#F8EDD8] uppercase", brand.className)}>
+          <p className={cn("mt-1 text-xl font-medium tracking-wider whitespace-nowrap text-[#FFFFEE] uppercase", brand.className)}>
             Librarum
           </p>
           {showSubtitle && (

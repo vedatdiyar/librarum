@@ -143,7 +143,7 @@ export function AuthorDetailPageClientHero({
                     <label className="sr-only" htmlFor="edit-author-name">Yazar Adını Düzenle</label>
                     <Input
                       aria-label="Yazar Adı"
-                      className="h-20 border-none bg-transparent p-0 font-serif text-4xl font-bold tracking-tight text-white ring-0 outline-none focus-visible:ring-0 md:text-5xl lg:text-6xl"
+                      className="h-20 border-none bg-transparent p-0 font-serif text-3xl font-bold tracking-tight text-white ring-0 outline-none focus-visible:ring-0 md:text-5xl lg:text-6xl"
                       id="edit-author-name"
                       name="authorName"
                       onChange={(event) => setNameDraft(event.target.value)}
@@ -169,7 +169,7 @@ export function AuthorDetailPageClientHero({
                 </div>
               ) : (
                 <div className="flex items-center gap-4">
-                  <h1 className="truncate font-serif text-4xl leading-tight font-bold tracking-tight text-white md:text-5xl lg:text-6xl">
+                  <h1 className="font-serif text-3xl leading-tight font-bold tracking-tight wrap-break-word text-white md:text-5xl lg:text-6xl">
                     {author.name}
                   </h1>
                   <Button 
@@ -266,7 +266,7 @@ export function AuthorDetailPageClientVolumesSection({ author }: { author: Autho
                     </div>
                     {book.rating != null && (
                       <div className="flex items-center gap-1.5">
-                        <Trophy className="h-2.5 w-2.5 text-primary" />
+                        <Trophy className="h-3 w-3 shrink-0 text-primary" />
                         <span className="text-[9px] font-bold tracking-widest text-foreground uppercase">{book.rating.toFixed(1)}</span>
                       </div>
                     )}

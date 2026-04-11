@@ -118,15 +118,18 @@ export function PublicationSection({
   const { register, formState: { errors } } = useFormContext();
 
   return (
-    <div className="space-y-12">
-      <div className="space-y-10">
+    <div className="space-y-8 md:space-y-12">
+
+      <div className="space-y-8 md:space-y-10">
+
         <IsbnMetadataField
           fetchMetadata={fetchMetadata}
           isSubmitting={isSubmitting}
           metadataState={metadataState}
         />
 
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="grid gap-6 md:gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+
           {[
             {
               name: "title" as const,
@@ -302,7 +305,8 @@ function AuthorFieldSection({
       error={errors.authorIds?.message as string}
       label="YAZARLAR"
     >
-      <div className="glass-panel space-y-6 rounded-3xl border-white/5 bg-white/1 p-8 transition-all group-hover:border-white/10">
+      <div className="glass-panel space-y-4 rounded-2xl border-white/5 bg-white/1 p-4 transition-all group-hover:border-white/10 md:space-y-6 md:rounded-3xl md:p-8">
+
         <SelectionPills
           items={authors}
           onRemove={(authorId) =>
@@ -435,7 +439,8 @@ function PublisherYearPageSection({
     : null;
 
   return (
-    <div className="grid gap-8 md:grid-cols-3">
+    <div className="grid gap-6 md:grid-cols-3 md:gap-8">
+
       <Field
         description="Yayınevinin arşiv kaydı."
         error={errors.publisher?.message as string}

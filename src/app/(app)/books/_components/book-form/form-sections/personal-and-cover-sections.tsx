@@ -47,7 +47,8 @@ export function PersonalSection() {
   const rating = watch("rating");
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8 md:space-y-12">
+
       <Field id="rating" label="DEĞERLENDİRME PUANI" description="Kitabı 0.0 ile 5.0 arasında puanlayın.">
         <div className="pt-2">
           <RatingInput
@@ -57,7 +58,8 @@ export function PersonalSection() {
         </div>
       </Field>
 
-      <div className="grid gap-10 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 md:gap-10">
+
         <Field id="readMonth" label="OKUMA AYI" description="Kitabın tamamlandığı ayı seçin.">
           <Controller
             control={control}
@@ -104,10 +106,11 @@ export function PersonalSection() {
             <textarea
                 aria-label="Yankı Notu"
                 {...register("personalNote")}
-                className="flex min-h-[160px] w-full resize-none rounded-[32px] border border-white/5 bg-white/2 py-6 pr-8 pl-16 text-sm text-white shadow-inner transition-all outline-none placeholder:text-foreground placeholder:italic focus:border-primary/40 focus:bg-white/4"
+                className="flex min-h-[160px] w-full resize-none rounded-[24px] border border-white/5 bg-white/2 py-6 pr-8 pl-14 text-sm text-white shadow-inner transition-all outline-none placeholder:text-foreground placeholder:italic focus:border-primary/40 focus:bg-white/4 md:rounded-[32px] md:pl-16"
                 id="personalNote"
                 placeholder="Kitap hakkındaki düşüncelerinizi veya önemli alıntıları buraya ekleyin..."
             />
+
         </div>
       </Field>
     </div>
@@ -139,8 +142,10 @@ export function CoverSection({
   const title = watch("title");
 
   return (
-    <div className="grid gap-12 lg:grid-cols-[280px_1fr]">
-      <div className="group/cover relative aspect-2/3 overflow-hidden rounded-[32px] border border-white/10 bg-white/2 shadow-[0_32px_64px_-24px_rgba(0,0,0,0.6)] transition-all duration-700 hover:scale-[1.02] hover:border-white/20">
+    <div className="grid gap-8 md:gap-12 lg:grid-cols-[280px_1fr]">
+
+      <div className="group/cover relative mx-auto aspect-2/3 max-w-[200px] overflow-hidden rounded-[24px] border border-white/10 bg-white/2 shadow-[0_32px_64px_-24px_rgba(0,0,0,0.6)] transition-all duration-700 hover:scale-[1.02] hover:border-white/20 md:mx-0 md:max-w-none md:rounded-[32px]">
+
         <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-white/10 to-transparent opacity-30" />
         {coverPreviewUrl ? (
           <>
@@ -165,8 +170,10 @@ export function CoverSection({
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black/80 to-transparent opacity-0 transition-opacity duration-700 group-hover/cover:opacity-100" />
       </div>
 
-      <div className="flex flex-col justify-center space-y-8">
-        <div className="glass-panel rounded-3xl border-white/5 bg-white/1 p-8 shadow-inner">
+      <div className="flex flex-col justify-center space-y-6 md:space-y-8">
+
+        <div className="glass-panel rounded-2xl border-white/5 bg-white/1 p-6 shadow-inner md:rounded-3xl md:p-8">
+
            <div className="mb-2 flex items-center gap-3">
                 <div className="h-1 w-1 rounded-full bg-primary" />
                 <p className="text-[10px] font-bold tracking-[0.3em] text-foreground uppercase">Görsel Kaynağı</p>

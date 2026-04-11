@@ -58,8 +58,10 @@ export function ClassificationSection({
   }, [currentSeriesId, series, seriesQuery]);
 
   return (
-    <div className="space-y-10">
-      <div className="grid gap-8 lg:grid-cols-2">
+    <div className="space-y-8 md:space-y-10">
+
+      <div className="grid gap-6 md:gap-8 lg:grid-cols-2">
+
         <Field
           description="Kitabın katalog kategorisini belirleyin."
           error={errors.categoryId?.message as string}
@@ -114,7 +116,8 @@ export function ClassificationSection({
           id="seriesName"
           label="SERİ"
         >
-          <div className="space-y-4 rounded-2xl border border-white/8 bg-white/3 p-4">
+          <div className="space-y-4 rounded-2xl border border-white/8 bg-white/3 p-4 md:p-6">
+
             <label className="flex items-center gap-3">
               <Checkbox
                 aria-label="Bu bir seri kitabı"

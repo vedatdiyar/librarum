@@ -34,9 +34,11 @@ type GlobalSearchProps = {
   compact?: boolean;
   expandable?: boolean;
   className?: string;
+  preventAutoFocus?: boolean;
+  mobile?: boolean;
 };
 
-export function GlobalSearch({ compact = false, expandable = false, className }: GlobalSearchProps) {
+export function GlobalSearch({ compact = false, expandable = false, className, preventAutoFocus = false, mobile = false }: GlobalSearchProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [query, setQuery] = React.useState("");
@@ -97,7 +99,9 @@ export function GlobalSearch({ compact = false, expandable = false, className }:
           )}
           onClick={() => {
             setIsExpanded(true);
-            setTimeout(() => inputRef.current?.focus(), 100);
+            if (!preventAutoFocus) {
+              setTimeout(() => inputRef.current?.focus(), 100);
+            }
           }}
           type="button"
         >
@@ -158,10 +162,13 @@ export function GlobalSearch({ compact = false, expandable = false, className }:
       )}
 
       {shouldShowDropdown && (
-        <div className="absolute right-0 left-0 z-50 mt-3 overflow-hidden rounded-2xl border border-white/10 bg-background/95 shadow-2xl backdrop-blur-3xl duration-500 animate-in fade-in slide-in-from-top-2">
+        <div className={cn(
+          "z-50 mt-4 overflow-hidden rounded-2xl border border-white/10 bg-white/2 shadow-2xl backdrop-blur-3xl transition-all duration-500 animate-in fade-in slide-in-from-top-4",
+          mobile ? "relative w-full border-none bg-transparent shadow-none backdrop-blur-none" : "absolute right-0 left-0"
+        )}>
           <Command shouldFilter={false} className="bg-transparent">
             <CommandInput className="hidden" value={query} />
-            <CommandList className="max-h-[440px]">
+            <CommandList className={cn("max-h-[440px]", mobile && "max-h-[70vh]")}>
               {searchQuery.isLoading ? (
                 <div className="flex items-center justify-center p-12">
                    <LoaderCircle className="h-6 w-6 animate-spin text-primary" />

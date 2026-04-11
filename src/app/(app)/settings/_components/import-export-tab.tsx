@@ -192,7 +192,7 @@ export function ImportExportTab() {
             <p className="max-w-xl text-[13px] leading-relaxed text-foreground/80">Dışarıdaki kayıtlarınızı koleksiyonunuza dahil edin. JSON mevcut arşivi değiştirir; CSV ise verilerinize ekleme yapar.</p>
         </div>
 
-        <div className="group relative flex flex-col items-center justify-center gap-4 rounded-[2.5rem] border border-dashed border-white/5 bg-white/1 p-8 text-center transition-all duration-700 hover:border-white/10 hover:bg-white/2 lg:p-10">
+        <div className="group relative flex flex-col items-center justify-center gap-4 rounded-[2.5rem] border border-dashed border-white/5 bg-white/1 p-6 text-center transition-all duration-700 hover:border-white/10 hover:bg-white/2 sm:p-8 lg:p-10">
           <div className="relative mb-0 rounded-xl border border-white/10 bg-white/5 p-3.5 text-primary transition-transform duration-700 group-hover:scale-105">
             <Upload className="h-6 w-6" />
           </div>

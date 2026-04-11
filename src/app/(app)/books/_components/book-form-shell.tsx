@@ -37,31 +37,32 @@ export function BookFormShell({
     return (
       <Sheet onOpenChange={onOpenChange} open={open}>
         <SheetContent 
-            className="glass-panel flex h-[88dvh] flex-col overflow-hidden rounded-t-[40px] border-white/10 bg-background/95 px-0 shadow-2xl backdrop-blur-3xl" 
+            className="glass-panel flex h-[92dvh] flex-col overflow-hidden rounded-t-[32px] border-white/10 bg-background/95 px-0 shadow-2xl backdrop-blur-3xl" 
             side="bottom"
         >
-          <div className="absolute top-0 left-1/2 mt-3 h-1.5 w-12 -translate-x-1/2 rounded-full bg-white/10" />
+          <div className="absolute top-0 left-1/2 mt-3 h-1 w-10 -translate-x-1/2 rounded-full bg-white/20" />
           
-          <SheetHeader className="shrink-0 border-b border-white/5 px-8 pt-10 pb-7">
-            <div className="mb-2 flex items-center gap-3">
-                <div className="rounded-2xl border border-primary/20 bg-primary/10 p-2.5 text-primary">
+          <SheetHeader className="shrink-0 border-b border-white/5 px-6 pt-8 pb-5">
+            <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
                     <Terminal className="h-4 w-4" />
                 </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold tracking-[0.24em] text-primary uppercase">Kayıt Düzenleme</p>
-                  <SheetTitle className="font-serif text-2xl font-bold tracking-tight text-white">{title}</SheetTitle>
+                <div className="min-w-0 space-y-0.5">
+                  <p className="text-[9px] font-bold tracking-[0.2em] text-primary uppercase">Kayıt Düzenleme</p>
+                  <SheetTitle className="truncate font-serif text-xl font-bold tracking-tight text-white">{title}</SheetTitle>
                 </div>
             </div>
-            <SheetDescription className="max-w-xl text-[13px] leading-relaxed text-foreground/80">{description}</SheetDescription>
+            <SheetDescription className="hidden" />
           </SheetHeader>
           
-          <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-8 pt-6 pb-12 [&_.animate-in]:animate-none [&_.animate-in]:delay-0 [&_.animate-in]:duration-0 [&_.transition-all]:transition-none [&_.transition-colors]:transition-none [&_.transition-opacity]:transition-none [&_.transition-transform]:transition-none">
+          <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pt-4 pb-10 [&_.animate-in]:animate-none [&_.animate-in]:delay-0 [&_.animate-in]:duration-0 [&_.transition-all]:transition-none [&_.transition-colors]:transition-none [&_.transition-opacity]:transition-none [&_.transition-transform]:transition-none">
             {children}
           </div>
         </SheetContent>
       </Sheet>
     );
   }
+
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>

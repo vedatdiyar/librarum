@@ -162,7 +162,7 @@ export function BlacklistTab() {
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-white/5 bg-white/2">
-            <div className="grid grid-cols-[120px_1fr_112px] border-b border-white/5 bg-white/2 px-6 py-3">
+            <div className="hidden grid-cols-[120px_1fr_112px] border-b border-white/5 bg-white/2 px-6 py-3 md:grid">
               <span className="text-[11px] font-bold tracking-[0.14em] text-foreground/80 uppercase">Tür</span>
               <span className="text-[11px] font-bold tracking-[0.14em] text-foreground/80 uppercase">Değer</span>
               <span className="sr-only">İşlemler</span>
@@ -171,20 +171,22 @@ export function BlacklistTab() {
               {prefs?.map((pref, idx) => (
                    <div 
                       key={pref.id} 
-                      className="group grid grid-cols-[120px_1fr_112px] items-center px-6 py-3 transition-colors hover:bg-white/4"
+                      className="group grid grid-cols-[1fr_auto] items-center gap-4 px-6 py-4 transition-colors hover:bg-white/4 md:grid-cols-[120px_1fr_112px] md:py-3"
                   >
-                      <div className="flex items-center gap-2.5 text-foreground/80">
-                           {getTypeIcon(pref.type)}
-                           <span className="text-[11px] font-bold tracking-[0.12em] uppercase">{getTypeText(pref.type)}</span>
+                      <div className="flex flex-col gap-1 md:contents md:flex-row md:items-center md:gap-0">
+                          <div className="flex items-center gap-2.5 text-foreground/80">
+                               {getTypeIcon(pref.type)}
+                               <span className="text-[10px] font-bold tracking-[0.12em] uppercase">{getTypeText(pref.type)}</span>
+                          </div>
+                          
+                          <p className="font-serif text-base font-bold text-white transition-colors group-hover:text-primary">{pref.value}</p>
                       </div>
-                      
-                      <p className="font-serif text-base font-bold text-white transition-colors group-hover:text-primary">{pref.value}</p>
 
                       <div className="flex justify-end">
                         <Button 
                             variant="ghost" 
                             size="icon"
-                            className="h-9 w-9 rounded-lg text-foreground/80 opacity-0 transition-all group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
+                            className="h-9 w-9 rounded-lg text-foreground/80 transition-all hover:bg-destructive/10 hover:text-destructive md:opacity-0 md:group-hover:opacity-100"
                             onClick={() => deleteMutation.mutate(pref.id)}
                         >
                             <Trash2 className="h-4 w-4" />

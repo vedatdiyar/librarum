@@ -130,7 +130,7 @@ export function SeriesDetailPageClientHero({
                     <label className="sr-only" htmlFor="edit-series-name">Seri Adını Düzenle</label>
                     <Input
                       aria-label="Seri Adı"
-                      className="h-20 border-none bg-transparent p-0 font-serif text-4xl font-bold tracking-tight text-white ring-0 outline-none focus-visible:ring-0 md:text-5xl lg:text-6xl"
+                      className="h-20 border-none bg-transparent p-0 font-serif text-3xl font-bold tracking-tight text-white ring-0 outline-none focus-visible:ring-0 md:text-5xl lg:text-6xl"
                       id="edit-series-name"
                       onChange={(event) => setNameDraft(event.target.value)}
                       ref={nameInputRef}
@@ -155,7 +155,7 @@ export function SeriesDetailPageClientHero({
                 </div>
               ) : (
                 <div className="flex items-center gap-4">
-                  <h1 className="truncate font-serif text-4xl leading-tight font-bold tracking-tight text-white md:text-5xl lg:text-6xl">
+                  <h1 className="font-serif text-3xl leading-tight font-bold tracking-tight wrap-break-word text-white md:text-5xl lg:text-6xl">
                     {series.name}
                   </h1>
                   <Button 

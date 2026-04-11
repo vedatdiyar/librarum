@@ -1,12 +1,24 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
+
 const Table = React.forwardRef<
   HTMLTableElement,
   React.TableHTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
-  <div className="w-full overflow-x-auto rounded-[24px] bg-white/1 px-1">
-    <table className={cn("w-full caption-bottom text-sm", className)} ref={ref} {...props} />
+  <div
+    className="custom-scrollbar w-full overflow-x-auto"
+    style={{ WebkitOverflowScrolling: 'touch' }}
+  >
+    <table
+      className={cn(
+        // min-w-full ile taşmayı önle, responsive için min-width ayarla
+        "w-full min-w-[600px] caption-bottom text-sm",
+        className
+      )}
+      ref={ref}
+      {...props}
+    />
   </div>
 ));
 

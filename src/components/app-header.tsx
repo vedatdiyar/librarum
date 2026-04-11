@@ -22,9 +22,7 @@ export function AppDesktopHeader() {
           <GlobalSearch expandable />
           
           <div className="flex items-center gap-2">
-            <Button variant="ghost" className="group h-11 w-11 rounded-xl border border-white/5 bg-white/2 p-0 transition-all duration-300 hover:scale-105 hover:border-white/10 hover:bg-white/5 active:scale-95">
-              <Settings className="h-5 w-5 text-foreground/70 transition-colors group-hover:text-primary" />
-            </Button>
+            {/* Settings butonu kaldırıldı */}
 
             <Button variant="ghost" className="flex h-11 items-center gap-3 rounded-xl border border-white/5 bg-white/2 pr-4 pl-1.5 transition-all duration-300 hover:scale-[1.02] hover:border-white/10 hover:bg-white/5 active:scale-[0.98]">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-foreground/70">

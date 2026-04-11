@@ -76,7 +76,7 @@ export function BooksFilterBar({
 }) {
   return (
     <div className="glass-panel rounded-2xl border-white/5 bg-white/1 p-6">
-      <div className="mb-8 flex items-center justify-between border-b border-white/5 pb-6">
+      <div className="mb-8 flex flex-col items-start justify-between gap-6 border-b border-white/5 pb-6 md:flex-row md:items-center">
          <div className="flex flex-col gap-1">
             <div className="mb-2 inline-flex w-fit items-center gap-2 rounded-full border border-white/5 bg-white/3 px-2.5 py-1">
                <span className="h-1.5 w-1.5 rounded-full bg-primary" />

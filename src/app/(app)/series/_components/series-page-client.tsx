@@ -124,10 +124,10 @@ export function SeriesPageClient() {
             <Table>
               <TableHeader>
                 <TableRow className="border-b border-white/5 hover:bg-transparent">
-                  <TableHead className="px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Seri</TableHead>
-                  <TableHead className="w-48 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Toplam</TableHead>
-                  <TableHead className="w-48 text-[9px] font-bold tracking-wider text-foreground/40 uppercase">Koleksiyonda</TableHead>
-                  <TableHead className="w-48 text-right text-[9px] font-bold tracking-wider text-foreground/40 uppercase">İlerleme</TableHead>
+                  <TableHead className="px-2 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase md:px-4">Seri</TableHead>
+                  <TableHead className="hidden w-32 text-center text-[9px] font-bold tracking-wider text-foreground/40 uppercase sm:table-cell md:w-48">Toplam</TableHead>
+                  <TableHead className="hidden w-32 text-center text-[9px] font-bold tracking-wider text-foreground/40 uppercase sm:table-cell md:w-48">Koleksiyonda</TableHead>
+                  <TableHead className="w-32 text-right text-[9px] font-bold tracking-wider text-foreground/40 uppercase md:w-48">İlerleme</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -137,33 +137,33 @@ export function SeriesPageClient() {
                     className="group border-b border-white/2 transition-all duration-500 animate-in fade-in fill-mode-both slide-in-from-left-4 last:border-0 hover:bg-white/3"
                     style={{ animationDelay: `${idx * 40}ms` }}
                   >
-                    <TableCell className="px-4 py-3">
-                      <Link className="flex items-center gap-4" href={`/series/${item.slug}`}>
-                        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-foreground transition-all duration-500 group-hover:border-primary/30 group-hover:bg-primary/5 group-hover:text-primary">
-                          <LibraryBig className="h-5 w-5" />
+                    <TableCell className="px-2 py-3 md:px-4">
+                      <Link className="flex items-center gap-3 md:gap-4" href={`/series/${item.slug}`}>
+                        <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-foreground transition-all duration-500 group-hover:border-primary/30 group-hover:bg-primary/5 group-hover:text-primary md:h-10 md:w-10 md:rounded-xl">
+                          <LibraryBig className="h-4 w-4 md:h-5 md:w-5" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="flex items-center gap-2 font-serif text-lg font-bold tracking-tight text-white transition-transform duration-500 group-hover:translate-x-1">
+                            <span className="flex items-center gap-2 font-serif text-base font-bold tracking-tight text-white transition-transform duration-500 group-hover:translate-x-1 md:text-lg">
                             {item.name}
-                            <ArrowRight className="h-3.5 w-3.5 -translate-x-1 text-primary opacity-0 transition-all duration-700 group-hover:translate-x-0 group-hover:opacity-100" />
+                            <ArrowRight className="h-3 w-3 -translate-x-1 text-primary opacity-0 transition-all duration-700 group-hover:translate-x-0 group-hover:opacity-100 md:h-3.5 md:w-3.5" />
                             </span>
                         </div>
                       </Link>
                     </TableCell>
-                    <TableCell className="px-6">
-                        <span className="text-base font-bold text-foreground">{item.totalVolumes ?? "Belirsiz"}</span>
+                    <TableCell className="hidden px-2 text-center sm:table-cell md:px-6">
+                        <span className="text-sm font-bold text-foreground md:text-base">{item.totalVolumes ?? "Belirsiz"}</span>
                     </TableCell>
-                    <TableCell className="px-6">
-                          <div className="flex flex-col">
+                    <TableCell className="hidden px-2 text-center sm:table-cell md:px-6">
+                          <div className="flex flex-col items-center">
                             <span className={cn(
-                                "text-base font-bold",
+                                "text-sm font-bold md:text-base",
                                 item.completionPercentage === 100 ? "text-emerald-400" : "text-white/60"
                             )}>
                                 {item.ownedCount}
                             </span>
                         </div>
                     </TableCell>
-                    <TableCell className="px-6 text-right">
+                    <TableCell className="px-2 text-right md:px-6">
                         <div className="flex flex-col items-end">
                             <div className="mb-1 flex items-center gap-2">
                                 <span className={cn(

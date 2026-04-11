@@ -119,7 +119,7 @@ export function CategoryTab() {
 
         {categories && categories.length > 0 ? (
             <div className="overflow-hidden rounded-xl border border-white/5 bg-white/2">
-              <div className="grid grid-cols-[1fr_140px_88px] border-b border-white/5 bg-white/2 px-6 py-3">
+              <div className="hidden grid-cols-[1fr_140px_88px] border-b border-white/5 bg-white/2 px-6 py-3 md:grid">
                 <span className="text-[11px] font-bold tracking-[0.14em] text-foreground/80 uppercase">Koleksiyon</span>
                 <span className="text-[11px] font-bold tracking-[0.14em] text-foreground/80 uppercase">Kitap Sayısı</span>
                 <span className="sr-only">İşlemler</span>
@@ -128,10 +128,13 @@ export function CategoryTab() {
                 {categories.map((category, idx) => (
                     <div 
                         key={category.id} 
-                        className="group grid grid-cols-[1fr_140px_88px] items-center px-6 py-3 transition-colors hover:bg-white/4"
+                        className="group grid grid-cols-[1fr_auto] items-center gap-4 px-6 py-4 transition-colors hover:bg-white/4 md:grid-cols-[1fr_140px_88px] md:py-3"
                     >
-                        <p className="font-serif text-base font-bold text-white transition-colors group-hover:text-primary">{category.name}</p>
-                        <p className="text-xs font-medium text-foreground/80">{category.bookCount} kitap</p>
+                        <div className="flex flex-col gap-0.5 md:block">
+                          <p className="font-serif text-base font-bold text-white transition-colors group-hover:text-primary">{category.name}</p>
+                          <p className="text-[10px] font-medium text-foreground/60 md:hidden">{category.bookCount} kitap</p>
+                        </div>
+                        <p className="hidden text-xs font-medium text-foreground/80 md:block">{category.bookCount} kitap</p>
                         <div className="flex justify-end">
                           <Button 
                               variant="ghost" 

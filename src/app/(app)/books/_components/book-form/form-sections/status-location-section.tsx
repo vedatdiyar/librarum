@@ -34,8 +34,10 @@ export function StatusLocationSection() {
   }, [status, setValue]);
 
   return (
-    <div className="space-y-12">
-      <div className="grid gap-10 md:grid-cols-2">
+    <div className="space-y-8 md:space-y-12">
+
+      <div className="grid gap-6 md:grid-cols-2 md:gap-10">
+
         <Field id="status" label="DURUM" description="Kitabın koleksiyon içindeki güncel durumu.">
           <Controller
             control={control}
@@ -77,13 +79,16 @@ export function StatusLocationSection() {
         </Field>
       </div>
 
-      <div className="group/location glass-panel relative overflow-hidden rounded-[40px] border-white/5 bg-white/1 p-8 transition-all duration-700 hover:border-white/10">
-        <div className="mb-8 flex items-center gap-3">
+      <div className="group/location glass-panel relative overflow-hidden rounded-[24px] border-white/5 bg-white/1 p-4 transition-all duration-700 hover:border-white/10 md:rounded-[40px] md:p-8">
+
+        <div className="mb-4 flex items-center gap-3 md:mb-8">
+
             <MapPin className="h-4 w-4 text-primary" />
             <span className="text-[11px] font-bold tracking-[0.3em] text-white/40 uppercase">KİTAPLIK KONUMU</span>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 md:gap-8">
+
             <Field id="locationName" label="BÖLÜM / ODA" description="Kitabın bulunduğu fiziksel alan.">
                 <Input 
                     className="h-12 rounded-xl border-white/5 bg-white/2 text-sm shadow-inner hover:bg-white/4 focus:bg-white/8 disabled:opacity-20" 
@@ -106,7 +111,8 @@ export function StatusLocationSection() {
         </div>
       </div>
 
-      <div className="grid gap-10 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 md:gap-10">
+
         <Field 
           error={errors.copyCount?.message as string} 
           id="copyCount"
