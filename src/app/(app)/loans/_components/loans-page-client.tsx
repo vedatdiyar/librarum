@@ -42,8 +42,8 @@ function BookThumb({ title, coverUrl }: { title: string; coverUrl: string | null
   if (coverUrl) {
     return (
       <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/2 shadow-xl transition-transform duration-500 group-hover:scale-110">
-        <Image alt="" className="object-cover opacity-30 blur-lg" fill sizes="64px" src={coverUrl} />
-        <Image alt={`${title} cover`} className="relative object-contain" fill sizes="64px" src={coverUrl} />
+        <Image alt="" className="object-cover opacity-30 blur-lg" fill sizes="64px" src={coverUrl} unoptimized />
+        <Image alt={`${title} cover`} className="relative object-contain" fill sizes="64px" src={coverUrl} unoptimized />
       </div>
     );
   }
@@ -129,7 +129,7 @@ export function LoansPageClient() {
         <div className="glass-panel overflow-hidden rounded-3xl border-white/5 bg-white/2 shadow-[0_24px_80px_-24px_rgba(0,0,0,0.5)] delay-300 duration-1000 animate-in fade-in fill-mode-both slide-in-from-bottom-8">
             <div className="flex flex-col items-start justify-between gap-6 border-b border-white/3 bg-white/3 px-6 py-6 md:flex-row md:items-center md:px-8">
                 <div>
-                   <h3 className="font-serif text-xl font-bold tracking-tight text-white">Aktif Ödünçler</h3>
+                   <h3 className="font-serif text-xl font-bold tracking-tight text-white">Ödünç Verilenler</h3>
                    <p className="mt-1 text-[12px] leading-relaxed text-foreground/60 italic">Koleksiyon dışında bulunan kitapların listesi.</p>
                 </div>
                 <div className="flex items-center gap-6">

@@ -14,7 +14,6 @@ type PageHeroProps = {
 };
 
 export function PageHero({
-  kicker,
   title,
   description,
   aside,
@@ -26,11 +25,6 @@ export function PageHero({
     <div className={cn("relative mb-8 overflow-hidden", className)}>
       <div className="flex flex-col justify-between gap-8 pt-2 pb-1 lg:flex-row lg:items-end">
         <div className="max-w-2xl space-y-4">
-          <div className="inline-flex items-center gap-2 duration-300 animate-in fade-in slide-in-from-left-1">
-            <span className="h-1 w-1 rounded-full bg-primary/60" />
-            <span className="text-[10px] font-bold tracking-[0.2em] text-primary uppercase">{kicker}</span>
-          </div>
-
           <div className="space-y-2">
             <h1 className="font-serif text-3xl font-bold tracking-tight text-white duration-300 animate-in fade-in slide-in-from-bottom-1 md:text-4xl">
               {title}

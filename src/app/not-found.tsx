@@ -18,7 +18,7 @@ export default function NotFound() {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-100 flex h-screen w-screen flex-col items-center justify-center overflow-hidden bg-background font-sans">
+    <div className="fixed inset-0 z-[100] flex h-screen w-screen flex-col items-center justify-center overflow-hidden bg-background font-sans">
       {/* Background Image - With overlay and blur */}
       <div
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-80 brightness-95 contrast-125 saturate-125"

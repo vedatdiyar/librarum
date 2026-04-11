@@ -9,8 +9,8 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import type { SearchResultItem } from "@/types";
 import { readJsonResponse } from "@/lib/shared";
 
-async function fetchSearchResults(query: string) {
-  const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+async function fetchSearchResults(query: string, signal?: AbortSignal) {
+  const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, { signal });
   return readJsonResponse<SearchResultItem[]>(response);
 }
 
@@ -73,7 +73,10 @@ export function GlobalSearch({ compact = false, expandable = false, className }:
   const searchQuery = useQuery({
     enabled: debouncedQuery.length >= 2,
     queryKey: ["search", debouncedQuery],
-    queryFn: () => fetchSearchResults(debouncedQuery)
+    queryFn: ({ signal }) => fetchSearchResults(debouncedQuery, signal),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    refetchOnWindowFocus: false
   });
 
   const shouldShowDropdown =

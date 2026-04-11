@@ -81,7 +81,7 @@ export function CategoryTab() {
       <div className="space-y-5">
         <div className="space-y-1.5">
             <h3 className="font-serif text-lg font-bold tracking-tight text-white">Kategori Ekle</h3>
-            <p className="text-sm text-foreground/70">Koleksiyonunuzun yapısını düzenlemek için yeni kategoriler belirleyin.</p>
+            <p className="text-sm text-foreground/80">Koleksiyonunuzun yapısını düzenlemek için yeni kategoriler belirleyin.</p>
         </div>
         
         <div className="flex flex-col gap-4 md:flex-row md:items-center">
@@ -114,32 +114,32 @@ export function CategoryTab() {
       <div className="space-y-5">
         <div className="flex items-center justify-between">
             <h3 className="font-serif text-lg font-bold tracking-tight text-white">Mevcut Kategoriler</h3>
-            <span className="text-[10px] font-bold tracking-[0.2em] text-foreground/50 uppercase">{categories?.length ?? 0} Kategori</span>
+            <span className="text-xs font-bold tracking-[0.16em] text-foreground/80 uppercase">{categories?.length ?? 0} Kategori</span>
         </div>
 
         {categories && categories.length > 0 ? (
             <div className="overflow-hidden rounded-xl border border-white/5 bg-white/2">
-              <div className="grid grid-cols-[1fr_120px_80px] border-b border-white/5 bg-white/2 px-6 py-2">
-                <span className="text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Koleksiyon</span>
-                <span className="text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Kitap Sayısı</span>
+              <div className="grid grid-cols-[1fr_140px_88px] border-b border-white/5 bg-white/2 px-6 py-3">
+                <span className="text-[11px] font-bold tracking-[0.14em] text-foreground/80 uppercase">Koleksiyon</span>
+                <span className="text-[11px] font-bold tracking-[0.14em] text-foreground/80 uppercase">Kitap Sayısı</span>
                 <span className="sr-only">İşlemler</span>
               </div>
               <div className="divide-y divide-white/2">
                 {categories.map((category, idx) => (
                     <div 
                         key={category.id} 
-                        className="group grid grid-cols-[1fr_120px_80px] items-center px-6 py-2 transition-colors hover:bg-white/4"
+                        className="group grid grid-cols-[1fr_140px_88px] items-center px-6 py-3 transition-colors hover:bg-white/4"
                     >
-                        <p className="font-serif text-[15px] font-bold text-white transition-colors group-hover:text-primary">{category.name}</p>
-                        <p className="text-[10px] font-medium text-foreground/50">{category.bookCount} kitap</p>
+                        <p className="font-serif text-base font-bold text-white transition-colors group-hover:text-primary">{category.name}</p>
+                        <p className="text-xs font-medium text-foreground/80">{category.bookCount} kitap</p>
                         <div className="flex justify-end">
                           <Button 
                               variant="ghost" 
                               size="icon"
-                              className="h-8 w-8 rounded-lg text-foreground/20 transition-all hover:bg-destructive/10 hover:text-destructive"
+                              className="h-9 w-9 rounded-lg text-foreground/80 transition-all hover:bg-destructive/10 hover:text-destructive"
                               onClick={() => setDeleteConfirm(category)}
                           >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                     </div>
@@ -148,7 +148,7 @@ export function CategoryTab() {
             </div>
         ) : (
             <div className="glass-panel flex flex-col items-center justify-center rounded-3xl border-dashed border-white/5 p-12 duration-700 animate-in fade-in">
-                <p className="mb-4 font-serif text-lg font-bold text-white/40">Koleksiyon Henüz Boş</p>
+                <p className="mb-4 font-serif text-lg font-bold text-white/80">Koleksiyon Henüz Boş</p>
                 <p className="mb-8 max-w-xs text-center text-sm leading-relaxed text-foreground">
                     Henüz herhangi bir kategori eklenmemiş.
                 </p>

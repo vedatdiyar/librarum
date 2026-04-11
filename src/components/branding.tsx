@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { brand } from "@/app/fonts";
 import { cn } from "@/lib/utils";
 
 interface BrandingProps {
@@ -37,7 +38,9 @@ export function Branding({ className, onClose, showSubtitle = true, isCollapsed 
       </div>
       {!isCollapsed && (
         <div className="flex min-w-0 flex-col justify-center duration-300 animate-in fade-in slide-in-from-left-2">
-          <p className="mt-1 font-fredoka text-xl font-medium tracking-wider whitespace-nowrap text-[#F8EDD8] uppercase">Librarum</p>
+          <p className={cn("mt-1 text-xl font-medium tracking-wider whitespace-nowrap text-[#F8EDD8] uppercase", brand.className)}>
+            Librarum
+          </p>
           {showSubtitle && (
             <p className="mt-1 text-[10px] leading-none font-medium tracking-[0.2em] text-foreground uppercase">
               Özel Kütüphane

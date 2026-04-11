@@ -1,0 +1,7 @@
+CREATE EXTENSION IF NOT EXISTS pg_trgm;--> statement-breakpoint
+
+CREATE INDEX "books_search_trgm_idx" ON "books" USING gin ((regexp_replace(translate(lower(concat_ws(' ', coalesce("title", ''), coalesce("subtitle", ''), coalesce("isbn", ''), coalesce("publisher", ''), coalesce("location_name", ''), coalesce("shelf_row", ''))), 'çğıöşüÇĞİÖŞÜ', 'cgiosuCGIOSU'), '[^a-z0-9]+', ' ', 'g')) gin_trgm_ops);--> statement-breakpoint
+CREATE INDEX "authors_name_search_trgm_idx" ON "authors" USING gin ((regexp_replace(translate(lower(coalesce("name", '')), 'çğıöşüÇĞİÖŞÜ', 'cgiosuCGIOSU'), '[^a-z0-9]+', ' ', 'g')) gin_trgm_ops);--> statement-breakpoint
+CREATE INDEX "series_name_search_trgm_idx" ON "series" USING gin ((regexp_replace(translate(lower(coalesce("name", '')), 'çğıöşüÇĞİÖŞÜ', 'cgiosuCGIOSU'), '[^a-z0-9]+', ' ', 'g')) gin_trgm_ops);--> statement-breakpoint
+CREATE INDEX "categories_name_search_trgm_idx" ON "categories" USING gin ((regexp_replace(translate(lower(coalesce("name", '')), 'çğıöşüÇĞİÖŞÜ', 'cgiosuCGIOSU'), '[^a-z0-9]+', ' ', 'g')) gin_trgm_ops);--> statement-breakpoint
+CREATE INDEX "publishers_name_search_trgm_idx" ON "publishers" USING gin ((regexp_replace(translate(lower(coalesce("name", '')), 'çğıöşüÇĞİÖŞÜ', 'cgiosuCGIOSU'), '[^a-z0-9]+', ' ', 'g')) gin_trgm_ops);

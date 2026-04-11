@@ -17,6 +17,10 @@ export default defineConfig([
         config: path.join(__dirname, "./src/app/globals.css"),
       },
     },
+    rules: {
+      // Keep canonicalization out of save-time ESLint fixes.
+      "tailwindcss/enforces-shorthand": "off",
+    },
   },
   globalIgnores([
     ".next/**",

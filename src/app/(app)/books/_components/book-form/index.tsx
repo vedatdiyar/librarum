@@ -119,13 +119,12 @@ function Section({
 }) {
   return (
     <div 
+        data-section-index={index}
         className={cn(
           "group glass-panel relative flex flex-col overflow-hidden transition-all duration-300 hover:border-white/10",
           "rounded-[32px] p-6 md:rounded-[40px] md:p-8",
-          "duration-700 animate-in fade-in fill-mode-both",
-          "border-white/5 bg-white/1 xl:slide-in-from-bottom-6"
+          "border-white/5 bg-white/1"
         )}
-        style={{ animationDelay: `${index * 50}ms` }}
     >
       <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/5 opacity-0 blur-[120px] transition-opacity duration-1000 group-hover:opacity-100" />
       
@@ -534,7 +533,7 @@ function BookFormActions(props: any) {
       </div>
 
       {submitError ? (
-        <div className="flex items-start gap-3 rounded-2xl border border-rose-400/20 bg-rose-400/5 p-5 text-rose-400 duration-500 animate-in zoom-in-95">
+        <div className="flex items-start gap-3 rounded-2xl border border-rose-400/20 bg-rose-400/5 p-5 text-rose-400">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 opacity-60" />
           <p className="text-[11px] leading-relaxed font-bold tracking-tight uppercase">{submitError}</p>
         </div>

@@ -92,7 +92,7 @@ export function BlacklistTab() {
       <div className="space-y-5">
         <div className="space-y-1.5">
             <h3 className="font-serif text-lg font-bold tracking-tight text-white">Yapay Zeka Sınırları</h3>
-            <p className="max-w-xl text-[13px] leading-relaxed text-foreground/70">
+            <p className="max-w-xl text-[13px] leading-relaxed text-foreground/80">
                 Yapay zeka motorunuz için anlamsal çerçeveyi belirleyin. Buraya eklenen yazarlar veya alanlar, keşif ve öneri listelerinizden tamamen hariç tutulur.
             </p>
         </div>
@@ -100,7 +100,7 @@ export function BlacklistTab() {
         <div className="glass-panel rounded-4xl border border-white/5 bg-white/1 p-6 shadow-inner">
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-2.5">
-                    <label className="px-1 text-[9px] font-bold tracking-[0.3em] text-foreground/40 uppercase">Hedef Varlık Türü</label>
+                    <label className="px-1 text-[9px] font-bold tracking-[0.3em] text-foreground/80 uppercase">Hedef Varlık Türü</label>
                     <div className="flex w-fit rounded-lg border border-white/5 bg-white/5 p-1 backdrop-blur-xl">
                       {(["author", "category"] as const).map((t) => (
                         <button
@@ -110,7 +110,7 @@ export function BlacklistTab() {
                                 "rounded-lg px-5 py-2 text-[10px] font-bold tracking-widest uppercase transition-all duration-500",
                                 newType === t 
                                     ? "bg-white text-black shadow-lg" 
-                                    : "text-foreground/60 hover:text-white"
+                                    : "text-foreground/80 hover:text-white"
                             )}
                         >
                             {getTypeText(t)}
@@ -119,7 +119,7 @@ export function BlacklistTab() {
                     </div>
                 </div>
                 <div className="w-full flex-1 space-y-2.5">
-                    <label className="px-1 text-[9px] font-bold tracking-[0.3em] text-foreground/40 uppercase" htmlFor="blacklist-value-input">Tanımlayıcı Adı</label>
+                    <label className="px-1 text-[9px] font-bold tracking-[0.3em] text-foreground/80 uppercase" htmlFor="blacklist-value-input">Tanımlayıcı Adı</label>
                     <Input 
                         id="blacklist-value-input"
                         name="blacklistValue"
@@ -149,45 +149,45 @@ export function BlacklistTab() {
       <div className="space-y-5">
         <div className="flex items-center justify-between">
             <h3 className="font-serif text-lg font-bold tracking-tight text-white">Aktif Kısıtlamalar</h3>
-            <span className="text-[10px] font-bold tracking-[0.2em] text-foreground/50 uppercase">{prefs?.length ?? 0} Varlık Filtrelendi</span>
+            <span className="text-xs font-bold tracking-[0.16em] text-foreground/80 uppercase">{prefs?.length ?? 0} Varlık Filtrelendi</span>
         </div>
 
         {prefs?.length === 0 ? (
           <div className="glass-panel flex flex-col items-center justify-center rounded-4xl border-dashed border-white/5 p-12 duration-700 animate-in fade-in">
-            <div className="mb-4 rounded-2xl border border-white/5 bg-white/2 p-4 text-foreground/20">
+            <div className="mb-4 rounded-2xl border border-white/5 bg-white/2 p-4 text-foreground/80">
                 <ShieldAlert className="h-8 w-8" />
             </div>
-            <p className="mb-2 font-serif text-lg font-bold text-white/40">Sınırsız Keşif</p>
-            <p className="max-w-sm text-center text-sm leading-relaxed text-foreground/60">Yapay zeka motoru şu anda herhangi bir kısıtlama olmadan çalışıyor.</p>
+            <p className="mb-2 font-serif text-lg font-bold text-white/80">Sınırsız Keşif</p>
+            <p className="max-w-sm text-center text-sm leading-relaxed text-foreground/80">Yapay zeka motoru şu anda herhangi bir kısıtlama olmadan çalışıyor.</p>
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-white/5 bg-white/2">
-            <div className="grid grid-cols-[100px_1fr_100px] border-b border-white/5 bg-white/2 px-6 py-2">
-              <span className="text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Tür</span>
-              <span className="text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Değer</span>
+            <div className="grid grid-cols-[120px_1fr_112px] border-b border-white/5 bg-white/2 px-6 py-3">
+              <span className="text-[11px] font-bold tracking-[0.14em] text-foreground/80 uppercase">Tür</span>
+              <span className="text-[11px] font-bold tracking-[0.14em] text-foreground/80 uppercase">Değer</span>
               <span className="sr-only">İşlemler</span>
             </div>
             <div className="divide-y divide-white/2">
               {prefs?.map((pref, idx) => (
                    <div 
                       key={pref.id} 
-                      className="group grid grid-cols-[100px_1fr_100px] items-center px-6 py-2 transition-colors hover:bg-white/4"
+                      className="group grid grid-cols-[120px_1fr_112px] items-center px-6 py-3 transition-colors hover:bg-white/4"
                   >
-                      <div className="flex items-center gap-2 text-foreground/30">
+                      <div className="flex items-center gap-2.5 text-foreground/80">
                            {getTypeIcon(pref.type)}
-                           <span className="text-[9px] font-bold tracking-widest uppercase">{getTypeText(pref.type)}</span>
+                           <span className="text-[11px] font-bold tracking-[0.12em] uppercase">{getTypeText(pref.type)}</span>
                       </div>
                       
-                      <p className="font-serif text-[15px] font-bold text-white transition-colors group-hover:text-primary">{pref.value}</p>
+                      <p className="font-serif text-base font-bold text-white transition-colors group-hover:text-primary">{pref.value}</p>
 
                       <div className="flex justify-end">
                         <Button 
                             variant="ghost" 
                             size="icon"
-                            className="h-8 w-8 rounded-lg text-foreground/10 opacity-0 transition-all group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
+                            className="h-9 w-9 rounded-lg text-foreground/80 opacity-0 transition-all group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
                             onClick={() => deleteMutation.mutate(pref.id)}
                         >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                   </div>

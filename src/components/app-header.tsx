@@ -1,8 +1,9 @@
 "use client";
 
-import { Settings, User } from "lucide-react";
+import { LogOut, Settings, User } from "lucide-react";
 import { Button } from "@/components/ui";
 import { GlobalSearch } from "./global-search";
+import { signOut } from "next-auth/react";
 
 export function AppDesktopHeader() {
   return (
@@ -21,7 +22,7 @@ export function AppDesktopHeader() {
           <GlobalSearch expandable />
           
           <div className="flex items-center gap-2">
-            <Button variant="ghost" className="h-11 w-11 rounded-xl border border-white/5 bg-white/2 p-0 transition-all duration-300 hover:scale-105 hover:border-white/10 hover:bg-white/5 active:scale-95">
+            <Button variant="ghost" className="group h-11 w-11 rounded-xl border border-white/5 bg-white/2 p-0 transition-all duration-300 hover:scale-105 hover:border-white/10 hover:bg-white/5 active:scale-95">
               <Settings className="h-5 w-5 text-foreground/70 transition-colors group-hover:text-primary" />
             </Button>
 
@@ -33,6 +34,14 @@ export function AppDesktopHeader() {
                 <span className="text-[13px] font-bold tracking-tight text-white/90">Vedat Diyar</span>
                 <span className="mt-0.5 text-[10px] font-medium tracking-widest text-foreground uppercase">Arşivci</span>
               </div>
+            </Button>
+
+            <Button 
+              variant="ghost" 
+              className="group h-11 w-11 rounded-xl border border-white/5 bg-white/2 p-0 transition-all duration-300 hover:scale-105 hover:border-white/10 hover:bg-white/5 active:scale-95"
+              onClick={() => signOut({ redirectTo: "/login" })}
+            >
+              <LogOut className="h-5 w-5 text-foreground/70 transition-colors group-hover:text-primary" />
             </Button>
           </div>
         </div>

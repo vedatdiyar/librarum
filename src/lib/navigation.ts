@@ -14,7 +14,7 @@ export const appPageTitles = {
   newBook: "Yeni Kitap",
   authors: "Yazarlar",
   series: "Seriler",
-  loans: "Ödünçler",
+  loans: "Ödünç Verilenler",
   aiSuggestions: "Akıllı Öneriler",
   settings: "Ayarlar"
 } as const;

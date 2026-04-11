@@ -105,7 +105,7 @@ export function SeriesTab() {
       <div className="space-y-5">
         <div className="space-y-1.5">
             <h3 className="font-serif text-lg font-bold tracking-tight text-white">Seri Ekle</h3>
-            <p className="text-sm text-foreground/70">Çok ciltli setleri veya kitap serilerini tek bir çatıda toplayın.</p>
+            <p className="text-sm text-foreground/80">Çok ciltli setleri veya kitap serilerini tek bir çatıda toplayın.</p>
         </div>
         
         <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_200px_auto]">
@@ -152,22 +152,22 @@ export function SeriesTab() {
       <div className="space-y-5">
         <div className="flex items-center justify-between">
             <h3 className="font-serif text-lg font-bold tracking-tight text-white">Mevcut Seriler</h3>
-            <span className="text-[10px] font-bold tracking-[0.2em] text-foreground/50 uppercase">{seriesList?.length ?? 0} Seri</span>
+            <span className="text-xs font-bold tracking-[0.16em] text-foreground/80 uppercase">{seriesList?.length ?? 0} Seri</span>
         </div>
 
         {seriesList && seriesList.length > 0 ? (
             <div className="overflow-hidden rounded-xl border border-white/5 bg-white/2">
-              <div className="grid grid-cols-[1fr_120px_120px_100px] border-b border-white/5 bg-white/2 px-6 py-2">
-                <span className="text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Seri</span>
-                <span className="text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Cilt Sayısı</span>
-                <span className="text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Kitap Sayısı</span>
+              <div className="grid grid-cols-[1fr_140px_140px_112px] border-b border-white/5 bg-white/2 px-6 py-3">
+                <span className="text-[11px] font-bold tracking-[0.14em] text-foreground/80 uppercase">Seri</span>
+                <span className="text-[11px] font-bold tracking-[0.14em] text-foreground/80 uppercase">Cilt Sayısı</span>
+                <span className="text-[11px] font-bold tracking-[0.14em] text-foreground/80 uppercase">Kitap Sayısı</span>
                 <span className="sr-only">İşlemler</span>
               </div>
               <div className="divide-y divide-white/2">
                 {seriesList.map((series, idx) => (
                     <div 
                         key={series.id} 
-                        className="group grid grid-cols-[1fr_120px_120px_100px] items-center px-6 py-2 transition-colors hover:bg-white/4"
+                        className="group grid grid-cols-[1fr_140px_140px_112px] items-center px-6 py-3 transition-colors hover:bg-white/4"
                     >
                         <div className="min-w-0">
                           {editingSeries?.id === series.id ? (
@@ -175,11 +175,11 @@ export function SeriesTab() {
                               id={`edit-series-name-${series.id}`}
                               value={editingSeries.name}
                               onChange={(e) => setEditingSeries({ ...editingSeries, name: e.target.value })}
-                              className="h-8 rounded-lg border-white/10 bg-white/5 text-xs"
+                              className="h-9 rounded-lg border-white/10 bg-white/5 text-sm"
                               placeholder="Seri Adı"
                             />
                           ) : (
-                            <p className="truncate font-serif text-[15px] font-bold text-white transition-colors group-hover:text-primary">{series.name}</p>
+                            <p className="truncate font-serif text-base font-bold text-white transition-colors group-hover:text-primary">{series.name}</p>
                           )}
                         </div>
                         
@@ -193,18 +193,18 @@ export function SeriesTab() {
                               ...editingSeries, 
                               totalVolumes: e.target.value ? parseInt(e.target.value) : null 
                               })}
-                              className="h-8 w-24 rounded-lg border-white/10 bg-white/5 text-xs"
+                              className="h-9 w-28 rounded-lg border-white/10 bg-white/5 text-sm"
                               placeholder="Cilt"
                             />
                           ) : (
-                            <p className="text-[10px] font-medium text-foreground/50">
+                            <p className="text-xs font-medium text-foreground/80">
                               {series.totalVolumes ? `${series.totalVolumes} Cilt` : "—"}
                             </p>
                           )}
                         </div>
 
                         <div>
-                           <p className="text-[10px] font-medium text-foreground/50">{series.bookCount} kitap</p>
+                           <p className="text-xs font-medium text-foreground/80">{series.bookCount} kitap</p>
                         </div>
 
                         <div className="flex justify-end gap-1">
@@ -212,7 +212,7 @@ export function SeriesTab() {
                             <>
                               <Button 
                                   size="icon" 
-                                  className="h-8 w-8 bg-primary/20 text-primary hover:bg-primary/30"
+                                  className="h-9 w-9 bg-primary/20 text-primary hover:bg-primary/30"
                                   onClick={() => updateMutation.mutate({
                                   id: editingSeries.id,
                                   name: editingSeries.name,
@@ -220,15 +220,15 @@ export function SeriesTab() {
                                   })}
                                   disabled={updateMutation.isPending}
                               >
-                                  <Check className="h-4 w-4" />
+                                  <Check className="h-[18px] w-[18px]" />
                               </Button>
                               <Button 
                                   variant="ghost" 
                                   size="icon" 
-                                  className="h-8 w-8 text-foreground/20 hover:bg-white/5"
+                                  className="h-9 w-9 text-foreground/80 hover:bg-white/5"
                                   onClick={() => setEditingSeries(null)}
                               >
-                                  <X className="h-4 w-4" />
+                                  <X className="h-[18px] w-[18px]" />
                               </Button>
                             </>
                           ) : (
@@ -236,18 +236,18 @@ export function SeriesTab() {
                               <Button 
                                 variant="ghost" 
                                 size="icon"
-                                className="h-8 w-8 rounded-lg text-foreground/10 opacity-0 transition-all group-hover:opacity-100 hover:bg-white/5 hover:text-white"
+                                className="h-9 w-9 rounded-lg text-foreground/80 opacity-0 transition-all group-hover:opacity-100 hover:bg-white/5 hover:text-white"
                                 onClick={() => setEditingSeries(series)}
                                 >
-                                <Pencil className="h-3.5 w-3.5" />
+                                <Pencil className="h-4 w-4" />
                               </Button>
                               <Button 
                                 variant="ghost" 
                                 size="icon"
-                                className="h-8 w-8 rounded-lg text-foreground/10 opacity-0 transition-all group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
+                                className="h-9 w-9 rounded-lg text-foreground/80 opacity-0 transition-all group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
                                 onClick={() => setDeleteConfirm(series)}
                                 >
-                                <Trash2 className="h-3.5 w-3.5" />
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </>
                           )}
@@ -258,7 +258,7 @@ export function SeriesTab() {
             </div>
         ) : (
             <div className="glass-panel flex flex-col items-center justify-center rounded-3xl border-dashed border-white/5 p-12 duration-700 animate-in fade-in">
-                <p className="mb-4 font-serif text-lg font-bold text-white/40">Kayıtlı Seri Bulunmuyor</p>
+                <p className="mb-4 font-serif text-lg font-bold text-white/80">Kayıtlı Seri Bulunmuyor</p>
                 <p className="mb-8 max-w-xs text-center text-sm leading-relaxed text-foreground">
                     Kitap serilerini takip etmek için yeni bir seri oluşturun.
                 </p>

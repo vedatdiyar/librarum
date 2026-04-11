@@ -102,7 +102,7 @@ export function ImportExportTab() {
       <section className="space-y-5">
         <div className="space-y-1.5">
             <h3 className="font-serif text-lg font-bold tracking-tight text-white">Dışa Aktar</h3>
-            <p className="max-w-xl text-[13px] leading-relaxed text-foreground/70">Koleksiyon kayıtlarınızı yedeklemek veya başka ortamlara taşımak için dışa aktarın.</p>
+            <p className="max-w-xl text-[13px] leading-relaxed text-foreground/80">Koleksiyon kayıtlarınızı yedeklemek veya başka ortamlara taşımak için dışa aktarın.</p>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -114,14 +114,14 @@ export function ImportExportTab() {
                 </div>
                 <div>
                     <p className="font-serif text-[15px] font-bold tracking-tight text-white">Tam Arşiv (JSON)</p>
-                    <p className="mt-0.5 text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Tam Veri Yedeği</p>
+                    <p className="mt-0.5 text-[9px] font-bold tracking-[0.2em] text-foreground/80 uppercase">Tam Veri Yedeği</p>
                 </div>
                 </div>
                 <p className="text-sm leading-relaxed text-foreground">
                     Koleksiyon veritabanınızın tam kopyası. Başka bir kütüphaneye taşınmak veya tam yedek almak için uygundur.
                 </p>
                 <Button 
-                    className="h-9 w-full rounded-lg border-white/10 bg-white/3 text-[10px] font-bold tracking-widest text-white/70 uppercase transition-all hover:bg-white/8 hover:text-white" 
+                    className="h-9 w-full rounded-lg border-white/10 bg-white/3 text-[10px] font-bold tracking-widest text-white/80 uppercase transition-all hover:bg-white/8 hover:text-white" 
                     onClick={() => handleExport("json")} 
                     variant="ghost"
                 >
@@ -139,14 +139,14 @@ export function ImportExportTab() {
                 </div>
                 <div>
                     <p className="font-serif text-[15px] font-bold tracking-tight text-white">Tablo Halinde Veri (CSV)</p>
-                    <p className="mt-0.5 text-[9px] font-bold tracking-[0.2em] text-foreground/40 uppercase">Tablo Görünümü</p>
+                    <p className="mt-0.5 text-[9px] font-bold tracking-[0.2em] text-foreground/80 uppercase">Tablo Görünümü</p>
                 </div>
                 </div>
                 <p className="text-sm leading-relaxed text-foreground">
                     Okunabilir tablo formatı. Excel veya Google Sheets gibi veri analizi araçlarıyla uyumludur.
                 </p>
                 <Button 
-                    className="h-9 w-full rounded-lg border-white/10 bg-white/3 text-[10px] font-bold tracking-widest text-white/70 uppercase transition-all hover:bg-white/8 hover:text-white" 
+                    className="h-9 w-full rounded-lg border-white/10 bg-white/3 text-[10px] font-bold tracking-widest text-white/80 uppercase transition-all hover:bg-white/8 hover:text-white" 
                     onClick={() => handleExport("csv")} 
                     variant="ghost"
                 >
@@ -163,7 +163,7 @@ export function ImportExportTab() {
       <section className="space-y-5">
         <div className="space-y-1.5">
           <h3 className="font-serif text-lg font-bold tracking-tight text-white">Dosya Yapısı</h3>
-          <p className="max-w-xl text-[13px] leading-relaxed text-foreground/70">
+          <p className="max-w-xl text-[13px] leading-relaxed text-foreground/80">
             Excel/CSV dosyası için gerekli sütun dizilimi. Alanlar virgülle, liste formatındaki alanlar ise noktalı virgülle ayrılmalıdır.
           </p>
         </div>
@@ -189,7 +189,7 @@ export function ImportExportTab() {
       <section className="space-y-5">
         <div className="space-y-1.5">
             <h3 className="font-serif text-lg font-bold tracking-tight text-white">İçe Aktar</h3>
-            <p className="max-w-xl text-[13px] leading-relaxed text-foreground/70">Dışarıdaki kayıtlarınızı koleksiyonunuza dahil edin. JSON mevcut arşivi değiştirir; CSV ise verilerinize ekleme yapar.</p>
+            <p className="max-w-xl text-[13px] leading-relaxed text-foreground/80">Dışarıdaki kayıtlarınızı koleksiyonunuza dahil edin. JSON mevcut arşivi değiştirir; CSV ise verilerinize ekleme yapar.</p>
         </div>
 
         <div className="group relative flex flex-col items-center justify-center gap-4 rounded-[2.5rem] border border-dashed border-white/5 bg-white/1 p-8 text-center transition-all duration-700 hover:border-white/10 hover:bg-white/2 lg:p-10">
@@ -199,7 +199,7 @@ export function ImportExportTab() {
           
           <div className="relative space-y-2">
             <p className="font-serif text-lg font-bold text-white">Dosya Yükle</p>
-            <p className="mx-auto max-w-xl text-sm leading-relaxed text-foreground/60">
+            <p className="mx-auto max-w-xl text-sm leading-relaxed text-foreground/80">
               Bir JSON veya CSV dosyası seçin. Sistemimiz kayıtları kontrol ederek koleksiyonunuza işleyecektir.
             </p>
           </div>
@@ -275,7 +275,7 @@ export function ImportExportTab() {
                     <p className="mt-1 text-[10px] font-bold tracking-[0.2em] text-emerald-400/50 uppercase">Eklenen Kitaplar</p>
                   </div>
                   <div className="group relative rounded-2xl border border-white/5 bg-white/3 p-5">
-                    <p className="font-serif text-4xl font-bold text-white/40">{importResult.skipped}</p>
+                    <p className="font-serif text-4xl font-bold text-white/80">{importResult.skipped}</p>
                     <p className="mt-1 text-[10px] font-bold tracking-[0.2em] text-foreground uppercase">Atlanan / Mevcut</p>
                   </div>
                 </div>
