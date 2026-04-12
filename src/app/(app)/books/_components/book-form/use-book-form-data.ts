@@ -12,6 +12,14 @@ import type {
 } from "@/types";
 import { toOptionalInteger } from "./use-book-form";
 
+type PaginatedResponse<T> = {
+  items: T[];
+  totalItems: number;
+  totalPages: number;
+  page: number;
+};
+
+
 interface UseBookFormDataOptions {
   initialBook?: BookDetail | null;
   values: {
@@ -102,7 +110,7 @@ export function useBookFormData({
 
   const seriesQueryResult = useQuery({
     queryKey: ["book-form", "series"],
-    queryFn: async () => readJsonResponse<SeriesOption[]>(await fetch("/api/series")),
+    queryFn: async () => readJsonResponse<PaginatedResponse<SeriesOption>>(await fetch("/api/series")),
     staleTime: 60_000
   });
 
@@ -113,12 +121,13 @@ export function useBookFormData({
       if (deferredAuthorQuery.trim()) {
         params.set("q", deferredAuthorQuery.trim());
       }
-      return readJsonResponse<AuthorOption[]>(
+      return readJsonResponse<PaginatedResponse<AuthorOption>>(
         await fetch(`/api/authors${params.toString() ? `?${params.toString()}` : ""}`)
       );
     },
     staleTime: 20_000
   });
+
 
   const rememberResolvedAuthor = React.useCallback((author: AuthorOption) => {
     setAuthorState((current) => {
@@ -142,7 +151,7 @@ export function useBookFormData({
   const selectedAuthors = React.useMemo(() => {
     const authorMap = new Map<string, AuthorOption>();
     (initialBook?.authors ?? []).forEach((author) => authorMap.set(author.id, author));
-    (authorsQuery.data ?? []).forEach((author) => authorMap.set(author.id, author));
+    (authorsQuery.data?.items ?? []).forEach((author) => authorMap.set(author.id, author));
     resolvedAuthors.forEach((author) => authorMap.set(author.id, author));
     pendingAuthorSuggestions.forEach((suggestion) =>
       authorMap.set(suggestion.suggestedAuthor.id, suggestion.suggestedAuthor)
@@ -151,7 +160,8 @@ export function useBookFormData({
     return (values.authorIds ?? [])
       .map((authorId) => authorMap.get(authorId))
       .filter((author): author is AuthorOption => Boolean(author));
-  }, [authorsQuery.data, initialBook, pendingAuthorSuggestions, resolvedAuthors, values.authorIds]);
+  }, [authorsQuery.data?.items, initialBook, pendingAuthorSuggestions, resolvedAuthors, values.authorIds]);
+
 
   const draftAuthorNames = React.useMemo(
     () => Array.from(new Set((values.authorNames ?? []).map((name) => name.trim()).filter(Boolean))),
@@ -160,7 +170,7 @@ export function useBookFormData({
 
   const availableAuthors = React.useMemo(
     () => {
-      const mergedAuthors = [...(authorsQuery.data ?? []), ...resolvedAuthors].filter(
+      const mergedAuthors = [...(authorsQuery.data?.items ?? []), ...resolvedAuthors].filter(
         (author, index, list) => list.findIndex((item) => item.id === author.id) === index
       );
 
@@ -168,13 +178,14 @@ export function useBookFormData({
         (author) => !(values.authorIds ?? []).includes(author.id)
       );
     },
-    [authorsQuery.data, resolvedAuthors, values.authorIds]
+    [authorsQuery.data?.items, resolvedAuthors, values.authorIds]
   );
+
 
   const selectedSeries = React.useMemo(() => {
     if (!values.seriesId) return null;
     return (
-      (seriesQueryResult.data ?? []).find((series) => series.id === values.seriesId) ??
+      (seriesQueryResult.data?.items ?? []).find((series) => series.id === values.seriesId) ??
       (initialBook?.series && initialBook.series.id === values.seriesId
         ? {
             id: initialBook.series.id,
@@ -183,7 +194,8 @@ export function useBookFormData({
           }
         : null)
     );
-  }, [initialBook, seriesQueryResult.data, values.seriesId]);
+  }, [initialBook, seriesQueryResult.data?.items, values.seriesId]);
+
 
   function addAuthorById(authorId: string) {
     setValue("authorIds", [...new Set([...(values.authorIds || []), authorId])], {
@@ -192,9 +204,10 @@ export function useBookFormData({
     });
 
     if ((values.authorNames ?? []).length > 0) {
-      const selected = [...(authorsQuery.data ?? []), ...resolvedAuthors].find(
+      const selected = [...(authorsQuery.data?.items ?? []), ...resolvedAuthors].find(
         (author) => author.id === authorId
       );
+
 
       if (selected) {
         setValue(
@@ -310,9 +323,10 @@ export function useBookFormData({
     const nextSuggestions: PendingAuthorSuggestion[] = [];
 
     for (const name of uniqueNames) {
-      const localExactMatch = [...(authorsQuery.data ?? []), ...resolvedAuthors].find(
+      const localExactMatch = [...(authorsQuery.data?.items ?? []), ...resolvedAuthors].find(
         (author) => normalizeAuthorKey(author.name) === normalizeAuthorKey(name)
       );
+
 
       if (localExactMatch) {
         resolvedIds.push(localExactMatch.id);
@@ -320,7 +334,8 @@ export function useBookFormData({
       }
 
       const response = await fetch(`/api/authors?q=${encodeURIComponent(name)}`);
-      const candidates = await readJsonResponse<AuthorOption[]>(response);
+      const result = await readJsonResponse<PaginatedResponse<AuthorOption>>(response);
+      const candidates = result.items;
       const exactMatch = candidates.find(
         (author) => normalizeAuthorKey(author.name) === normalizeAuthorKey(name)
       );
@@ -438,10 +453,11 @@ export function useBookFormData({
 
   const canCreateSeries =
     seriesQuery.trim().length > 0 &&
-    !(seriesQueryResult.data ?? []).some(
+    !(seriesQueryResult.data?.items ?? []).some(
       (series) =>
         series.name.toLocaleLowerCase("tr-TR") === seriesQuery.trim().toLocaleLowerCase("tr-TR")
     );
+
 
   const canCreateCategory =
     categoryQuery.trim().length > 0 &&

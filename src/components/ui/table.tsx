@@ -12,7 +12,6 @@ const Table = React.forwardRef<
   >
     <table
       className={cn(
-        // min-w-full ile taşmayı önle, responsive için min-width ayarla
         "w-full min-w-[600px] caption-bottom text-sm",
         className
       )}
@@ -28,7 +27,7 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead className={cn("[&_tr]:border-b [&_tr]:border-border/60", className)} ref={ref} {...props} />
+  <thead className={cn("bg-transparent [&_tr]:border-b [&_tr]:border-white/10", className)} ref={ref} {...props} />
 ));
 
 TableHeader.displayName = "TableHeader";
@@ -52,7 +51,7 @@ const TableRow = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tr
     className={cn(
-      "border-b border-border/55 transition-colors duration-150 hover:bg-surface-raised/55",
+      "border-b border-white/5 transition-colors duration-200 hover:bg-white/2",
       className
     )}
     ref={ref}
@@ -68,7 +67,7 @@ const TableHead = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <th
     className={cn(
-      "h-12 px-4 text-left align-middle text-[11px] font-medium tracking-[0.18em] text-text-secondary uppercase",
+      "h-12 px-2 py-4 text-left align-middle text-[10px] font-bold tracking-wider text-foreground/40 uppercase md:px-4 md:text-[11px]",
       className
     )}
     ref={ref}
@@ -82,7 +81,7 @@ const TableCell = React.forwardRef<
   HTMLTableCellElement,
   React.TdHTMLAttributes<HTMLTableCellElement>
 >(({ className, ...props }, ref) => (
-  <td className={cn("px-4 py-4 align-middle text-sm text-text-primary", className)} ref={ref} {...props} />
+  <td className={cn("px-2 py-3 align-middle text-sm text-text-primary md:px-4 md:py-4", className)} ref={ref} {...props} />
 ));
 
 TableCell.displayName = "TableCell";

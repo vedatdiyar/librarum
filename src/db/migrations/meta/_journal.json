@@ -36,6 +36,20 @@
       "when": 1775952052024,
       "tag": "0004_burly_luckman",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1776029726923,
+      "tag": "0005_add-user-id-to-ai-tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1776030898456,
+      "tag": "0006_amused_mattie_franklin",
+      "breakpoints": true
     }
   ]
 }

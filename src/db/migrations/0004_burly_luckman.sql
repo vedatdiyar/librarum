@@ -1,1 +1,1 @@
-ALTER TABLE "books" DROP COLUMN "publisher";
+ALTER TABLE "books" DROP COLUMN "publisher" CASCADE;

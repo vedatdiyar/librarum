@@ -50,7 +50,7 @@ function formatRating(rating: number | null) {
   return rating ? rating.toFixed(1) : "—";
 }
 
-export function BookCover({
+export const BookCover = React.memo(function BookCover({
   title,
   subtitle,
   coverUrl,
@@ -90,9 +90,101 @@ export function BookCover({
       <div className="mt-4 h-1 w-8 rounded-full bg-white/5 transition-colors group-hover:bg-primary/20" />
     </div>
   );
-}
+});
 
-export function BooksTable({
+const BooksTableRow = React.memo(function BooksTableRow({
+  book,
+  index,
+  isSelected,
+  onToggleRow
+}: {
+  book: ApiBookListItem;
+  index: number;
+  isSelected: boolean;
+  onToggleRow: (id: string, index: number, withShift: boolean) => void;
+}) {
+  return (
+    <TableRow
+      className={cn(
+        "group animate-in fade-in fill-mode-both slide-in-from-left-4",
+        isSelected && "bg-primary/10 hover:bg-primary/15"
+      )}
+      style={{ animationDelay: `${index * 40}ms` }}
+    >
+      <TableCell className="text-center">
+        <Checkbox
+          aria-label={`Seç: ${book.title}`}
+          checked={isSelected}
+          id={`select-book-${book.id}`}
+          name={`select-book-${book.id}`}
+          onChange={(event) =>
+            onToggleRow(book.id, index, (event.nativeEvent as MouseEvent).shiftKey)
+          }
+        />
+      </TableCell>
+      <TableCell>
+        <Link href={`/books/${book.slug}`}>
+          <BookCover
+            className="w-10 shadow-lg group-hover:scale-110 md:w-14"
+            coverUrl={book.coverUrl}
+            subtitle={book.subtitle}
+            title={book.title}
+          />
+        </Link>
+      </TableCell>
+      <TableCell>
+        <div className="space-y-1">
+          <Link
+            className="block"
+            href={`/books/${book.slug}`}
+          >
+            <BookTitleBlock subtitle={book.subtitle} title={book.title} />
+          </Link>
+          <p className="hidden font-mono text-[10px] font-bold tracking-widest text-foreground uppercase md:block">
+            {book.isbn || "ISBN YOK"}
+          </p>
+        </div>
+      </TableCell>
+      <TableCell className="hidden md:table-cell">
+        <div className="flex flex-wrap gap-2">
+          {book.authors.map((author) => (
+            <Link
+              className="text-sm font-medium text-foreground transition-colors hover:text-white"
+              href={`/authors/${author.slug}`}
+              key={author.id}
+            >
+              {author.name}
+            </Link>
+          ))}
+        </div>
+      </TableCell>
+      <TableCell className="text-center">
+        <div className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold tracking-widest uppercase md:px-2.5 md:py-1 md:text-[10px]", STATUS_COLORS[book.status])}>
+          {STATUS_LABELS[book.status]}
+        </div>
+      </TableCell>
+      <TableCell className="hidden lg:table-cell">
+        <span className="text-[13px] font-medium text-foreground">
+          {book.status === "loaned" ? (
+            book.loanedTo || "—"
+          ) : (
+            <>
+              {book.location?.locationName || "—"}
+              {book.location?.shelfRow && ` / ${book.location.shelfRow}`}
+            </>
+          )}
+        </span>
+      </TableCell>
+      <TableCell className="text-right">
+        <span className="font-serif text-lg font-bold text-primary transition-colors group-hover:text-primary">
+            {formatRating(book.rating)}
+        </span>
+      </TableCell>
+    </TableRow>
+  );
+});
+
+export const BooksTable = React.memo(function BooksTable({
   items,
   selectedIds,
   onToggleRow,
@@ -109,7 +201,7 @@ export function BooksTable({
     <div className="w-full">
       <Table>
         <TableHeader>
-          <TableRow className="border-b border-white/5 hover:bg-transparent">
+          <TableRow className="hover:bg-transparent">
             <TableHead className="w-12 text-center">
               <Checkbox
                 aria-label="Hepsini seç"
@@ -119,102 +211,113 @@ export function BooksTable({
                 onChange={(event) => onToggleAllVisible(event.target.checked)}
               />
             </TableHead>
-            <TableHead className="w-20 px-2 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase md:w-24 md:px-4">KAPAK</TableHead>
-            <TableHead className="px-2 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase md:px-4">BAŞLIK</TableHead>
-            <TableHead className="hidden px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase md:table-cell">YAZARLAR</TableHead>
-            <TableHead className="px-4 py-4 text-center text-[9px] font-bold tracking-wider text-foreground/40 uppercase">DURUM</TableHead>
-            <TableHead className="hidden px-4 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase lg:table-cell">KONUM</TableHead>
-            <TableHead className="px-4 py-4 text-right text-[9px] font-bold tracking-wider text-foreground/40 uppercase">PUAN</TableHead>
+            <TableHead className="w-20 md:w-24">KAPAK</TableHead>
+            <TableHead>BAŞLIK</TableHead>
+            <TableHead className="hidden md:table-cell">YAZARLAR</TableHead>
+            <TableHead className="text-center">DURUM</TableHead>
+            <TableHead className="hidden lg:table-cell">KONUM</TableHead>
+            <TableHead className="text-right">PUAN</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((book, index) => (
-            <TableRow
-              className={cn(
-                "group border-b border-white/2 transition-all duration-500 animate-in fade-in fill-mode-both slide-in-from-left-4 last:border-0 hover:bg-white/3",
-                selectedIds.includes(book.id) && "bg-primary/10 hover:bg-primary/15"
-              )}
+            <BooksTableRow
+              book={book}
+              index={index}
+              isSelected={selectedIds.includes(book.id)}
               key={book.id}
-              style={{ animationDelay: `${index * 40}ms` }}
-            >
-              <TableCell className="px-4 py-3 text-center">
-                <Checkbox
-                  aria-label={`Seç: ${book.title}`}
-                  checked={selectedIds.includes(book.id)}
-                  id={`select-book-${book.id}`}
-                  name={`select-book-${book.id}`}
-                  onChange={(event) =>
-                    onToggleRow(book.id, index, (event.nativeEvent as MouseEvent).shiftKey)
-                  }
-                />
-              </TableCell>
-              <TableCell className="px-2 py-3 md:px-4">
-                <Link href={`/books/${book.slug}`}>
-                  <BookCover
-                    className="w-10 shadow-lg group-hover:scale-110 md:w-14"
-                    coverUrl={book.coverUrl}
-                    subtitle={book.subtitle}
-                    title={book.title}
-                  />
-                </Link>
-              </TableCell>
-              <TableCell className="px-2 py-3 md:px-4">
-                <div className="space-y-1">
-                  <Link
-                    className="block"
-                    href={`/books/${book.slug}`}
-                  >
-                    <BookTitleBlock subtitle={book.subtitle} title={book.title} />
-                  </Link>
-                  <p className="hidden font-mono text-[10px] font-bold tracking-widest text-foreground uppercase md:block">
-                    {book.isbn || "ISBN YOK"}
-                  </p>
-                </div>
-              </TableCell>
-              <TableCell className="hidden px-4 py-3 md:table-cell">
-                <div className="flex flex-wrap gap-2">
-                  {book.authors.map((author) => (
-                    <Link
-                      className="text-sm font-medium text-foreground transition-colors hover:text-white"
-                      href={`/authors/${author.slug}`}
-                      key={author.id}
-                    >
-                      {author.name}
-                    </Link>
-                  ))}
-                </div>
-              </TableCell>
-              <TableCell className="px-4 py-3 text-center">
-                <div className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold tracking-widest uppercase md:px-2.5 md:py-1 md:text-[10px]", STATUS_COLORS[book.status])}>
-                  {STATUS_LABELS[book.status]}
-                </div>
-              </TableCell>
-              <TableCell className="hidden px-4 py-3 lg:table-cell">
-                <span className="text-[13px] font-medium text-foreground">
-                  {book.status === "loaned" ? (
-                    book.loanedTo || "—"
-                  ) : (
-                    <>
-                      {book.location?.locationName || "—"}
-                      {book.location?.shelfRow && ` / ${book.location.shelfRow}`}
-                    </>
-                  )}
-                </span>
-              </TableCell>
-              <TableCell className="px-4 py-3 text-right">
-                <span className="font-serif text-lg font-bold text-primary transition-colors group-hover:text-primary">
-                    {formatRating(book.rating)}
-                </span>
-              </TableCell>
-            </TableRow>
+              onToggleRow={onToggleRow}
+            />
           ))}
         </TableBody>
       </Table>
     </div>
   );
-}
+});
 
-export function BooksGrid({
+const BooksGridItem = React.memo(function BooksGridItem({
+  book,
+  index,
+  isSelected,
+  onToggleRow
+}: {
+  book: ApiBookListItem;
+  index: number;
+  isSelected: boolean;
+  onToggleRow: (id: string, index: number, withShift: boolean) => void;
+}) {
+  return (
+    <div
+      className={cn(
+        "group glass-panel relative flex flex-col rounded-2xl p-5 transition-all duration-500 hover:-translate-y-2 hover:bg-white/4",
+        isSelected && "border-primary/50 bg-primary/8"
+      )}
+      style={{ animationDelay: `${index * 50}ms` }}
+    >
+      <div className="absolute top-4 right-4 z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+        <Checkbox
+          aria-label={`Seç: ${book.title}`}
+          checked={isSelected}
+          id={`grid-select-book-${book.id}`}
+          name={`select-book-${book.id}`}
+          onChange={(event) =>
+            onToggleRow(book.id, index, (event.nativeEvent as MouseEvent).shiftKey)
+          }
+        />
+      </div>
+
+      <Link className="flex-1 space-y-8" href={`/books/${book.slug}`}>
+        <div className="group relative mx-auto aspect-2/3 w-4/5">
+          <div className="absolute inset-0 rounded-full bg-primary/20 opacity-0 blur-3xl transition-opacity duration-1000 group-hover:opacity-100" />
+          <BookCover
+            className="relative group-hover:scale-105"
+            coverUrl={book.coverUrl}
+            subtitle={book.subtitle}
+            title={book.title}
+          />
+        </div>
+        
+        <div className="space-y-3 text-center">
+          <div className={cn("mx-auto inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold tracking-widest uppercase", STATUS_COLORS[book.status])}>
+            {STATUS_LABELS[book.status]}
+          </div>
+          <BookTitleBlock
+            className="text-center"
+            subtitle={book.subtitle}
+            title={book.title}
+          />
+          <p className="line-clamp-1 text-[11px] font-medium tracking-widest text-foreground uppercase">
+            {book.authors.map((a) => a.name).join(", ") || "Bilinmeyen Yazar"}
+          </p>
+        </div>
+      </Link>
+
+      <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-6">
+        <div className="flex flex-col">
+          <span className="text-[10px] font-bold tracking-widest text-foreground uppercase">Konum</span>
+          <span className="text-[12px] font-medium tracking-tight text-foreground italic">
+            {book.status === "loaned" ? (
+              book.loanedTo || "—"
+            ) : (
+              <>
+                {book.location?.locationName || "—"}
+                {book.location?.shelfRow && ` / ${book.location.shelfRow}`}
+              </>
+            )}
+          </span>
+        </div>
+        <div className="flex flex-col items-end">
+          <span className="text-[10px] font-bold tracking-widest text-foreground uppercase">Puan</span>
+          <span className="font-serif text-xl font-bold text-primary transition-transform group-hover:scale-110">
+              {formatRating(book.rating)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+export const BooksGrid = React.memo(function BooksGrid({
   items,
   selectedIds,
   onToggleRow
@@ -226,75 +329,14 @@ export function BooksGrid({
   return (
     <div className="grid gap-8 duration-1000 animate-in fade-in sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
       {items.map((book, index) => (
-        <div
-          className={cn(
-            "group glass-panel relative flex flex-col rounded-2xl p-5 transition-all duration-500 hover:-translate-y-2 hover:bg-white/4",
-            selectedIds.includes(book.id) && "border-primary/50 bg-primary/8"
-          )}
+        <BooksGridItem
+          book={book}
+          index={index}
+          isSelected={selectedIds.includes(book.id)}
           key={book.id}
-          style={{ animationDelay: `${index * 50}ms` }}
-        >
-          <div className="absolute top-4 right-4 z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-            <Checkbox
-                aria-label={`Seç: ${book.title}`}
-                checked={selectedIds.includes(book.id)}
-                id={`grid-select-book-${book.id}`}
-                name={`select-book-${book.id}`}
-                onChange={(event) =>
-                    onToggleRow(book.id, index, (event.nativeEvent as MouseEvent).shiftKey)
-                }
-            />
-          </div>
-
-          <Link className="flex-1 space-y-8" href={`/books/${book.slug}`}>
-            <div className="group relative mx-auto aspect-2/3 w-4/5">
-                <div className="absolute inset-0 rounded-full bg-primary/20 opacity-0 blur-3xl transition-opacity duration-1000 group-hover:opacity-100" />
-                <BookCover
-                    className="relative group-hover:scale-105"
-                    coverUrl={book.coverUrl}
-                  subtitle={book.subtitle}
-                    title={book.title}
-                />
-            </div>
-            
-            <div className="space-y-3 text-center">
-              <div className={cn("mx-auto inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold tracking-widest uppercase", STATUS_COLORS[book.status])}>
-                {STATUS_LABELS[book.status]}
-              </div>
-              <BookTitleBlock
-                className="text-center"
-                subtitle={book.subtitle}
-                title={book.title}
-              />
-              <p className="line-clamp-1 text-[11px] font-medium tracking-widest text-foreground uppercase">
-                {book.authors.map((a) => a.name).join(", ") || "Bilinmeyen Yazar"}
-              </p>
-            </div>
-          </Link>
-
-          <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-6">
-            <div className="flex flex-col">
-                <span className="text-[10px] font-bold tracking-widest text-foreground uppercase">Konum</span>
-                <span className="text-[12px] font-medium tracking-tight text-foreground italic">
-                  {book.status === "loaned" ? (
-                    book.loanedTo || "—"
-                  ) : (
-                    <>
-                      {book.location?.locationName || "—"}
-                      {book.location?.shelfRow && ` / ${book.location.shelfRow}`}
-                    </>
-                  )}
-                </span>
-            </div>
-            <div className="flex flex-col items-end">
-                <span className="text-[10px] font-bold tracking-widest text-foreground uppercase">Puan</span>
-                <span className="font-serif text-xl font-bold text-primary transition-transform group-hover:scale-110">
-                    {formatRating(book.rating)}
-                </span>
-            </div>
-          </div>
-        </div>
+          onToggleRow={onToggleRow}
+        />
       ))}
     </div>
   );
-}
+});

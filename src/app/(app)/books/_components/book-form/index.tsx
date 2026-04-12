@@ -8,7 +8,8 @@ import type {
   BookFormMode,
   IsbnCoverOption,
   IsbnMetadata,
-  IsbnMetadataSource
+  IsbnMetadataSource,
+  SeriesOption
 } from "@/types";
 
 import { useBookForm, buildBookPayload, type BookFormValues } from "./use-book-form";
@@ -20,20 +21,19 @@ import { DuplicateDialog } from "./duplicate-dialog";
 import { splitBookDisplayTitle } from "@/lib/book-title";
 
 import { STATUS_META, toSafeCoverPreviewUrl } from "./book-form-constants";
+import { BookFormProvider, type BookFormContextValue } from "./book-form-context.tsx";
 import { BookFormSections } from "./book-form-sections";
 import { BookFormSidebar } from "./book-form-sidebar";
 import { BookFormActions } from "./book-form-actions";
 
-type BookFormSectionsProps = React.ComponentProps<typeof BookFormSections>;
 type BookFormSidebarProps = React.ComponentProps<typeof BookFormSidebar>;
 type BookFormActionsProps = React.ComponentProps<typeof BookFormActions>;
+type BookFormSectionsProps = React.ComponentProps<typeof BookFormSections>;
 
 function BookFormPageContent({
-  sectionsProps,
   sidebarProps,
   actionsProps
 }: {
-  sectionsProps: BookFormSectionsProps;
   sidebarProps: BookFormSidebarProps;
   actionsProps: BookFormActionsProps;
 }) {
@@ -41,7 +41,7 @@ function BookFormPageContent({
     <div className="flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1fr)_320px]">
       <BookFormSidebar {...sidebarProps} />
       <div className="min-w-0 space-y-8">
-        <BookFormSections {...sectionsProps} />
+        <BookFormSections />
         <BookFormActions {...actionsProps} />
       </div>
     </div>
@@ -49,15 +49,13 @@ function BookFormPageContent({
 }
 
 function BookFormModalContent({
-  sectionsProps,
   actionsProps
 }: {
-  sectionsProps: BookFormSectionsProps;
   actionsProps: BookFormActionsProps;
 }) {
   return (
     <>
-      <BookFormSections {...sectionsProps} />
+      <BookFormSections />
       <BookFormActions {...actionsProps} />
     </>
   );
@@ -261,59 +259,75 @@ function useBookFormLogic({
     await runDuplicateCheck(submittedValues, payload);
   });
   const canCreateSeriesExt = values.isSeries && canCreateSeries;
-  const sectionsProps: BookFormSectionsProps = {
-    addAuthorById,
-    availableAuthors,
-    authorQuery,
-    canCreateAuthor,
-    canCreateCategory,
-    canCreateSeries: canCreateSeriesExt,
-    categoryQuery,
-    categories: categoriesQuery.data ?? [],
-    createAuthor,
-    createCategory,
-    createSeries,
-    createPublisher,
-    draftAuthorNames,
-    fileInputRef,
-    fetchMetadata,
-    hasCustomCover: Boolean(values.coverCustomUrl),
-    isSubmitting,
-    isUploadingCover,
-    metadataState,
+
+  // Create context value for form state
+  const contextValue: BookFormContextValue = {
     mode,
-    onRevertClick: () => void revertCoverToDefault(),
+    values,
+    isSubmitting,
+
+    // Author management
+    addAuthorById,
+    authorQuery,
+    availableAuthors,
+    canCreateAuthor,
+    createAuthor,
+    draftAuthorNames,
+    pendingAuthorSuggestions,
+    removeDraftAuthorName,
+    resolveSuggestedAuthor,
+    selectedAuthors,
+    setAuthorQuery,
+    updateDraftAuthorName,
+
+    // Publisher management
+    canCreatePublisher,
+    createPublisher,
+    publisherQuery,
+    publishers: publishersQuery.data ?? [],
+    setPublisherQuery,
+
+    // Category management
+    canCreateCategory,
+    categories: categoriesQuery.data ?? [],
+    categoryQuery,
+    createCategory,
+    setCategoryQuery,
+
+    // Series management
+    canCreateSeries: Boolean(canCreateSeriesExt),
+    createSeries,
+    series: seriesQueryResult.data?.items ?? [],
+    selectedSeries: (selectedSeries as SeriesOption | null) ?? null,
+    seriesQuery,
+    setSeriesQuery,
+
+    // ISBN metadata
+    fetchMetadata,
+    metadataState,
+
+    // Cover management
+    coverPreviewUrl,
+    fileInputRef,
+    hasCustomCover: Boolean(values.coverCustomUrl),
+    isUploadingCover,
+    metadataCoverOptions: metadataState.coverOptions,
+    selectedMetadataCoverUrl: values.coverMetadataUrl || null,
     onSelectMetadataCover: (url: string) => {
       setValue("coverMetadataUrl", url, { shouldDirty: true });
     },
+    onRevertClick: () => void revertCoverToDefault(),
     onUploadClick: () => fileInputRef.current?.click(),
-    pendingAuthorSuggestions,
-    removeDraftAuthorName,
-    updateDraftAuthorName,
-    resolveSuggestedAuthor,
-    selectedAuthors,
-    selectedMetadataCoverUrl: values.coverMetadataUrl || null,
-    selectedSeries,
-    series: seriesQueryResult.data ?? [],
-    seriesQuery,
-    setAuthorQuery,
-    setCategoryQuery,
-    setSeriesQuery,
-    setPublisherQuery,
-    publishers: publishersQuery.data ?? [],
-    publisherQuery,
-    canCreatePublisher,
-    coverPreviewUrl,
-    uploadCover,
-    values
+    uploadCover
   };
+
+  const sectionsProps: BookFormSectionsProps = {};
 
   const sidebarProps: BookFormSidebarProps = {
     categoryLabel,
     coverPreviewUrl,
     hasSummaryContent,
     mode,
-    selectedSeries,
     stickyStyle,
     summaryAuthors,
     summaryLocation,
@@ -335,13 +349,13 @@ function useBookFormLogic({
 
   return {
     actionsProps,
+    contextValue,
     duplicateResult,
     form,
     isSubmitting,
     onSubmit,
     pendingSubmitRef,
     performSubmit,
-    sectionsProps,
     setDuplicateResult,
     sidebarProps
   };
@@ -359,13 +373,13 @@ export function BookForm({
 }: BookFormProps) {
   const {
     actionsProps,
+    contextValue,
     duplicateResult,
     form,
     isSubmitting,
     onSubmit,
     pendingSubmitRef,
     performSubmit,
-    sectionsProps,
     setDuplicateResult,
     sidebarProps
   } = useBookFormLogic({
@@ -381,34 +395,31 @@ export function BookForm({
 
   return (
     <FormProvider {...form}>
-      <form className={cn("pb-12", layout === "page" ? "space-y-6 md:space-y-8" : "space-y-8 pb-16 md:space-y-12")} onSubmit={onSubmit}>
-        {layout === "page" ? (
-          <BookFormPageContent
-            actionsProps={actionsProps}
-            sectionsProps={sectionsProps}
-            sidebarProps={sidebarProps}
-          />
-        ) : (
-          <BookFormModalContent
-            actionsProps={actionsProps}
-            sectionsProps={sectionsProps}
-          />
+      <BookFormProvider value={contextValue}>
+        <form className={cn("pb-12", layout === "page" ? "space-y-6 md:space-y-8" : "space-y-8 pb-16 md:space-y-12")} onSubmit={onSubmit}>
+          {layout === "page" ? (
+            <BookFormPageContent
+              actionsProps={actionsProps}
+              sidebarProps={sidebarProps}
+            />
+          ) : (
+            <BookFormModalContent
+              actionsProps={actionsProps}
+            />
+          )}
+        </form>
 
-
-        )}
-      </form>
-
-
-      <DuplicateDialog
-        duplicateResult={duplicateResult}
-        isSubmitting={isSubmitting}
-        onConfirm={(resolution) => {
-          if (pendingSubmitRef.current) {
-            void performSubmit(pendingSubmitRef.current.payload, resolution);
-          }
-        }}
-        setDuplicateResult={setDuplicateResult}
-      />
+        <DuplicateDialog
+          duplicateResult={duplicateResult}
+          isSubmitting={isSubmitting}
+          onConfirm={(resolution) => {
+            if (pendingSubmitRef.current) {
+              void performSubmit(pendingSubmitRef.current.payload, resolution);
+            }
+          }}
+          setDuplicateResult={setDuplicateResult}
+        />
+      </BookFormProvider>
     </FormProvider>
   );
 }

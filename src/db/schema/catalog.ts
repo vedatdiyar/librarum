@@ -28,7 +28,8 @@ export const authorAliases = pgTable(
     authorId: uuid("author_id")
       .notNull()
       .references(() => authors.id, {
-        onDelete: "cascade"
+        onDelete: "cascade",
+        onUpdate: "cascade"
       }),
     name: text("name").notNull(),
     normalizedName: text("normalized_name").notNull()
@@ -87,7 +88,8 @@ export const publisherAliases = pgTable(
     publisherId: uuid("publisher_id")
       .notNull()
       .references(() => publishers.id, {
-        onDelete: "cascade"
+        onDelete: "cascade",
+        onUpdate: "cascade"
       }),
     name: text("name").notNull(),
     normalizedName: text("normalized_name").notNull()

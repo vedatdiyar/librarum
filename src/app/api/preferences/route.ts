@@ -11,14 +11,14 @@ const addPreferenceSchema = z.object({
 });
 
 export const GET = withApiHandler(async () => {
-  await requireSession();
-  const prefs = await listPreferences();
+  const session = await requireSession();
+  const prefs = await listPreferences(session.user.id);
   return apiSuccess(prefs);
 });
 
 export const POST = withApiHandler(async (request: Request) => {
-  await requireSession();
+  const session = await requireSession();
   const payload = await parseJsonBody(request, addPreferenceSchema);
-  const pref = await addPreference(payload.type, payload.value);
+  const pref = await addPreference(session.user.id, payload.type, payload.value);
   return apiSuccess(pref, 201);
 });

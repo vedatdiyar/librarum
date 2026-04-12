@@ -40,27 +40,32 @@ async function fetchCategoryDistribution() {
 export function useDashboardData() {
   const statsQuery = useQuery({
     queryKey: ["dashboard", "stats"],
-    queryFn: fetchStats
+    queryFn: fetchStats,
+    staleTime: 5 * 60_000
   });
 
   const unreadBacklogQuery = useQuery({
     queryKey: ["dashboard", "books", "owned", 5],
-    queryFn: fetchUnreadBacklog
+    queryFn: fetchUnreadBacklog,
+    staleTime: 5 * 60_000
   });
 
   const recentBooksQuery = useQuery({
     queryKey: ["dashboard", "books", "recent", 5],
-    queryFn: fetchRecentBooks
+    queryFn: fetchRecentBooks,
+    staleTime: 5 * 60_000
   });
 
   const favoriteAuthorsQuery = useQuery({
     queryKey: ["dashboard", "favorite-authors"],
-    queryFn: fetchFavoriteAuthors
+    queryFn: fetchFavoriteAuthors,
+    staleTime: 5 * 60_000
   });
 
   const categoryDistributionQuery = useQuery({
     queryKey: ["dashboard", "category-distribution"],
-    queryFn: fetchCategoryDistribution
+    queryFn: fetchCategoryDistribution,
+    staleTime: 5 * 60_000
   });
 
   return {

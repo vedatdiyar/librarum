@@ -1,15 +1,16 @@
-import { apiSuccess, parseJsonBody, withApiHandler } from "@/server/api";
+import { apiSuccess, parseJsonBody, parseSearchParams, withApiHandler } from "@/server/api";
 import { requireSession } from "@/server/auth";
-import { createSeriesSchema } from "@/server/books-schemas";
+import { createSeriesSchema, paginationQuerySchema } from "@/server/books-schemas";
 import { createSeries, listSeries } from "@/server/catalog-service";
 
 export const dynamic = "force-dynamic";
 
-export const GET = withApiHandler(async () => {
+export const GET = withApiHandler(async (request: Request) => {
   await requireSession();
-  const series = await listSeries();
+  const query = parseSearchParams(request, paginationQuerySchema);
+  const result = await listSeries(query.page, query.limit);
 
-  return apiSuccess(series);
+  return apiSuccess(result);
 });
 
 export const POST = withApiHandler(async (request: Request) => {

@@ -8,11 +8,13 @@ import { readJsonResponse } from "@/lib/helpers";
 import type {
   ApiBookListItem,
   AuthorListItem,
+  AuthorsListResponse,
   BookListResponse,
   BooksListFilters,
   BulkBooksPatchInput,
   CategoryOption,
-  SeriesListItem
+  SeriesListItem,
+  SeriesListResponse
 } from "@/types";
 
 export type BooksPageFilterState = Record<keyof BooksListFilters, string>;
@@ -31,6 +33,7 @@ export function parsePage(searchParams: URLSearchParams | ReadonlyURLSearchParam
   const parsedPage = Number.parseInt(rawPage, 10);
   return Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage;
 }
+
 
 export function parseFilters(searchParams: URLSearchParams | ReadonlyURLSearchParams): BooksPageFilterState {
   return {
@@ -55,10 +58,10 @@ function buildBooksQueryString(filters: BooksPageFilterState, page: number) {
   return params.toString();
 }
 
-function buildBooksApiUrl(filters: BooksPageFilterState, page: number) {
+function buildBooksApiUrl(filters: BooksPageFilterState, page: number, limit: number) {
   const params = new URLSearchParams();
   params.set("page", String(page));
-  params.set("limit", "25");
+  params.set("limit", String(limit));
   Object.entries(filters).forEach(([key, value]) => {
     if (value) {
       params.set(key, value);
@@ -82,7 +85,7 @@ export function useSelection(items: ApiBookListItem[]) {
   const allVisibleSelected =
     visibleIds.length > 0 && visibleIds.every((id) => selectedIds.includes(id));
 
-  function toggleRow(id: string, index: number, withShift: boolean) {
+  const toggleRow = React.useCallback((id: string, index: number, withShift: boolean) => {
     setSelectedIds((current) => {
       if (
         withShift &&
@@ -108,18 +111,20 @@ export function useSelection(items: ApiBookListItem[]) {
 
       return [...current, id];
     });
-  }
+  }, [items]);
 
-  function toggleAllVisible(checked: boolean) {
+  const toggleAllVisible = React.useCallback((checked: boolean) => {
     setSelectedIds(checked ? visibleIds : []);
-  }
+  }, [visibleIds]);
+
+  const clearSelection = React.useCallback(() => setSelectedIds([]), []);
 
   return {
     selectedIds,
     allVisibleSelected,
     toggleRow,
     toggleAllVisible,
-    clearSelection: () => setSelectedIds([])
+    clearSelection
   };
 }
 
@@ -128,31 +133,40 @@ export function useBooksPageData(searchParams: URLSearchParams | ReadonlyURLSear
   const queryClient = useQueryClient();
 
   const page = React.useMemo(() => parsePage(searchParams), [searchParams]);
+  const limit = 24;
   const filters = React.useMemo(() => parseFilters(searchParams), [searchParams]);
-
+ 
   const booksQuery = useQuery({
-    queryKey: ["books", page, filters],
-    queryFn: async () => readJsonResponse<BookListResponse>(await fetch(buildBooksApiUrl(filters, page)))
+    queryKey: ["books", page, limit, filters],
+    queryFn: async () => readJsonResponse<BookListResponse>(await fetch(buildBooksApiUrl(filters, page, limit)))
   });
 
   const categoriesQuery = useQuery({
     queryKey: ["categories"],
-    queryFn: async () => readJsonResponse<CategoryOption[]>(await fetch("/api/categories"))
+    queryFn: async () => readJsonResponse<CategoryOption[]>(await fetch("/api/categories")),
+    staleTime: Infinity,
+    gcTime: 30 * 60_000
   });
 
   const authorsQuery = useQuery({
     queryKey: ["authors"],
-    queryFn: async () => readJsonResponse<AuthorListItem[]>(await fetch("/api/authors"))
+    queryFn: async () => readJsonResponse<AuthorsListResponse>(await fetch("/api/authors")),
+    staleTime: Infinity,
+    gcTime: 30 * 60_000
   });
 
   const seriesQuery = useQuery({
     queryKey: ["series"],
-    queryFn: async () => readJsonResponse<SeriesListItem[]>(await fetch("/api/series"))
+    queryFn: async () => readJsonResponse<SeriesListResponse>(await fetch("/api/series")),
+    staleTime: Infinity,
+    gcTime: 30 * 60_000
   });
 
   const locationsQuery = useQuery({
     queryKey: ["locations"],
-    queryFn: async () => readJsonResponse<string[]>(await fetch("/api/locations"))
+    queryFn: async () => readJsonResponse<string[]>(await fetch("/api/locations")),
+    staleTime: Infinity,
+    gcTime: 30 * 60_000
   });
 
   const syncFiltersToUrl = React.useCallback(
@@ -182,6 +196,7 @@ export function useBooksPageData(searchParams: URLSearchParams | ReadonlyURLSear
 
   return {
     page,
+    limit,
     filters,
     booksQuery,
     categoriesQuery,

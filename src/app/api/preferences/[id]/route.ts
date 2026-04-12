@@ -14,10 +14,10 @@ type PreferenceRouteContext = {
 
 export const DELETE = withApiHandler(
   async (_request: Request, context: PreferenceRouteContext) => {
-    await requireSession();
+    const session = await requireSession();
     const { id } = await context.params;
     const prefId = uuidSchema.parse(id);
-    await deletePreference(prefId);
+    await deletePreference(prefId, session.user.id);
 
     return apiMessage("Preference deleted.");
   }

@@ -13,6 +13,7 @@ import {
   TableHead, 
   TableHeader, 
   TableRow,
+  Skeleton,
   cn
 } from "@/components/ui";
 import type { BookListResponse } from "@/types";
@@ -42,8 +43,8 @@ function BookThumb({ title, coverUrl }: { title: string; coverUrl: string | null
   if (coverUrl) {
     return (
       <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/2 shadow-xl transition-transform duration-500 group-hover:scale-110">
-        <Image alt="" className="object-cover opacity-30 blur-lg" fill sizes="64px" src={coverUrl} unoptimized />
-        <Image alt={`${title} cover`} className="relative object-contain" fill sizes="64px" src={coverUrl} unoptimized />
+        <Image alt="" className="object-cover opacity-30 blur-lg" fill sizes="64px" src={coverUrl} />
+        <Image alt={`${title} cover`} className="relative object-contain" fill sizes="64px" src={coverUrl} />
       </div>
     );
   }
@@ -68,34 +69,47 @@ export function LoansPageClient() {
         {/* Hero Skeleton */}
         <div className="space-y-8 py-10">
           <div className="space-y-4">
-            <div className="h-4 w-32 animate-pulse rounded-full bg-white/5" />
-            <div className="h-16 w-3/4 animate-pulse rounded-2xl bg-white/5" />
-            <div className="h-20 w-full animate-pulse rounded-2xl bg-white/5" />
+            <Skeleton className="h-4 w-32 rounded-full" />
+            <Skeleton className="h-16 w-3/4 rounded-2xl" />
+            <Skeleton className="h-20 w-full rounded-2xl" />
           </div>
         </div>
 
         {/* Table Container Skeleton */}
-        <div className="rounded-3xl border border-white/5 bg-white/2 p-6">
-           <div className="mb-8 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-              <div className="space-y-2">
-                 <div className="h-8 w-48 animate-pulse rounded-lg bg-white/5" />
-                 <div className="h-4 w-80 animate-pulse rounded-full bg-white/5" />
-              </div>
-              <div className="h-12 w-40 animate-pulse rounded-xl bg-white/5" />
-           </div>
-
-           <div className="space-y-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div className="flex h-20 items-center gap-4 rounded-xl border border-white/2 bg-white/2 px-4" key={`loan-skeleton-${i}`}>
-                   <div className="h-12 w-10 shrink-0 animate-pulse rounded-xl bg-white/5" />
-                   <div className="flex-1 space-y-2">
-                      <div className="h-5 w-1/2 animate-pulse rounded-lg bg-white/5" />
-                      <div className="h-3 w-1/4 animate-pulse rounded-full bg-white/5" />
-                   </div>
-                   <div className="h-9 w-28 animate-pulse rounded-xl bg-white/5" />
+        <div className="glass-panel overflow-hidden rounded-3xl border border-white/5 bg-white/2 shadow-[0_24px_80px_-24px_rgba(0,0,0,0.5)]">
+            <div className="flex flex-col items-start justify-between gap-6 border-b border-white/3 bg-white/3 px-8 py-6 md:flex-row md:items-center">
+                <div>
+                   <Skeleton className="h-7 w-48 rounded-lg" />
+                   <Skeleton className="mt-2 h-4 w-64 rounded-full" />
                 </div>
-              ))}
-           </div>
+                <div className="flex items-center gap-6">
+                   <div className="hidden h-10 w-px bg-white/5 md:block" />
+                   <div className="flex flex-col items-end gap-1">
+                      <div className="flex items-center gap-3">
+                         <Skeleton className="h-8 w-12 rounded-lg" />
+                         <Skeleton className="h-9 w-9 rounded-xl" />
+                      </div>
+                      <Skeleton className="h-3 w-32 rounded-full" />
+                   </div>
+                </div>
+            </div>
+
+            <div className="space-y-4 px-4 py-8">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div className="flex h-20 items-center gap-4 rounded-xl border border-white/2 bg-white/2 px-4 shadow-sm" key={`loan-skeleton-client-row-${i}`}>
+                     <Skeleton className="h-16 w-12 shrink-0 rounded-xl" />
+                     <div className="flex-1 space-y-2">
+                        <Skeleton className="h-5 w-1/2 rounded-lg" />
+                        <Skeleton className="h-3 w-1/4 rounded-full" />
+                     </div>
+                     <div className="flex items-center gap-8">
+                         <Skeleton className="hidden h-6 w-32 rounded-xl sm:block" />
+                         <Skeleton className="hidden h-6 w-32 rounded-xl md:block" />
+                         <Skeleton className="h-9 w-24 rounded-xl" />
+                     </div>
+                  </div>
+                ))}
+            </div>
         </div>
       </section>
     );
@@ -155,21 +169,21 @@ export function LoansPageClient() {
                 ) : (
                     <Table>
                         <TableHeader>
-                            <TableRow className="border-b border-white/5 hover:bg-transparent">
-                                <TableHead className="px-2 py-4 text-[9px] font-bold tracking-wider text-foreground/40 uppercase md:px-4">KİTAP</TableHead>
-                                <TableHead className="hidden text-[9px] font-bold tracking-wider text-foreground/40 uppercase sm:table-cell">KİMDE?</TableHead>
-                                <TableHead className="hidden text-[9px] font-bold tracking-wider text-foreground/40 uppercase md:table-cell">TARİH</TableHead>
-                                <TableHead className="w-24 text-right text-[9px] font-bold tracking-wider text-foreground/40 uppercase md:w-40">İŞLEM</TableHead>
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead>KİTAP</TableHead>
+                                <TableHead className="hidden sm:table-cell">KİMDE?</TableHead>
+                                <TableHead className="hidden md:table-cell">TARİH</TableHead>
+                                <TableHead className="w-24 text-right md:w-40">İŞLEM</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {items.map((book, idx) => (
                                 <TableRow 
                                     key={book.id}
-                                    className="group border-b border-white/2 transition-all duration-500 animate-in fade-in fill-mode-both slide-in-from-left-4 last:border-0 hover:bg-white/3"
+                                    className="group animate-in fade-in fill-mode-both slide-in-from-left-4"
                                     style={{ animationDelay: `${idx * 40}ms` }}
                                 >
-                                    <TableCell className="px-2 py-3 md:px-4">
+                                    <TableCell>
                                         <div className="flex items-center gap-3 md:gap-6">
                                             <div className="hidden shrink-0 sm:block">
                                                 <BookThumb coverUrl={book.coverUrl} title={book.title} />
@@ -192,7 +206,7 @@ export function LoansPageClient() {
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="hidden px-2 sm:table-cell md:px-6">
+                                    <TableCell className="hidden sm:table-cell md:px-6">
                                         <div className="flex items-center gap-2">
                                             <div className="rounded-lg border border-white/5 bg-white/2 p-1.5 text-foreground md:p-2">
                                                 <User className="h-3 w-3 md:h-3.5 md:w-3.5" />
@@ -200,7 +214,7 @@ export function LoansPageClient() {
                                             <span className="text-sm font-bold tracking-tight text-foreground md:text-base">{book.loanedTo ?? "İsimsiz"}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="hidden px-2 md:table-cell md:px-6">
+                                    <TableCell className="hidden md:table-cell md:px-6">
                                         <div className="flex items-center gap-2">
                                             <div className="rounded-lg border border-white/5 bg-white/2 p-2 text-foreground">
                                                 <Calendar className="h-3.5 w-3.5" />
@@ -208,7 +222,7 @@ export function LoansPageClient() {
                                             <span className="text-sm font-medium text-foreground">{formatLoanDate(book.loanedAt)}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-2 text-right md:px-6">
+                                    <TableCell className="text-right md:px-6">
                                         <Button 
                                             onClick={() => setSelectedBookId(book.id)} 
                                             className="h-8 rounded-lg bg-white px-3 text-[8px] font-bold tracking-wider text-black uppercase shadow-none transition-all hover:translate-y-0 hover:bg-primary hover:shadow-none md:h-10 md:rounded-xl md:px-6 md:text-[9px] md:tracking-widest"

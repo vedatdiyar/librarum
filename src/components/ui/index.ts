@@ -10,4 +10,6 @@ export * from "./sheet";
 export * from "./table";
 export * from "./tabs";
 export * from "./select";
+export * from "./skeleton";
+export * from "./pagination";
 export * from "@/lib/utils";

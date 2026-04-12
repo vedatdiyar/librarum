@@ -5,8 +5,18 @@ import {
   XCircle
 } from "lucide-react";
 import { Button } from "@/components/ui";
+import type { BookFormMode } from "@/types";
 
-export function BookFormActions(props: Record<string, any>) {
+type BookFormActionsProps = {
+  layout?: "page" | "modal";
+  isSubmitting: boolean;
+  mode: BookFormMode;
+  onCancel?: () => void;
+  onOpenChange?: (open: boolean) => void;
+  submitError?: string | null;
+};
+
+export function BookFormActions(props: BookFormActionsProps) {
   const { layout, isSubmitting, mode, onCancel, onOpenChange, submitError } = props;
   const actionsClassName =
     layout === "page"

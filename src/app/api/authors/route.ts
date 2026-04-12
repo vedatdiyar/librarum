@@ -8,9 +8,9 @@ export const dynamic = "force-dynamic";
 export const GET = withApiHandler(async (request: Request) => {
   await requireSession();
   const query = parseSearchParams(request, entityListQuerySchema);
-  const authors = await listAuthors(query.q);
+  const result = await listAuthors(query.q, query.page, query.limit);
 
-  return apiSuccess(authors);
+  return apiSuccess(result);
 });
 
 export const POST = withApiHandler(async (request: Request) => {

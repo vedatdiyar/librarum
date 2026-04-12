@@ -191,10 +191,14 @@ function computeCompletionPercentage(
   return Math.round((knownOwnedVolumeCount / totalVolumes) * 100);
 }
 
-export async function listAuthors(query: string | null | undefined): Promise<AuthorListItem[]> {
+export async function listAuthors(
+  query: string | null | undefined,
+  page: number = 1,
+  limit: number = 40
+): Promise<{ items: AuthorListItem[]; totalItems: number; totalPages: number; page: number }> {
   const db = createDb();
   const normalizedQuery = query?.trim() ?? "";
-  
+
   // Tokenize the query to search for individual parts (e.g. "Fyodor" and "Dostoyevski")
   const queryTokens = normalizedQuery
     .split(/[\s.]+/)
@@ -207,7 +211,7 @@ export async function listAuthors(query: string | null | undefined): Promise<Aut
       const p = `%${token}%`;
       return sql`(${authors.name} ilike ${p} or exists (select 1 from ${authorAliases} where ${authorAliases.authorId} = ${authors.id} and ${authorAliases.name} ilike ${p}))`;
     });
-    
+
     // Join with AND to narrow down results (e.g. must have both Fyodor and Dostoyevski)
     likeClause = sql`where ${sql.join(conditions, sql` and `)}`;
   } else if (normalizedQuery) {
@@ -215,6 +219,21 @@ export async function listAuthors(query: string | null | undefined): Promise<Aut
     const p = `%${normalizedQuery}%`;
     likeClause = sql`where (${authors.name} ilike ${p} or exists (select 1 from ${authorAliases} where ${authorAliases.authorId} = ${authors.id} and ${authorAliases.name} ilike ${p}))`;
   }
+
+  // Get total count first
+  const countResult = await db.execute(sql`
+    select count(*) as total
+    from (
+      select distinct ${authors.id}
+      from ${authors}
+      left join ${authorAliases} on ${authorAliases.authorId} = ${authors.id}
+      ${likeClause}
+    ) as author_count
+  `);
+
+  const totalItems = normalizeCount((countResult.rows[0] as any)?.total ?? 0);
+  const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+  const safePage = Math.min(page, totalPages);
 
   const result = await db.execute(sql`
     select
@@ -229,7 +248,8 @@ export async function listAuthors(query: string | null | undefined): Promise<Aut
     ${likeClause}
     group by ${authors.id}, ${authors.name}, ${authors.slug}
     order by ${authors.name} asc
-    limit 40
+    limit ${limit}
+    offset ${(safePage - 1) * limit}
   `);
 
   const items = result.rows.map((row) => ({
@@ -241,12 +261,13 @@ export async function listAuthors(query: string | null | undefined): Promise<Aut
   }));
 
   // If we have a query, use our smart matching to rank the best results at the top
+  let finalItems = items;
   if (normalizedQuery && items.length > 0) {
     const { isAutoMergeMatch, normalizeAuthorNameKey } = await import("./author-identity");
-    
+
     // Sort items by similarity to the query
     // This is optional but helps when there are many similar authors
-    return items.sort((a, b) => {
+    finalItems = items.sort((a, b) => {
       const aMatch = isAutoMergeMatch(normalizeAuthorNameKey(a.name), normalizeAuthorNameKey(normalizedQuery));
       const bMatch = isAutoMergeMatch(normalizeAuthorNameKey(b.name), normalizeAuthorNameKey(normalizedQuery));
       if (aMatch && !bMatch) return -1;
@@ -255,7 +276,12 @@ export async function listAuthors(query: string | null | undefined): Promise<Aut
     });
   }
 
-  return items;
+  return {
+    items: finalItems,
+    totalItems,
+    totalPages,
+    page: safePage
+  };
 }
 
 export async function createAuthor(name: string): Promise<AuthorOption> {
@@ -574,8 +600,22 @@ export async function resolvePublisherName(name: string): Promise<PublisherResol
 
 
 
-export async function listSeries(): Promise<SeriesOption[]> {
+export async function listSeries(
+  page: number = 1,
+  limit: number = 40
+): Promise<{ items: SeriesOption[]; totalItems: number; totalPages: number; page: number }> {
   const db = createDb();
+  
+  // Get total count first
+  const countResult = await db.execute(sql`
+    select count(*) as total
+    from ${series}
+  `);
+
+  const totalItems = normalizeCount((countResult.rows[0] as any)?.total ?? 0);
+  const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+  const safePage = Math.min(page, totalPages);
+
   const result = await db.execute(sql`
     select
       ${series.id} as id,
@@ -588,26 +628,33 @@ export async function listSeries(): Promise<SeriesOption[]> {
     left join ${bookSeries} on ${bookSeries.seriesId} = ${series.id}
     group by ${series.id}, ${series.name}, ${series.slug}, ${series.totalVolumes}
     order by ${series.name} asc
+    limit ${limit}
+    offset ${(safePage - 1) * limit}
   `);
 
-  return result.rows.map((row) => {
-    const totalVolumes =
-      row.total_volumes == null
-        ? null
-        : normalizeCount(row.total_volumes as number | string);
-    const bookCount = normalizeCount(row.book_count as number | string);
-    const knownOwnedCount = normalizeCount(row.known_owned_count as number | string);
+  return {
+    items: result.rows.map((row) => {
+      const totalVolumes =
+        row.total_volumes == null
+          ? null
+          : normalizeCount(row.total_volumes as number | string);
+      const bookCount = normalizeCount(row.book_count as number | string);
+      const knownOwnedCount = normalizeCount(row.known_owned_count as number | string);
 
-    return {
-      id: String(row.id),
-      name: String(row.name),
-      slug: String(row.slug),
-      totalVolumes,
-      bookCount,
-      ownedCount: bookCount,
-      completionPercentage: computeCompletionPercentage(knownOwnedCount, totalVolumes)
-    };
-  });
+      return {
+        id: String(row.id),
+        name: String(row.name),
+        slug: String(row.slug),
+        totalVolumes,
+        bookCount,
+        ownedCount: bookCount,
+        completionPercentage: computeCompletionPercentage(knownOwnedCount, totalVolumes)
+      };
+    }),
+    totalItems,
+    totalPages,
+    page: safePage
+  };
 }
 
 export async function createSeries(

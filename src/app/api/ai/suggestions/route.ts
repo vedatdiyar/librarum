@@ -40,9 +40,9 @@ export const GET = withApiHandler(async (req: NextRequest) => {
  * Triggers manual monthly report regeneration (with 1-hour cooldown)
  */
 export const POST = withApiHandler(async () => {
-  await requireSession();
+  const session = await requireSession();
   const curator = getCuratorInstance();
-  const result = await curator.generateMonthlyReport();
+  const result = await curator.generateMonthlyReport(session.user.id);
 
   if (result.success) {
     const report = await getLatestReport();
@@ -52,9 +52,9 @@ export const POST = withApiHandler(async () => {
     const errorLower = result.error?.toLowerCase() || "";
     const isCooldown = errorLower.includes("recently");
     const isQuota = errorLower.includes("quota") || errorLower.includes("429") || errorLower.includes("exhausted");
-    
+
     const status = (isCooldown || isQuota) ? 429 : 500;
-    
+
     throw new ApiError(status, result.error || "Analiz raporu oluşturulamadı.");
 
   }

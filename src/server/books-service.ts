@@ -65,6 +65,11 @@ type TransactionClient = Parameters<DbClient["transaction"]>[0] extends (
   : never;
 type DbExecutor = DbClient | TransactionClient;
 
+import { MemoryCache } from "./cache";
+
+const categoryCache = new MemoryCache<string, CategoryRow>(600000, 500); // 10m TTL, 500 items
+const publisherCache = new MemoryCache<string, PublisherOption>(600000, 500); // 10m TTL, 500 items
+
 type BookRow = InferSelectModel<typeof books>;
 type CategoryRow = InferSelectModel<typeof categories>;
 
@@ -194,6 +199,11 @@ async function loadBookRelations(
     )
   );
 
+  const { found: cachedCategories, missing: missingCategoryIds } =
+    categoryCache.getMany(categoryIds);
+  const { found: cachedPublishers, missing: missingPublisherIds } =
+    publisherCache.getMany(publisherIds);
+
   const [authorRows, seriesRows, categoryRows, publisherRows] = await Promise.all([
     db
       .select({
@@ -218,22 +228,33 @@ async function loadBookRelations(
       .from(bookSeries)
       .innerJoin(series, eq(bookSeries.seriesId, series.id))
       .where(inArray(bookSeries.bookId, bookIds)),
-    categoryIds.length > 0
-      ? db.select().from(categories).where(inArray(categories.id, categoryIds))
+    missingCategoryIds.length > 0
+      ? db.select().from(categories).where(inArray(categories.id, missingCategoryIds))
       : Promise.resolve([]),
-    publisherIds.length > 0
-      ? db.select().from(publishers).where(inArray(publishers.id, publisherIds))
+    missingPublisherIds.length > 0
+      ? db.select().from(publishers).where(inArray(publishers.id, missingPublisherIds))
       : Promise.resolve([])
   ]);
 
+  // Update caches
+  if (categoryRows.length > 0) {
+    categoryCache.setMany(categoryRows.map((c) => [c.id, c]));
+  }
+  if (publisherRows.length > 0) {
+    publisherCache.setMany(
+      publisherRows.map((p) => [p.id, { id: p.id, name: p.name, slug: p.slug }])
+    );
+  }
+
   const authorsByBookId = new Map<string, AuthorOption[]>();
   const seriesByBookId = new Map<string, BookSeriesReference>();
-  const categoriesById = new Map(categoryRows.map((category) => [category.id, category]));
-  const publishersById = new Map(
-    publisherRows.map((pub) => [
-      pub.id,
-      { id: pub.id, name: pub.name, slug: pub.slug }
-    ])
+
+  const categoriesById = new Map<string, CategoryRow>(cachedCategories);
+  categoryRows.forEach((c) => categoriesById.set(c.id, c));
+
+  const publishersById = new Map<string, PublisherOption>(cachedPublishers);
+  publisherRows.forEach((pub) =>
+    publishersById.set(pub.id, { id: pub.id, name: pub.name, slug: pub.slug })
   );
 
   authorRows.forEach((authorRow) => {
@@ -740,18 +761,68 @@ export async function listBooks(filters: ListBooksQuery): Promise<BookListRespon
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const page = Math.min(filters.page, totalPages);
 
-  const bookRows = await db
-    .select()
-    .from(books)
-    .where(whereClause)
-    .orderBy(desc(books.createdAt), asc(books.title))
-    .limit(pageSize)
-    .offset((page - 1) * pageSize);
+  const bookRows = await db.query.books.findMany({
+    where: whereClause,
+    orderBy: [desc(books.createdAt), asc(books.title)],
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+    with: {
+      category: true,
+      publisher: true,
+      authors: {
+        with: {
+          author: true
+        }
+      },
+      series: {
+        with: {
+          series: true
+        }
+      }
+    }
+  });
 
-  const relations = await loadBookRelations(db, bookRows);
+  // Build relations object for mapping (reusing existing mapper)
+  const relations: BookRelations = {
+    authorsByBookId: new Map(),
+    seriesByBookId: new Map(),
+    categoriesById: new Map(),
+    publishersById: new Map()
+  };
+
+  bookRows.forEach((row) => {
+    if (row.category) {
+      relations.categoriesById.set(row.category.id, row.category);
+      categoryCache.set(row.category.id, row.category);
+    }
+    if (row.publisher) {
+      const pubOpt = { id: row.publisher.id, name: row.publisher.name, slug: row.publisher.slug };
+      relations.publishersById.set(row.publisher.id, pubOpt);
+      publisherCache.set(row.publisher.id, pubOpt);
+    }
+    if (row.authors) {
+      relations.authorsByBookId.set(
+        row.id,
+        row.authors.map((ba) => ({
+          id: ba.author.id,
+          name: ba.author.name,
+          slug: ba.author.slug
+        }))
+      );
+    }
+    if (row.series) {
+      relations.seriesByBookId.set(row.id, {
+        id: row.series.series.id,
+        name: row.series.series.name,
+        slug: row.series.series.slug,
+        totalVolumes: row.series.series.totalVolumes,
+        seriesOrder: row.series.seriesOrder
+      });
+    }
+  });
 
   return {
-    items: bookRows.map((book) => mapBookListItem(book, relations)),
+    items: bookRows.map((book) => mapBookListItem(book as any as BookRow, relations)),
     page,
     pageSize,
     totalItems,
@@ -768,22 +839,125 @@ export async function listBooks(filters: ListBooksQuery): Promise<BookListRespon
 
 export async function listRecentBooks(limit = 5) {
   const db = createDb();
-  const bookRows = await db
-    .select()
-    .from(books)
-    .orderBy(desc(books.createdAt), asc(books.title))
-    .limit(limit);
-  const relations = await loadBookRelations(db, bookRows);
+  const bookRows = await db.query.books.findMany({
+    orderBy: [desc(books.createdAt), asc(books.title)],
+    limit,
+    with: {
+      category: true,
+      publisher: true,
+      authors: {
+        with: {
+          author: true
+        }
+      },
+      series: {
+        with: {
+          series: true
+        }
+      }
+    }
+  });
 
-  return bookRows.map((book) => mapBookListItem(book, relations));
+  const relations: BookRelations = {
+    authorsByBookId: new Map(),
+    seriesByBookId: new Map(),
+    categoriesById: new Map(),
+    publishersById: new Map()
+  };
+
+  bookRows.forEach((row) => {
+    if (row.category) relations.categoriesById.set(row.category.id, row.category);
+    if (row.publisher) {
+      relations.publishersById.set(row.publisher.id, {
+        id: row.publisher.id,
+        name: row.publisher.name,
+        slug: row.publisher.slug
+      });
+    }
+    if (row.authors) {
+      relations.authorsByBookId.set(
+        row.id,
+        row.authors.map((ba) => ({
+          id: ba.author.id,
+          name: ba.author.name,
+          slug: ba.author.slug
+        }))
+      );
+    }
+    if (row.series) {
+      relations.seriesByBookId.set(row.id, {
+        id: row.series.series.id,
+        name: row.series.series.name,
+        slug: row.series.series.slug,
+        totalVolumes: row.series.series.totalVolumes,
+        seriesOrder: row.series.seriesOrder
+      });
+    }
+  });
+
+  return bookRows.map((book) => mapBookListItem(book as any as BookRow, relations));
 }
 
 export async function getBookDetail(bookId: string) {
   const db = createDb();
-  const book = await getExistingBookOrThrow(db, bookId);
-  const relations = await loadBookRelations(db, [book]);
+  const book = await db.query.books.findFirst({
+    where: eq(books.id, bookId),
+    with: {
+      category: true,
+      publisher: true,
+      authors: {
+        with: {
+          author: true
+        }
+      },
+      series: {
+        with: {
+          series: true
+        }
+      }
+    }
+  });
 
-  return mapBookDetail(book, relations);
+  if (!book) {
+    throw new ApiError(404, "Book not found.");
+  }
+
+  const relations: BookRelations = {
+    authorsByBookId: new Map(),
+    seriesByBookId: new Map(),
+    categoriesById: new Map(),
+    publishersById: new Map()
+  };
+
+  if (book.category) relations.categoriesById.set(book.category.id, book.category);
+  if (book.publisher) {
+    relations.publishersById.set(book.publisher.id, {
+      id: book.publisher.id,
+      name: book.publisher.name,
+      slug: book.publisher.slug
+    });
+  }
+  if (book.authors) {
+    relations.authorsByBookId.set(
+      book.id,
+      book.authors.map((ba) => ({
+        id: ba.author.id,
+        name: ba.author.name,
+        slug: ba.author.slug
+      }))
+    );
+  }
+  if (book.series) {
+    relations.seriesByBookId.set(book.id, {
+      id: book.series.series.id,
+      name: book.series.series.name,
+      slug: book.series.series.slug,
+      totalVolumes: book.series.series.totalVolumes,
+      seriesOrder: book.series.seriesOrder
+    });
+  }
+
+  return mapBookDetail(book as any as BookRow, relations);
 }
 
 export async function createBook(input: CreateBookInput): Promise<CreateBookResponse> {
@@ -817,12 +991,61 @@ export async function createBook(input: CreateBookInput): Promise<CreateBookResp
           })
           .where(eq(books.id, duplicateCheck.existingBook.id))
           .returning();
-        const increasedBook = increasedBooks[0];
-        const relations = await loadBookRelations(tx, [increasedBook]);
+        const increasedBookRaw = increasedBooks[0];
+        const increasedBookWithRels = await tx.query.books.findFirst({
+          where: eq(books.id, increasedBookRaw.id),
+          with: {
+            category: true,
+            publisher: true,
+            authors: { with: { author: true } },
+            series: { with: { series: true } }
+          }
+        });
+
+        if (!increasedBookWithRels) {
+          throw new ApiError(500, "Failed to retrieve updated book.");
+        }
+
+        const relations: BookRelations = {
+          authorsByBookId: new Map(),
+          seriesByBookId: new Map(),
+          categoriesById: new Map(),
+          publishersById: new Map()
+        };
+
+        if (increasedBookWithRels.category) {
+          relations.categoriesById.set(increasedBookWithRels.category.id, increasedBookWithRels.category);
+        }
+        if (increasedBookWithRels.publisher) {
+          relations.publishersById.set(increasedBookWithRels.publisher.id, {
+            id: increasedBookWithRels.publisher.id,
+            name: increasedBookWithRels.publisher.name,
+            slug: increasedBookWithRels.publisher.slug
+          });
+        }
+        if (increasedBookWithRels.authors) {
+          relations.authorsByBookId.set(
+            increasedBookWithRels.id,
+            increasedBookWithRels.authors.map((ba) => ({
+              id: ba.author.id,
+              name: ba.author.name,
+              slug: ba.author.slug
+            }))
+          );
+        }
+        if (increasedBookWithRels.series) {
+          relations.seriesByBookId.set(increasedBookWithRels.id, {
+            id: increasedBookWithRels.series.series.id,
+            name: increasedBookWithRels.series.series.name,
+            slug: increasedBookWithRels.series.series.slug,
+            totalVolumes: increasedBookWithRels.series.series.totalVolumes,
+            seriesOrder: increasedBookWithRels.series.seriesOrder
+          });
+        }
 
         return normalizeCreateBookResult(
           "increase_copy",
-          mapBookDetail(increasedBook, relations)
+          mapBookDetail(increasedBookWithRels as any as BookRow, relations)
         );
       }
 
@@ -858,9 +1081,58 @@ export async function createBook(input: CreateBookInput): Promise<CreateBookResp
       seriesRecord ? input.seriesOrder ?? null : null
     );
 
-    const relations = await loadBookRelations(tx, [sluggedBook]);
+    const createdBookWithRels = await tx.query.books.findFirst({
+      where: eq(books.id, sluggedBook.id),
+      with: {
+        category: true,
+        publisher: true,
+        authors: { with: { author: true } },
+        series: { with: { series: true } }
+      }
+    });
 
-    return normalizeCreateBookResult("created", mapBookDetail(sluggedBook, relations));
+    if (!createdBookWithRels) {
+      throw new ApiError(500, "Failed to retrieve created book.");
+    }
+
+    const relations: BookRelations = {
+      authorsByBookId: new Map(),
+      seriesByBookId: new Map(),
+      categoriesById: new Map(),
+      publishersById: new Map()
+    };
+
+    if (createdBookWithRels.category) {
+      relations.categoriesById.set(createdBookWithRels.category.id, createdBookWithRels.category);
+    }
+    if (createdBookWithRels.publisher) {
+      relations.publishersById.set(createdBookWithRels.publisher.id, {
+        id: createdBookWithRels.publisher.id,
+        name: createdBookWithRels.publisher.name,
+        slug: createdBookWithRels.publisher.slug
+      });
+    }
+    if (createdBookWithRels.authors) {
+      relations.authorsByBookId.set(
+        createdBookWithRels.id,
+        createdBookWithRels.authors.map((ba) => ({
+          id: ba.author.id,
+          name: ba.author.name,
+          slug: ba.author.slug
+        }))
+      );
+    }
+    if (createdBookWithRels.series) {
+      relations.seriesByBookId.set(createdBookWithRels.id, {
+        id: createdBookWithRels.series.series.id,
+        name: createdBookWithRels.series.series.name,
+        slug: createdBookWithRels.series.series.slug,
+        totalVolumes: createdBookWithRels.series.series.totalVolumes,
+        seriesOrder: createdBookWithRels.series.seriesOrder
+      });
+    }
+
+    return normalizeCreateBookResult("created", mapBookDetail(createdBookWithRels as any as BookRow, relations));
   });
 }
 
@@ -939,10 +1211,58 @@ export async function updateBook(bookId: string, input: UpdateBookInput) {
       await upsertBookSeries(tx, bookId, nextSeriesId, nextSeriesOrder);
     }
 
-    const refreshedBook = await getExistingBookOrThrow(tx, bookId);
-    const relations = await loadBookRelations(tx, [refreshedBook]);
+    const refreshedBookWithRels = await tx.query.books.findFirst({
+      where: eq(books.id, bookId),
+      with: {
+        category: true,
+        publisher: true,
+        authors: { with: { author: true } },
+        series: { with: { series: true } }
+      }
+    });
 
-    return mapBookDetail(refreshedBook, relations);
+    if (!refreshedBookWithRels) {
+      throw new ApiError(500, "Failed to retrieve updated book.");
+    }
+
+    const relations: BookRelations = {
+      authorsByBookId: new Map(),
+      seriesByBookId: new Map(),
+      categoriesById: new Map(),
+      publishersById: new Map()
+    };
+
+    if (refreshedBookWithRels.category) {
+      relations.categoriesById.set(refreshedBookWithRels.category.id, refreshedBookWithRels.category);
+    }
+    if (refreshedBookWithRels.publisher) {
+      relations.publishersById.set(refreshedBookWithRels.publisher.id, {
+        id: refreshedBookWithRels.publisher.id,
+        name: refreshedBookWithRels.publisher.name,
+        slug: refreshedBookWithRels.publisher.slug
+      });
+    }
+    if (refreshedBookWithRels.authors) {
+      relations.authorsByBookId.set(
+        refreshedBookWithRels.id,
+        refreshedBookWithRels.authors.map((ba) => ({
+          id: ba.author.id,
+          name: ba.author.name,
+          slug: ba.author.slug
+        }))
+      );
+    }
+    if (refreshedBookWithRels.series) {
+      relations.seriesByBookId.set(refreshedBookWithRels.id, {
+        id: refreshedBookWithRels.series.series.id,
+        name: refreshedBookWithRels.series.series.name,
+        slug: refreshedBookWithRels.series.series.slug,
+        totalVolumes: refreshedBookWithRels.series.series.totalVolumes,
+        seriesOrder: refreshedBookWithRels.series.seriesOrder
+      });
+    }
+
+    return mapBookDetail(refreshedBookWithRels as any as BookRow, relations);
   });
 }
 
@@ -1054,12 +1374,52 @@ export async function bulkUpdateBooks(input: BulkBooksPatchInput | BulkBooksPatc
 
 export async function exportAllBooks(): Promise<BookDetail[]> {
   const db = createDb();
-  const bookRows = await db
-    .select()
-    .from(books)
-    .orderBy(desc(books.createdAt), asc(books.title));
+  const bookRows = await db.query.books.findMany({
+    orderBy: [desc(books.createdAt), asc(books.title)],
+    with: {
+      category: true,
+      publisher: true,
+      authors: { with: { author: true } },
+      series: { with: { series: true } }
+    }
+  });
 
-  const relations = await loadBookRelations(db, bookRows);
+  const relations: BookRelations = {
+    authorsByBookId: new Map(),
+    seriesByBookId: new Map(),
+    categoriesById: new Map(),
+    publishersById: new Map()
+  };
 
-  return bookRows.map((book) => mapBookDetail(book, relations));
+  bookRows.forEach((row) => {
+    if (row.category) relations.categoriesById.set(row.category.id, row.category);
+    if (row.publisher) {
+      relations.publishersById.set(row.publisher.id, {
+        id: row.publisher.id,
+        name: row.publisher.name,
+        slug: row.publisher.slug
+      });
+    }
+    if (row.authors) {
+      relations.authorsByBookId.set(
+        row.id,
+        row.authors.map((ba) => ({
+          id: ba.author.id,
+          name: ba.author.name,
+          slug: ba.author.slug
+        }))
+      );
+    }
+    if (row.series) {
+      relations.seriesByBookId.set(row.id, {
+        id: row.series.series.id,
+        name: row.series.series.name,
+        slug: row.series.series.slug,
+        totalVolumes: row.series.series.totalVolumes,
+        seriesOrder: row.series.seriesOrder
+      });
+    }
+  });
+
+  return bookRows.map((book) => mapBookDetail(book as any as BookRow, relations));
 }

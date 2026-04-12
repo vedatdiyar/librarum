@@ -12,6 +12,11 @@ import { PublicationSection } from "./form-sections/publication-info-section";
 import { StatusLocationSection } from "./form-sections/status-location-section";
 import { PersonalSection, CoverSection } from "./form-sections/personal-and-cover-sections";
 import { ClassificationSection } from "./form-sections/classification-section";
+import { useBookFormContext } from "./book-form-context.tsx";
+
+type BookFormSectionsProps = {
+  className?: string;
+};
 
 function Section({
   title,
@@ -53,54 +58,12 @@ function Section({
   );
 }
 
-export function BookFormSections(props: Record<string, any>) {
-
-  const {
-    addAuthorById,
-    availableAuthors,
-    authorQuery,
-    canCreateAuthor,
-    canCreateCategory,
-    canCreateSeries,
-    categoryQuery,
-    categories,
-    createAuthor,
-    createCategory,
-    createSeries,
-    draftAuthorNames,
-    fileInputRef,
-    isSubmitting,
-    isUploadingCover,
-    metadataState,
-    mode,
-    pendingAuthorSuggestions,
-    removeDraftAuthorName,
-    updateDraftAuthorName,
-    resolveSuggestedAuthor,
-    selectedAuthors,
-    selectedMetadataCoverUrl,
-    selectedSeries,
-    series,
-    seriesQuery,
-    setAuthorQuery,
-    setCategoryQuery,
-    setSeriesQuery,
-    coverPreviewUrl,
-    hasCustomCover,
-    onRevertClick,
-    onSelectMetadataCover,
-    onUploadClick,
-    uploadCover,
-    values,
-    publishers,
-    publisherQuery,
-    setPublisherQuery,
-    canCreatePublisher,
-    createPublisher
-  } = props;
+export function BookFormSections({ className }: BookFormSectionsProps) {
+  const ctx = useBookFormContext();
 
   return (
     <>
+      {/* eslint-disable react-hooks/refs -- Context values contain a ref but are safe to access during render */}
       <Section
         index={0}
         icon={Cpu}
@@ -108,26 +71,26 @@ export function BookFormSections(props: Record<string, any>) {
         title="1. Bölüm — Kitap Detayları"
       >
         <PublicationSection
-          addAuthorById={addAuthorById}
-          removeDraftAuthorName={removeDraftAuthorName}
-          updateDraftAuthorName={updateDraftAuthorName}
-          availableAuthors={availableAuthors}
-          authorQuery={authorQuery}
-          authors={selectedAuthors}
-          draftAuthorNames={draftAuthorNames}
-          canCreateAuthor={canCreateAuthor}
-          createAuthor={createAuthor}
-          fetchMetadata={props.fetchMetadata}
-          isSubmitting={isSubmitting}
-          metadataState={metadataState}
-          pendingAuthorSuggestions={pendingAuthorSuggestions}
-          resolveSuggestedAuthor={resolveSuggestedAuthor}
-          setAuthorQuery={setAuthorQuery}
-          publishers={publishers}
-          publisherQuery={publisherQuery}
-          setPublisherQuery={setPublisherQuery}
-          canCreatePublisher={canCreatePublisher}
-          createPublisher={createPublisher}
+          addAuthorById={ctx.addAuthorById}
+          removeDraftAuthorName={ctx.removeDraftAuthorName}
+          updateDraftAuthorName={ctx.updateDraftAuthorName}
+          availableAuthors={ctx.availableAuthors}
+          authorQuery={ctx.authorQuery}
+          authors={ctx.selectedAuthors}
+          draftAuthorNames={ctx.draftAuthorNames}
+          canCreateAuthor={ctx.canCreateAuthor}
+          createAuthor={ctx.createAuthor}
+          fetchMetadata={ctx.fetchMetadata}
+          isSubmitting={ctx.isSubmitting}
+          metadataState={ctx.metadataState}
+          pendingAuthorSuggestions={ctx.pendingAuthorSuggestions}
+          resolveSuggestedAuthor={ctx.resolveSuggestedAuthor}
+          setAuthorQuery={ctx.setAuthorQuery}
+          publishers={ctx.publishers}
+          publisherQuery={ctx.publisherQuery}
+          setPublisherQuery={ctx.setPublisherQuery}
+          canCreatePublisher={ctx.canCreatePublisher}
+          createPublisher={ctx.createPublisher}
         />
       </Section>
 
@@ -138,18 +101,18 @@ export function BookFormSections(props: Record<string, any>) {
         title="2. Bölüm — Sınıflandırma"
       >
         <ClassificationSection
-          canCreateCategory={canCreateCategory}
-          canCreateSeries={Boolean(canCreateSeries)}
-          categories={categories}
-          categoryQuery={categoryQuery}
-          createCategory={createCategory}
-          createSeries={createSeries}
-          isSubmitting={isSubmitting}
-          selectedSeries={selectedSeries}
-          series={series}
-          seriesQuery={seriesQuery}
-          setCategoryQuery={setCategoryQuery}
-          setSeriesQuery={setSeriesQuery}
+          canCreateCategory={ctx.canCreateCategory}
+          canCreateSeries={ctx.canCreateSeries}
+          categories={ctx.categories}
+          categoryQuery={ctx.categoryQuery}
+          createCategory={ctx.createCategory}
+          createSeries={ctx.createSeries}
+          isSubmitting={ctx.isSubmitting}
+          selectedSeries={ctx.selectedSeries}
+          series={ctx.series}
+          seriesQuery={ctx.seriesQuery}
+          setCategoryQuery={ctx.setCategoryQuery}
+          setSeriesQuery={ctx.setSeriesQuery}
         />
       </Section>
 
@@ -178,18 +141,18 @@ export function BookFormSections(props: Record<string, any>) {
         title="5. Bölüm — Kapak Görseli"
       >
         <CoverSection
-          coverPreviewUrl={coverPreviewUrl}
-          hasCustomCover={hasCustomCover}
-          isSubmitting={isSubmitting}
-          isUploadingCover={isUploadingCover}
-          metadataCoverOptions={metadataState.coverOptions}
-          selectedMetadataCoverUrl={selectedMetadataCoverUrl}
-          onSelectMetadataCover={onSelectMetadataCover}
-          onRevertClick={onRevertClick}
-          onUploadClick={onUploadClick}
+          coverPreviewUrl={ctx.coverPreviewUrl}
+          hasCustomCover={ctx.hasCustomCover}
+          isSubmitting={ctx.isSubmitting}
+          isUploadingCover={ctx.isUploadingCover}
+          metadataCoverOptions={ctx.metadataCoverOptions}
+          selectedMetadataCoverUrl={ctx.selectedMetadataCoverUrl}
+          onSelectMetadataCover={ctx.onSelectMetadataCover}
+          onRevertClick={ctx.onRevertClick}
+          onUploadClick={ctx.onUploadClick}
         />
         <input
-          ref={fileInputRef}
+          ref={ctx.fileInputRef}
           aria-label="Özel kapak yükle"
           className="hidden"
           accept="image/*"
@@ -197,11 +160,12 @@ export function BookFormSections(props: Record<string, any>) {
           name="coverImage"
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if (file) void uploadCover(file);
+            if (file) void ctx.uploadCover(file);
           }}
           type="file"
         />
       </Section>
+      {/* eslint-enable react-hooks/refs */}
     </>
   );
 }

@@ -32,7 +32,7 @@ export type CuratorInstance = {
   scoredUnreadBooks: () => Promise<ScoredBook[]>;
 
   // Report Generation
-  generateMonthlyReport: () => Promise<{
+  generateMonthlyReport: (userId?: string) => Promise<{
     success: boolean;
     reportId?: string;
     error?: string;
@@ -101,10 +101,10 @@ export function initializeCurator(): CuratorInstance {
      * Full orchestration: DNA → Gemini → Storage
      * Returns result with report ID or error
      */
-    generateMonthlyReport: async () => {
+    generateMonthlyReport: async (userId?: string) => {
       try {
         const dna = await getLibraryDNA();
-        return await orchestrateMonthlyReportGeneration(dna);
+        return await orchestrateMonthlyReportGeneration(dna, userId);
       } catch (error) {
         return {
           success: false,

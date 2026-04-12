@@ -4,10 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { ComponentType, ReactNode } from "react";
-import { ArrowRight, BookCopy, BookOpen, Clock3, LoaderCircle, UserRound, Waypoints } from "lucide-react";
+import { type LucideIcon, ArrowRight, BookCopy, BookOpen, Clock3, LoaderCircle, UserRound, Waypoints } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, ChartFrame, cn } from "@/components/ui";
 import { StatCard } from "@/components/stat-card";
-import type { CategoryDistributionPoint, StatsSnapshot } from "@/types";
+import { UseQueryResult } from "@tanstack/react-query";
+import type { BookListResponse, CategoryDistributionPoint, FavoriteAuthor, StatsSnapshot } from "@/types";
 
 const Bar = dynamic(() => import("recharts").then((mod) => mod.Bar), { ssr: false });
 const BarChart = dynamic(() => import("recharts").then((mod) => mod.BarChart), { ssr: false });
@@ -19,7 +20,7 @@ const XAxis = dynamic(() => import("recharts").then((mod) => mod.XAxis), { ssr: 
 const YAxis = dynamic(() => import("recharts").then((mod) => mod.YAxis), { ssr: false });
 
 const CHART_COLORS = ["#EBD5A9", "#D4AF37", "#C5A059", "#AD9A74", "#8E733E"];
-const CHART_MARGIN = { top: 20, right: 0, left: -24, bottom: 0 };
+const CHART_MARGIN = { top: 20, right: 0, left: -24, bottom: 55 };
 const TOOLTIP_STYLE = {
   border: "1px solid var(--border)",
   borderRadius: "var(--radius)",
@@ -64,13 +65,13 @@ function SnapshotCard({
   label: string;
   value: string | number;
   helper: string;
-  icon: ComponentType<{ className?: string }>;
+  icon: LucideIcon;
   delayClass?: string;
 }) {
   return (
     <StatCard
       description={helper}
-      icon={Icon as any}
+      icon={Icon}
       label={label}
       value={value}
       className={cn("duration-300 animate-in fade-in fill-mode-both slide-in-from-bottom-4", delayClass)}
@@ -172,7 +173,7 @@ export function BacklogWidget({
   unreadBacklogQuery,
   totalUnread
 }: {
-  unreadBacklogQuery: any;
+  unreadBacklogQuery: UseQueryResult<BookListResponse>;
   totalUnread: number;
 }) {
   return (
@@ -229,7 +230,7 @@ export function BacklogWidget({
   );
 }
 
-export function RecentBooksWidget({ recentBooksQuery }: { recentBooksQuery: any }) {
+export function RecentBooksWidget({ recentBooksQuery }: { recentBooksQuery: UseQueryResult<BookListResponse> }) {
   return (
     <DashboardSection
       description="Koleksiyonunuza son eklenen kitaplar"
@@ -271,7 +272,7 @@ export function RecentBooksWidget({ recentBooksQuery }: { recentBooksQuery: any 
   );
 }
 
-export function FavoriteAuthorsWidget({ favoriteAuthorsQuery }: { favoriteAuthorsQuery: any }) {
+export function FavoriteAuthorsWidget({ favoriteAuthorsQuery }: { favoriteAuthorsQuery: UseQueryResult<FavoriteAuthor[]> }) {
   return (
     <DashboardSection
       description="En çok okuduğunuz yazarlar"
@@ -327,7 +328,7 @@ export function CategoryDistributionWidget({
   categoryDistributionQuery,
   categoryChartData
 }: {
-  categoryDistributionQuery: any;
+  categoryDistributionQuery: UseQueryResult<CategoryDistributionPoint[]>;
   categoryChartData: CategoryDistributionPoint[];
 }) {
   return (
@@ -350,7 +351,15 @@ export function CategoryDistributionWidget({
                 <XAxis
                   axisLine={false}
                   dataKey="name"
-                  tick={{ fill: "var(--foreground)", fontSize: 10, fontWeight: 700, style: { textTransform: 'none', letterSpacing: '0.05em' } }}
+                  interval={0}
+                  tick={{ 
+                    fill: "var(--foreground)", 
+                    fontSize: 9, 
+                    fontWeight: 700, 
+                    angle: -35,
+                    textAnchor: 'end',
+                    style: { textTransform: 'none', letterSpacing: '0.05em' } 
+                  }}
                   tickLine={false}
                 />
                 <YAxis

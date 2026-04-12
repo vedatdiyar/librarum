@@ -6,8 +6,25 @@ import {
   Quote
 } from "lucide-react";
 import { cn } from "@/components/ui";
-
-export function BookFormSidebar(props: Record<string, any>) {
+import type { BookFormMode, PublisherOption } from "@/types";
+import type { BookFormValues } from "./use-book-form";
+ 
+interface BookFormSidebarProps {
+  categoryLabel: string;
+  coverPreviewUrl: string | null;
+  hasSummaryContent: boolean;
+  mode: BookFormMode;
+  summaryAuthors: string[];
+  summaryLocation: string;
+  summarySeries: string | null;
+  summaryStatus: { label: string; className: string };
+  summaryTitle: { title: string | null; subtitle: string | null };
+  values: BookFormValues;
+  publishers: PublisherOption[];
+  stickyStyle?: React.CSSProperties;
+}
+ 
+export function BookFormSidebar(props: BookFormSidebarProps) {
   const {
     categoryLabel,
     coverPreviewUrl,
@@ -21,7 +38,7 @@ export function BookFormSidebar(props: Record<string, any>) {
     values,
     publishers
   } = props;
-
+ 
   return (
     <aside className="order-first hidden xl:order-last xl:block xl:self-start" style={props.stickyStyle}>
       <div className="space-y-6">
@@ -115,9 +132,11 @@ export function BookFormSidebar(props: Record<string, any>) {
                   value:
                     values.publisher || values.publicationYear?.trim()
                       ? [
-                          "id" in (values.publisher ?? {}) 
-                            ? (publishers as any[])?.find((p: any) => p.id === (values.publisher as any).id)?.name 
-                            : (values.publisher as any)?.name,
+                          values.publisher 
+                            ? "id" in values.publisher 
+                                ? publishers.find(p => p.id === (values.publisher as { id: string }).id)?.name
+                                : (values.publisher as { name: string }).name
+                            : null,
                           values.publicationYear?.trim()
                         ].filter(Boolean).join(" • ")
                       : "Yayınevi ve yayın yılı bekleniyor"

@@ -1,4 +1,6 @@
+import { cache } from "react";
 import { asc, countDistinct, eq, sql } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
 import { authors, bookAuthors, books, categories, createDb } from "@/db";
 import type {
   AuthorDistributionPoint,
@@ -20,7 +22,7 @@ const STATUS_ORDER: StatusBreakdownPoint["status"][] = [
 ];
 
 
-export async function getCategoryDistribution(): Promise<CategoryDistributionPoint[]> {
+async function getCategoryDistributionInternal(): Promise<CategoryDistributionPoint[]> {
   const db = createDb();
   const rows = await db
     .select({
@@ -40,7 +42,15 @@ export async function getCategoryDistribution(): Promise<CategoryDistributionPoi
   }));
 }
 
-export async function getFavoriteAuthors(): Promise<FavoriteAuthor[]> {
+export const getCategoryDistribution = cache(
+  unstable_cache(
+    async () => getCategoryDistributionInternal(),
+    ["category-distribution"],
+    { revalidate: 60, tags: ["stats", "categories"] }
+  )
+);
+
+async function getFavoriteAuthorsInternal(): Promise<FavoriteAuthor[]> {
   const db = createDb();
   const favoriteRows = await db.execute(sql`
     with author_ratings as (
@@ -79,6 +89,14 @@ export async function getFavoriteAuthors(): Promise<FavoriteAuthor[]> {
     ratedBooks: normalizeCount(row.rated_books as number | string)
   }));
 }
+
+export const getFavoriteAuthors = cache(
+  unstable_cache(
+    async () => getFavoriteAuthorsInternal(),
+    ["favorite-authors"],
+    { revalidate: 60, tags: ["stats", "authors"] }
+  )
+);
 
 async function getStatusBreakdown(): Promise<StatusBreakdownPoint[]> {
   const db = createDb();
@@ -208,7 +226,7 @@ async function getTotals() {
   };
 }
 
-export async function getStatsSnapshot(): Promise<StatsSnapshot> {
+async function getStatsSnapshotInternal(): Promise<StatsSnapshot> {
   const [
     totals,
     statusBreakdown,
@@ -240,3 +258,14 @@ export async function getStatsSnapshot(): Promise<StatsSnapshot> {
     collectionGrowth
   };
 }
+
+export const getStatsSnapshot = cache(
+  unstable_cache(
+    async () => getStatsSnapshotInternal(),
+    ["stats-snapshot"],
+    {
+      revalidate: 60,
+      tags: ["stats"]
+    }
+  )
+);

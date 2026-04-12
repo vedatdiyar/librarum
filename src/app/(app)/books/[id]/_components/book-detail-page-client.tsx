@@ -12,7 +12,8 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
+  Skeleton
 } from "@/components/ui";
 import { splitBookDisplayTitle } from "@/lib/book-title";
 import { useBookDetailData } from "../_hooks/use-book-detail-data";
@@ -24,29 +25,32 @@ function DetailSkeleton() {
   return (
     <div className="space-y-8 pb-24">
       {/* Back Link Skeleton */}
-      <div className="h-4 w-32 animate-pulse rounded-full bg-white/5" />
+      <Skeleton className="mb-4 h-4 w-32 rounded-full" />
 
-      <div className="grid animate-pulse gap-16 lg:grid-cols-[420px_1fr]">
+      <div className="grid gap-12 lg:grid-cols-[380px_1fr]">
+        {/* Cover Skeleton */}
         <div className="space-y-10">
-          <div className="aspect-2/3 w-full rounded-2xl border border-white/5 bg-white/2 shadow-2xl" />
-          <div className="h-24 w-full rounded-2xl border border-white/5 bg-white/2" />
+          <Skeleton className="aspect-2/3 w-full max-w-[320px] rounded-2xl border border-white/5 bg-white/2 shadow-2xl lg:max-w-none" />
+          <Skeleton className="h-24 w-full rounded-2xl border border-white/5 bg-white/2" />
         </div>
-        <div className="space-y-16">
-          <div className="space-y-8">
-            <div className="h-8 w-40 rounded-full bg-white/5" />
-            <div className="space-y-4">
-               <div className="h-24 w-full rounded-2xl bg-white/5 md:h-32" />
-               <div className="hidden h-32 w-2/3 rounded-2xl bg-white/5 md:block" />
+
+        {/* Identity & Meta Skeleton */}
+        <div className="space-y-12">
+          <div className="space-y-6">
+            <Skeleton className="h-6 w-24 rounded-full" />
+            <div className="space-y-3">
+              <Skeleton className="h-12 w-3/4 rounded-2xl" />
+              <Skeleton className="h-8 w-1/2 rounded-xl" />
             </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
              {Array.from({ length: 4 }).map((_, i) => (
-                <div className="h-24 rounded-2xl border border-white/5 bg-white/2" key={`meta-skeleton-${i}`} />
+                <Skeleton className="h-24 rounded-2xl border border-white/5 bg-white/2" key={`meta-skeleton-client-${i}`} />
              ))}
           </div>
 
-          <div className="h-[400px] w-full rounded-3xl border border-white/5 bg-white/2" />
+          <Skeleton className="h-[400px] w-full rounded-3xl border border-white/5 bg-white/2" />
         </div>
       </div>
     </div>

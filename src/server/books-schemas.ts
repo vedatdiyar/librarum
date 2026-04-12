@@ -103,7 +103,14 @@ export const listBooksQuerySchema = z.object({
 });
 
 export const entityListQuerySchema = z.object({
-  q: nullableStringSchema
+  q: nullableStringSchema,
+  page: z.coerce.number().int().min(1).optional().default(1),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(40)
+});
+
+export const paginationQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional().default(1),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(40)
 });
 
 export const createEntitySchema = z.object({

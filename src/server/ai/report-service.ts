@@ -27,7 +27,8 @@ const db = createDb();
  * Enforces 1-hour cooldown to prevent excessive generation
  */
 export async function generateNewReport(
-  libraryDNA: LibraryDNA
+  libraryDNA: LibraryDNA,
+  userId?: string
 ): Promise<ApiResponse<CuratorMonthlyReport>> {
   try {
     // Check if report was recently generated (within 1 hour)
@@ -69,6 +70,7 @@ export async function generateNewReport(
     const stored = await db
       .insert(aiSuggestions)
       .values({
+        userId: userId ?? null,
         generatedAt: new Date(),
         content: JSON.parse(JSON.stringify(validated)), // Ensure serializable
       })
@@ -136,14 +138,16 @@ export async function getLatestReport(): Promise<CuratorMonthlyReport | null> {
  * Stores a report in the database
  */
 export async function storeMonthlyReport(
-  report: CuratorMonthlyReport
+  report: CuratorMonthlyReport,
+  userId?: string
 ): Promise<string> {
   try {
     const validated = CuratorMonthlyReportSchema.parse(report);
-    
+
     const stored = await db
       .insert(aiSuggestions)
       .values({
+        userId: userId ?? null,
         generatedAt: report.generatedAt,
         content: JSON.parse(JSON.stringify(validated)),
       })
@@ -230,10 +234,11 @@ export async function listReports(
  * 5. Return result
  */
 export async function orchestrateMonthlyReportGeneration(
-  libraryDNA: LibraryDNA
+  libraryDNA: LibraryDNA,
+  userId?: string
 ): Promise<{ success: boolean; reportId?: string; error?: string }> {
   try {
-    const result = await generateNewReport(libraryDNA);
+    const result = await generateNewReport(libraryDNA, userId);
 
     if (!result.success) {
       return {

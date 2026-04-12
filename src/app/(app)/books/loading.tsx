@@ -1,15 +1,6 @@
-"use client";
+import { Skeleton } from "@/components/ui/skeleton";
 
-import * as React from "react";
-import { LoaderCircle } from "lucide-react";
-import { Skeleton } from "@/components/ui";
-import { BooksPageClientContent } from "./books-page-client-content";
-
-type BooksPageClientProps = {
-  searchParams: Record<string, string | string[] | undefined>;
-};
-
-function BooksSkeleton() {
+export default function BooksLoading() {
   return (
     <section className="space-y-10 pb-20">
       {/* Hero Skeleton */}
@@ -25,8 +16,8 @@ function BooksSkeleton() {
       <Skeleton className="h-20 w-full rounded-2xl border border-white/5 bg-white/2" />
 
       {/* Table/Grid Container Skeleton */}
-      <div className="glass-panel overflow-hidden rounded-3xl border border-white/5 bg-white/2">
-          <div className="flex flex-col items-start justify-between gap-4 border-b border-white/3 bg-white/3 px-8 py-6 md:flex-row md:items-center">
+      <div className="glass-panel overflow-hidden rounded-3xl border border-white/5 bg-white/1">
+          <div className="flex flex-col items-start justify-between gap-4 border-b border-white/3 px-8 py-6 md:flex-row md:items-center">
               <div className="space-y-2">
                   <Skeleton className="h-7 w-48 rounded-lg" />
                   <Skeleton className="h-4 w-64 rounded-full" />
@@ -36,20 +27,10 @@ function BooksSkeleton() {
 
           <div className="space-y-4 px-4 py-6">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton className="h-24 w-full rounded-2xl" key={`book-row-skeleton-client-${i}`} />
+              <Skeleton className="h-24 w-full rounded-2xl" key={`book-row-skeleton-${i}`} />
             ))}
           </div>
       </div>
     </section>
-  );
-}
-
-export function BooksPageClient({ searchParams }: BooksPageClientProps) {
-  return (
-    <React.Suspense
-      fallback={<BooksSkeleton />}
-    >
-      <BooksPageClientContent searchParams={searchParams} />
-    </React.Suspense>
   );
 }

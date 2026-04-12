@@ -24,11 +24,7 @@ function NavContent({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="px-6 py-4">
-        <p className="text-[10px] font-bold tracking-[0.3em] text-foreground/40 uppercase">Ana Menü</p>
-      </div>
-
-      <div className="flex-1 space-y-1 px-3">
+      <div className="flex-1 space-y-1 px-3 pt-6">
         <nav className="space-y-1.5">
           {navigationItems.map((item) => {
             const isActive =
@@ -144,6 +140,8 @@ export function AppMobileHeader() {
   const isMobile = useIsMobile();
   const router = useRouter();
 
+  const { data: session } = useSession();
+
   return (
     <div className="sticky top-0 z-50 lg:hidden">
       <div className="flex items-center justify-between border-b border-white/5 bg-background/80 px-4 py-4 backdrop-blur-xl">
@@ -166,7 +164,7 @@ export function AppMobileHeader() {
                 <Menu className="h-5 w-5 text-white/70" />
               </Button>
             </SheetTrigger>
-
+ 
             <SheetContent
               className="w-[280px] overflow-hidden border-none bg-[#111111] p-0 shadow-2xl"
               side="rightFull"
@@ -188,12 +186,12 @@ export function AppMobileHeader() {
                     <X className="h-4 w-4 text-white/70" />
                   </Button>
                 </div>
-
+ 
                 {/* Navigation scroll area */}
                 <div className="flex-1 overflow-y-auto pt-2">
                   <NavContent onClose={() => setMenuOpen(false)} isMobile />
                 </div>
-
+ 
                 {/* User Section at the bottom */}
                 <div className="mt-auto space-y-4 border-t border-white/5 bg-[#111111] p-4">
                   <div className="flex items-center gap-3 rounded-2xl bg-[#2a2320] p-3 shadow-lg">
@@ -201,7 +199,7 @@ export function AppMobileHeader() {
                       <UserIcon className="h-6 w-6" />
                     </div>
                     <div className="flex min-w-0 flex-col">
-                      <span className="truncate text-[15px] font-bold text-white/90">Vedat Diyar</span>
+                      <span className="truncate text-[15px] font-bold text-white/90">{session?.user?.name || "Kullanıcı"}</span>
                       <span className="truncate text-[11px] font-medium text-foreground italic">Arşivci</span>
                     </div>
                   </div>

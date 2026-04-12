@@ -230,6 +230,20 @@ export type BookListResponse = {
   filters: BooksListFilters;
 };
 
+export type AuthorsListResponse = {
+  items: AuthorListItem[];
+  page: number;
+  totalItems: number;
+  totalPages: number;
+};
+
+export type SeriesListResponse = {
+  items: SeriesListItem[];
+  page: number;
+  totalItems: number;
+  totalPages: number;
+};
+
 export type EntityReferenceInput =
   | {
       id: string;

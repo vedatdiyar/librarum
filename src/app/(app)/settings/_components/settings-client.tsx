@@ -8,12 +8,23 @@ import {
   FileJson, 
   ShieldAlert 
 } from "lucide-react";
-import { 
-  CategoryTab, 
-  SeriesTab, 
-  ImportExportTab, 
-  BlacklistTab 
-} from ".";
+import dynamic from "next/dynamic";
+
+const TabLoading = () => (
+  <div className="animate-pulse space-y-6">
+    <div className="h-8 w-1/4 rounded-lg bg-white/5" />
+    <div className="space-y-3">
+      <div className="h-20 w-full rounded-2xl bg-white/5" />
+      <div className="h-20 w-full rounded-2xl bg-white/5" />
+      <div className="h-20 w-full rounded-2xl bg-white/5" />
+    </div>
+  </div>
+);
+
+const CategoryTab = dynamic(() => import("./").then(mod => mod.CategoryTab), { loading: () => <TabLoading /> });
+const SeriesTab = dynamic(() => import("./").then(mod => mod.SeriesTab), { loading: () => <TabLoading /> });
+const ImportExportTab = dynamic(() => import("./").then(mod => mod.ImportExportTab), { loading: () => <TabLoading /> });
+const BlacklistTab = dynamic(() => import("./").then(mod => mod.BlacklistTab), { loading: () => <TabLoading /> });
 
 export function SettingsClient() {
   const [activeTab, setActiveTab] = useState("categories");

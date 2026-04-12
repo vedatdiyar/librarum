@@ -45,6 +45,30 @@ const MONTH_OPTIONS = [
 export function PersonalSection() {
   const { control, register, watch, setValue, formState: { errors } } = useFormContext();
   const rating = watch("rating");
+  const status = watch("status");
+  const personalNote = watch("personalNote");
+  const isCompleted = status === "completed";
+
+  React.useEffect(() => {
+    if (!isCompleted) {
+      setValue("rating", null, { shouldDirty: true });
+      setValue("personalNote", "", { shouldDirty: true });
+      setValue("readMonth", "", { shouldDirty: true });
+      setValue("readYear", "", { shouldDirty: true });
+    }
+  }, [isCompleted, setValue]);
+
+  if (!isCompleted) {
+    return (
+      <div className="space-y-8 md:space-y-12">
+        <div className="rounded-2xl border border-white/5 bg-white/2 p-6 text-center md:rounded-3xl md:p-8">
+          <p className="text-[13px] text-foreground/90">
+            Puan ve not alanları yalnızca kitabı <span className="font-semibold text-primary">&quot;Okundu&quot;</span> olarak işaretlediğinizde aktif olur.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 md:space-y-12">

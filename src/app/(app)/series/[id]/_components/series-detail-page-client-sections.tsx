@@ -17,7 +17,7 @@ import {
   CircleDashed,
   Terminal
 } from "lucide-react";
-import { Button, Input, cn } from "@/components/ui";
+import { Button, Input, Skeleton, cn } from "@/components/ui";
 import type { SeriesDetail } from "@/types";
 import { BOOK_STATUS_LABELS } from "@/lib/constants/books";
 
@@ -42,22 +42,22 @@ function BookThumb({ title, coverUrl }: { title: string; coverUrl: string | null
 export function SeriesDetailPageClientLoading() {
   return (
     <div className="space-y-12 pb-24">
-      <div className="h-4 w-32 animate-pulse rounded-full bg-white/5" />
+      <Skeleton className="h-4 w-32 rounded-full" />
       <div className="space-y-12 py-10">
         <div className="flex items-center gap-6">
-           <div className="h-16 w-3/4 max-w-xl rounded-2xl bg-white/5" />
+           <Skeleton className="h-16 w-3/4 max-w-xl rounded-2xl" />
         </div>
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
            {Array.from({ length: 3 }).map((_, i) => (
-              <div className="h-28 rounded-3xl border border-white/5 bg-white/2" key={`stat-skeleton-${i}`} />
+              <Skeleton className="h-28 rounded-3xl border border-white/5 bg-white/2" key={`stat-skeleton-client-${i}`} />
            ))}
         </div>
       </div>
       <div className="grid gap-12 xl:grid-cols-[1fr_420px]">
-        <div className="h-[600px] animate-pulse rounded-3xl border border-white/5 bg-white/2" />
+        <Skeleton className="h-[600px] rounded-3xl border border-white/5 bg-white/2" />
         <div className="space-y-12">
-           <div className="h-[300px] animate-pulse rounded-3xl border border-white/5 bg-white/2" />
-           <div className="h-[400px] animate-pulse rounded-3xl border border-white/5 bg-white/2" />
+           <Skeleton className="h-[300px] rounded-3xl border border-white/5 bg-white/2" />
+           <Skeleton className="h-[400px] rounded-3xl border border-white/5 bg-white/2" />
         </div>
       </div>
     </div>

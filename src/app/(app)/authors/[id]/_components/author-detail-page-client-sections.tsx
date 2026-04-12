@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, BarChart3, Check, History, LoaderCircle, Pencil, Trophy, X, LibraryBig } from "lucide-react";
-import { Button, ChartFrame, Input } from "@/components/ui";
+import { Button, ChartFrame, Input, Skeleton } from "@/components/ui";
 import { PageHero } from "@/components/page-hero";
 import type { AuthorDetail } from "@/types";
 import { BOOK_STATUS_LABELS } from "@/lib/constants/books";
@@ -46,28 +46,28 @@ export function AuthorDetailPageClientLoading() {
   return (
     <div className="space-y-12 pb-24">
       {/* Top Nav Skeleton */}
-      <div className="h-4 w-32 animate-pulse rounded-full bg-white/5" />
+      <Skeleton className="h-4 w-32 rounded-full" />
 
-      {/* Simplified Hero Skeleton */}
+      {/* Hero Skeleton */}
       <div className="space-y-12 py-10">
         <div className="flex items-center gap-6">
-           <div className="h-16 w-3/4 max-w-xl rounded-2xl bg-white/5" />
-           <div className="h-11 w-11 rounded-xl bg-white/5" />
+           <Skeleton className="h-16 w-3/4 max-w-xl rounded-2xl" />
+           <Skeleton className="h-11 w-11 rounded-xl" />
         </div>
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
            {Array.from({ length: 4 }).map((_, i) => (
-              <div className="h-28 rounded-3xl border border-white/5 bg-white/2" key={`stat-skeleton-${i}`} />
+              <Skeleton className="h-28 rounded-3xl border border-white/5 bg-white/2" key={`stat-skeleton-client-${i}`} />
            ))}
         </div>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-12">
         <div className="lg:col-span-8">
-           <div className="h-[600px] animate-pulse rounded-3xl border border-white/5 bg-white/2" />
+           <Skeleton className="h-[600px] rounded-3xl border border-white/5 bg-white/2" />
         </div>
         <div className="space-y-8 lg:col-span-4">
-           <div className="h-[400px] animate-pulse rounded-3xl border border-white/5 bg-white/2" />
-           <div className="h-[300px] animate-pulse rounded-3xl border border-white/5 bg-white/2" />
+           <Skeleton className="h-[400px] rounded-3xl border border-white/5 bg-white/2" />
+           <Skeleton className="h-[300px] rounded-3xl border border-white/5 bg-white/2" />
         </div>
       </div>
     </div>
@@ -302,9 +302,22 @@ export function AuthorDetailPageClientDomainSection({
           <div className="space-y-8">
             <ChartFrame height={280}>
               <ResponsiveContainer height="100%" minHeight={280} minWidth={0} width="100%">
-                <BarChart data={categoryData} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
+                <BarChart data={categoryData} margin={{ top: 12, right: 8, left: -20, bottom: 55 }}>
                   <CartesianGrid stroke="rgba(255,255,255,0.1)" vertical={false} />
-                  <XAxis axisLine={false} dataKey="name" tick={{ fill: "var(--foreground)", fontSize: 10, fontWeight: 700, opacity: 0.6 }} tickLine={false} />
+                  <XAxis 
+                    axisLine={false} 
+                    dataKey="name" 
+                    interval={0} 
+                    tick={{ 
+                      fill: "var(--foreground)", 
+                      fontSize: 9, 
+                      fontWeight: 700, 
+                      opacity: 0.8,
+                      angle: -35,
+                      textAnchor: 'end'
+                    }} 
+                    tickLine={false} 
+                  />
                   <YAxis allowDecimals={false} axisLine={false} tick={{ fill: "var(--foreground)", fontSize: 10, fontWeight: 700, opacity: 0.6 }} tickLine={false} />
                   <Tooltip
                     contentStyle={{

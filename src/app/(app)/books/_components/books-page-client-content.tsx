@@ -6,7 +6,8 @@ import {
   Button,
   Tabs,
   TabsList,
-  TabsTrigger
+  TabsTrigger,
+  Pagination
 } from "@/components/ui";
 import { useBooksViewStore } from "@/stores/books-view-store";
 import { PageHero } from "@/components/page-hero";
@@ -17,6 +18,7 @@ import { BulkActionDialog, type BulkAction } from "./bulk-action-dialog";
 import { cn } from "@/lib/utils";
 import { appPageTitles } from "@/lib/navigation";
 import { useUIStore } from "@/stores/ui-store";
+import type { BulkBooksPatchInput } from "@/types";
 
 const BULK_ACTIONS: Array<{ action: BulkAction; label: string }> = [
   { action: "category", label: "Kategori" },
@@ -26,44 +28,6 @@ const BULK_ACTIONS: Array<{ action: BulkAction; label: string }> = [
   { action: "series", label: "Seri" }
 ];
 
-function Pagination({
-  currentPage,
-  totalPages,
-  onPageChange
-}: {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}) {
-  if (totalPages <= 1) return null;
-
-  return (
-    <div className="flex items-center justify-center gap-6 py-12 duration-300 animate-in fade-in slide-in-from-bottom-2">
-      <Button
-        disabled={currentPage <= 1}
-        onClick={() => onPageChange(currentPage - 1)}
-        className="h-11 w-11 rounded-xl border-white/10 bg-white/3 transition-all duration-300 hover:bg-white/8"
-        variant="ghost"
-      >
-        <ChevronLeft className="h-5 w-5 text-white/70" />
-      </Button>
-      <div className="flex flex-col items-center">
-        <span className="mb-1 text-[10px] font-bold tracking-[0.2em] text-foreground uppercase">Gezinti</span>
-        <span className="font-serif text-sm font-bold tracking-tight text-foreground">
-          Sayfa {currentPage} / {totalPages}
-        </span>
-      </div>
-      <Button
-        disabled={currentPage >= totalPages}
-        onClick={() => onPageChange(currentPage + 1)}
-        className="h-11 w-11 rounded-xl border-white/10 bg-white/3 transition-all duration-300 hover:bg-white/8"
-        variant="ghost"
-      >
-        <ChevronRight className="h-5 w-5 text-white/70" />
-      </Button>
-    </div>
-  );
-}
 
 export function BooksPageClientContent({
   searchParams
@@ -92,6 +56,7 @@ export function BooksPageClientContent({
 
   const {
     page,
+    limit,
     filters,
     booksQuery,
     categoriesQuery,
@@ -111,11 +76,11 @@ export function BooksPageClientContent({
 
 
 
-  const handleFilterChange = (key: string, value: string) => {
+  const handleFilterChange = React.useCallback((key: string, value: string) => {
     syncFiltersToUrl({ ...filters, [key]: value });
-  };
+  }, [filters, syncFiltersToUrl]);
 
-  const handleBulkSubmit = (payload: any) => {
+  const handleBulkSubmit = React.useCallback((payload: Omit<BulkBooksPatchInput, "bookIds">) => {
     bulkUpdateMutation.mutate(
       { ...payload, bookIds: selectedIds },
       {
@@ -128,7 +93,7 @@ export function BooksPageClientContent({
         }
       }
     );
-  };
+  }, [bulkUpdateMutation, selectedIds, clearSelection]);
 
   return (
     <section className="space-y-10 pb-20">
@@ -140,11 +105,11 @@ export function BooksPageClientContent({
 
       <div className="delay-50 duration-300 animate-in fade-in fill-mode-both slide-in-from-bottom-2">
         <BooksFilterBar
-            authors={authorsQuery.data ?? []}
+            authors={authorsQuery.data?.items ?? []}
             categories={categoriesQuery.data ?? []}
             filters={filters}
             onFilterChange={handleFilterChange}
-            series={seriesQuery.data ?? []}
+            series={seriesQuery.data?.items ?? []}
             locations={locationsQuery.data ?? []}
             view={view}
             setView={setView}
@@ -159,8 +124,8 @@ export function BooksPageClientContent({
           ))}
         </div>
       ) : items.length > 0 ? (
-        <div className="glass-panel rounded-3xl border-white/5 shadow-[0_24px_80px_-24px_rgba(0,0,0,0.5)] delay-150 duration-1000 animate-in fade-in fill-mode-both slide-in-from-bottom-8">
-            <div className="flex flex-col items-start justify-between gap-4 border-b border-white/3 px-4 py-6 md:flex-row md:items-center md:gap-6 md:px-8">
+        <div className="glass-panel rounded-3xl border-white/5 bg-white/2 shadow-[0_24px_80px_-24px_rgba(0,0,0,0.5)] delay-150 duration-1000 animate-in fade-in fill-mode-both slide-in-from-bottom-8">
+            <div className="flex flex-col items-start justify-between gap-4 border-b border-white/3 bg-white/3 px-4 py-6 md:flex-row md:items-center md:gap-6 md:px-8">
                 <div>
                   <h3 className="font-serif text-lg font-bold tracking-tight text-white md:text-xl">Kayıtlı Kitaplar</h3>
                   <p className="mt-1 text-[11px] leading-relaxed text-foreground/60 italic md:text-[12px]">Koleksiyonunuzdaki kitapların ve genel durumun özeti.</p>
@@ -198,6 +163,8 @@ export function BooksPageClientContent({
                     currentPage={page}
                     onPageChange={(p) => syncFiltersToUrl(filters, p)}
                     totalPages={booksQuery.data?.totalPages ?? 1}
+                    totalItems={booksQuery.data?.totalItems ?? 0}
+                    pageSize={limit}
                 />
             </div>
         </div>
@@ -259,7 +226,7 @@ export function BooksPageClientContent({
         onSubmit={handleBulkSubmit}
         open={Boolean(activeBulkAction)}
         selectedCount={selectedIds.length}
-        series={seriesQuery.data ?? []}
+        series={seriesQuery.data?.items ?? []}
       />
     </section>
   );
