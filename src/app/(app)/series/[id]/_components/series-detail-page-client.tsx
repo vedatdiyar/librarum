@@ -13,7 +13,7 @@ import {
 } from "./series-detail-page-client-sections";
 import type { SeriesDetail } from "@/types";
 import { Library } from "lucide-react";
-import { readJsonResponse } from "@/lib/shared";
+import { readJsonResponse } from "@/lib/helpers";
 
 async function fetchSeriesDetail(seriesSlug: string) {
   const response = await fetch(`/api/series/${seriesSlug}`);

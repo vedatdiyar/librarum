@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui";
-import { splitBookDisplayTitle } from "@/lib/shared/book-title";
+import { splitBookDisplayTitle } from "@/lib/book-title";
 import { useBookDetailData } from "../_hooks/use-book-detail-data";
 import { BookMetaSection, BookStatusAndNotesSection, LogisticsInfo } from "./detail-sections";
 import { cn } from "@/lib/utils";

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { normalizeText, readJsonResponse } from "@/lib/shared";
+import { normalizeText, readJsonResponse } from "@/lib/helpers";
 import type {
   AuthorOption,
   BookDetail,

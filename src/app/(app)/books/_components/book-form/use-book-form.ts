@@ -14,8 +14,8 @@ import type {
   DuplicateCheckResponse,
   DuplicateResolution
 } from "@/types";
-import { normalizeIsbn } from "@/lib/shared";
-import { readJsonResponse } from "@/lib/shared";
+import { normalizeIsbn } from "@/lib/helpers";
+import { readJsonResponse } from "@/lib/helpers";
 
 export const BOOK_FORM_SCHEMA = z
   .object({

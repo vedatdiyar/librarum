@@ -36,8 +36,6 @@ import type {
   ScoringFactors,
 } from "@/types/curator";
 
-const db = createDb();
-
 // ============================================================
 // Zod Schemas for Validation
 // ============================================================
@@ -84,6 +82,7 @@ const LibraryDNASchema = z.object({
  * Returns top 3 categories/authors (not exhaustive lists) for token efficiency
  */
 export async function getLibraryDNA(): Promise<LibraryDNA> {
+  const db = createDb();
   // Get total book count and unread count
   const bookStats = await db
     .select({
@@ -224,6 +223,7 @@ export async function getLibraryDNA(): Promise<LibraryDNA> {
  * Identifies missing series volumes and abandoned authors
  */
 export async function getStructuralGaps(): Promise<StructuralGaps> {
+  const db = createDb();
   // Get all series with book counts
   const seriesWithBooks = await db
     .select({
@@ -348,6 +348,7 @@ export async function getStructuralGaps(): Promise<StructuralGaps> {
  * - Abandoned author recovery
  */
 export async function getScoringSignals(): Promise<ScoredBook[]> {
+  const db = createDb();
   // Get all unread books with their authors and series info
   const unreadBooks = await db
     .select({
@@ -425,6 +426,7 @@ export async function getScoringSignals(): Promise<ScoredBook[]> {
     bookGroups.get(book.bookId)!.push(book);
   }
 
+  const gaps = await getStructuralGaps();
   const scoredBooks: ScoredBook[] = [];
   for (const [bookId, bookRows] of bookGroups) {
     const firstRow = bookRows[0];
@@ -436,7 +438,6 @@ export async function getScoringSignals(): Promise<ScoredBook[]> {
 
     // Determine completion priority factors
     const isSeriesGap = firstRow.seriesId !== undefined && firstRow.seriesOrder !== null;
-    const gaps = await getStructuralGaps();
     const isAbandonedAuthor = gaps.abandonedAuthors.some(
       (a) => bookRows.some((br) => br.authorName === a.author)
     );

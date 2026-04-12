@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { LoaderCircle, Search } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, cn } from "@/components/ui";
 import type { SearchResultItem } from "@/types";
-import { readJsonResponse } from "@/lib/shared";
+import { readJsonResponse } from "@/lib/helpers";
 
 async function fetchSearchResults(query: string, signal?: AbortSignal) {
   const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, { signal });

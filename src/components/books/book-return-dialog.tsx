@@ -14,7 +14,7 @@ import {
   cn 
 } from "@/components/ui";
 import type { BookDetail, BookStatus } from "@/types";
-import { readJsonResponse } from "@/lib/shared";
+import { readJsonResponse } from "@/lib/helpers";
 
 import { BOOK_STATUS_LABELS } from "@/lib/constants/books";
 

@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { readJsonResponse } from "@/lib/shared";
+import { readJsonResponse } from "@/lib/helpers";
 import type {
   ApiBookListItem,
   AuthorListItem,

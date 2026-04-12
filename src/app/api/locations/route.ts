@@ -1,4 +1,5 @@
 import { apiSuccess, withApiHandler } from "@/server/api";
+import { requireSession } from "@/server/auth";
 import { createDb } from "@/db";
 import { books } from "@/db/schema/books";
 import { sql } from "drizzle-orm";
@@ -6,6 +7,7 @@ import { sql } from "drizzle-orm";
 export const dynamic = "force-dynamic";
 
 export const GET = withApiHandler(async () => {
+  await requireSession();
   const db = createDb();
   
   const result = await db

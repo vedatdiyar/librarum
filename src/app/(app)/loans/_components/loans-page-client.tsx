@@ -16,7 +16,7 @@ import {
   cn
 } from "@/components/ui";
 import type { BookListResponse } from "@/types";
-import { readJsonResponse } from "@/lib/shared";
+import { readJsonResponse } from "@/lib/helpers";
 import { BookReturnDialog } from "@/components/books/book-return-dialog";
 import { PageHero } from "@/components/page-hero";
 import { appPageTitles } from "@/lib/navigation";

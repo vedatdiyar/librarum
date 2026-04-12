@@ -5,8 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button, Input, cn } from "@/components/ui";
 import { authenticate } from "./actions";
-import type { LoginInput } from "@/schemas/auth";
-import { loginSchema } from "@/schemas/auth";
+import type { LoginInput } from "@/lib/auth-schema";
+import { loginSchema } from "@/lib/auth-schema";
 import { LoaderCircle, CheckCircle2, ShieldAlert } from "lucide-react";
 
 type LoginFormProps = {

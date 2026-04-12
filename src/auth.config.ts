@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextAuthConfig } from "next-auth";
-import { getSafeRedirectTarget } from "@/lib/shared";
+import { getSafeRedirectTarget } from "@/lib/helpers";
 
 const authSecret =
   process.env.LIBRARUM_AUTH_SECRET ??

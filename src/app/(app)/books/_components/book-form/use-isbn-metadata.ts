@@ -1,14 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { normalizeIsbn } from "@/lib/shared";
+import { normalizeIsbn } from "@/lib/helpers";
 import type {
   IsbnCoverOption,
   IsbnMetadata,
   IsbnMetadataResponse,
   IsbnMetadataSource
 } from "@/types";
-import { readJsonResponse } from "@/lib/shared";
+import { readJsonResponse } from "@/lib/helpers";
 
 export type MetadataState = {
   status: "idle" | "loading" | "success" | "not_found" | "error";

@@ -35,12 +35,11 @@ import type {
   PublisherOption
 } from "@/types";
 import { ApiError, assertFound } from "@/server/api";
-import { buildBookSlugSource } from "@/lib/shared/book-title";
-import { buildUniqueSlug, isUuid, toSlugPart } from "@/lib/shared";
+import { buildBookSlugSource } from "@/lib/book-title";
+import { buildUniqueSlug, isUuid, normalizeIsbn, toSlugPart } from "@/lib/helpers";
 import {
   checkDuplicateBook,
-  normalizeCreateBookResult,
-  normalizeIsbn
+  normalizeCreateBookResult
 } from "@/server/books-intelligence";
 import {
   resolveOrCreateAuthor

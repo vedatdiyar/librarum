@@ -9,11 +9,11 @@ import {
   getLibraryDNA,
   getStructuralGaps,
   getScoringSignals,
-} from "@/server/library-analyzer";
+} from "@/server/ai/library-analyzer";
 import {
   getLatestReport,
   orchestrateMonthlyReportGeneration,
-} from "@/server/report-service";
+} from "@/server/ai/report-service";
 import type {
   LibraryDNA,
   StructuralGaps,

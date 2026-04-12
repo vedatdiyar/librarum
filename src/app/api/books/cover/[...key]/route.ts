@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-import { withApiHandler } from "@/server/api";
+import { ApiError, withApiHandler } from "@/server/api";
 import { readCoverFromR2 } from "@/server/r2";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +8,12 @@ export const GET = withApiHandler(
     const { key: rawKeyParts } = await params;
     const keyParts = Array.isArray(rawKeyParts) ? rawKeyParts : [];
     const key = keyParts.map((segment) => decodeURIComponent(segment)).join("/");
+
+    // Path traversal protection
+    if (key.includes("..") || key.includes("//")) {
+      throw new ApiError(400, "Invalid cover key.");
+    }
+
     const cover = await readCoverFromR2(key);
 
     const headers = new Headers({

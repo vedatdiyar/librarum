@@ -12,8 +12,8 @@ import type {
   LibraryDNA,
   ApiResponse,
 } from "@/types/curator";
-import { CuratorMonthlyReportSchema } from "@/server/curator-brain";
-import { generateCuratorReport } from "@/server/curator-brain";
+import { CuratorMonthlyReportSchema } from "@/server/ai/curator-brain";
+import { generateCuratorReport } from "@/server/ai/curator-brain";
 import { ApiError } from "@/server/api";
 
 const db = createDb();

@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui";
 import type { ButtonProps } from "@/components/ui";
 import type { BookDetail } from "@/types";
-import { readJsonResponse } from "@/lib/shared";
+import { readJsonResponse } from "@/lib/helpers";
 import { BookForm } from "../../_components/book-form";
 import { BookFormShell } from "../../_components/book-form-shell";
 

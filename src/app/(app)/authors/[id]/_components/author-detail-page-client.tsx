@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AuthorDetailPageClientBackLink, AuthorDetailPageClientContinuitySection, AuthorDetailPageClientDomainSection, AuthorDetailPageClientError, AuthorDetailPageClientHero, AuthorDetailPageClientLoading, AuthorDetailPageClientVolumesSection } from "./author-detail-page-client-sections";
 import type { AuthorDetail } from "@/types";
 import { Library } from "lucide-react";
-import { readJsonResponse } from "@/lib/shared";
+import { readJsonResponse } from "@/lib/helpers";
 
 async function fetchAuthorDetail(authorSlug: string) {
   const response = await fetch(`/api/authors/${authorSlug}`);

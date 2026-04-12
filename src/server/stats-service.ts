@@ -9,7 +9,7 @@ import type {
   TimeSeriesPoint
 } from "@/types";
 import { listRecentBooks } from "@/server/books-service";
-import { normalizeCount, normalizeFloat } from "@/lib/shared";
+import { normalizeCount, normalizeFloat } from "@/lib/helpers";
 
 const STATUS_ORDER: StatusBreakdownPoint["status"][] = [
   "owned",

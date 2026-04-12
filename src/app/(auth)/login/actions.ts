@@ -2,8 +2,8 @@
 
 import { AuthError } from "next-auth";
 import { signIn } from "@/auth";
-import { getSafeRedirectTarget } from "@/lib/shared";
-import { loginSchema } from "@/schemas/auth";
+import { getSafeRedirectTarget } from "@/lib/helpers";
+import { loginSchema } from "@/lib/auth-schema";
 
 
 export async function authenticate(formData: FormData) {

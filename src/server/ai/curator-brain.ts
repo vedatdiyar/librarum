@@ -13,6 +13,7 @@ import {
 } from "@google/genai";
 import { eq, sql } from "drizzle-orm";
 import { createDb, authors, bookAuthors, books } from "@/db";
+import { normalizeText } from "@/lib/helpers";
 import type {
   LibraryDNA,
   CuratorMonthlyReport,
@@ -20,8 +21,6 @@ import type {
   NextMonthRoute,
 } from "@/types/curator";
 import { z } from "zod";
-
-const db = createDb();
 
 // ============================================================
 // Model Configuration
@@ -437,15 +436,7 @@ export function sanitizeCuratorResearchNote(researchText: string): string {
   return cleaned;
 }
 
-function normalizeText(value: string): string {
-  return value
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+
 
 function toStableExternalId(title: string, author: string): string {
   const slug = normalizeText(`${title} ${author}`).replace(/\s+/g, "-");
@@ -479,6 +470,7 @@ function formatReadingPace(avgPerMonth: number): string {
 type NarrativeReport = z.infer<typeof CuratorNarrativeSchema>;
 
 async function resolveBookId(title: string, authorName: string): Promise<string> {
+  const db = createDb();
   const rows = await db
     .select({
       bookId: books.id,

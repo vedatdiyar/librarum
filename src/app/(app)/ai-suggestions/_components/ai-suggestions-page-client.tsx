@@ -23,7 +23,7 @@ import type {
   AiSuggestionsResponse
 } from "@/types";
 import type { CuratedBookRecommendation } from "@/types/curator";
-import { readJsonResponse } from "@/lib/shared";
+import { readJsonResponse } from "@/lib/helpers";
 import { PageHero } from "@/components/page-hero";
 import { appPageTitles } from "@/lib/navigation";
 import { HistoryDrawer, type HistoryItem } from "./history-drawer";

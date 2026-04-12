@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { auth } from "@/auth";
-import { getSafeRedirectTarget, hasAuthenticatedUser } from "@/lib/shared";
+import { getSafeRedirectTarget, hasAuthenticatedUser } from "@/lib/helpers";
 import { LoginForm } from "./login-form";
 
 type LoginPageProps = {

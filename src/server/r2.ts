@@ -9,7 +9,13 @@ import { ApiError } from "@/server/api";
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_CONTENT_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
+let cachedR2Config: { bucket: string; publicUrl: string; client: S3Client } | null = null;
+
 function getR2Config() {
+  if (cachedR2Config) {
+    return cachedR2Config;
+  }
+
   const accountId = process.env.LIBRARUM_R2_ACCOUNT_ID;
   const accessKeyId = process.env.LIBRARUM_R2_ACCESS_KEY_ID;
   const secretAccessKey = process.env.LIBRARUM_R2_SECRET_ACCESS_KEY;
@@ -20,7 +26,7 @@ function getR2Config() {
     throw new ApiError(500, "R2 configuration is missing.");
   }
 
-  return {
+  cachedR2Config = {
     bucket,
     publicUrl: publicUrl.replace(/\/$/, ""),
     client: new S3Client({
@@ -32,6 +38,8 @@ function getR2Config() {
       }
     })
   };
+
+  return cachedR2Config;
 }
 
 function getPublicUrlFromEnv() {

@@ -15,7 +15,7 @@ import {
   cn
 } from "@/components/ui";
 import type { ApiBookListItem } from "@/types";
-import { splitBookDisplayTitle } from "@/lib/shared/book-title";
+import { splitBookDisplayTitle } from "@/lib/book-title";
 
 import { BOOK_STATUS_LABELS } from "@/lib/constants/books";
 

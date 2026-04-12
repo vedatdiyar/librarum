@@ -34,7 +34,7 @@ import {
   isUuid,
   normalizeCount,
   normalizeFloat
-} from "@/lib/shared";
+} from "@/lib/helpers";
 import { toCoverDeliveryUrl } from "@/server/r2";
 import {
   isAuthorNameAvailable,

@@ -13,7 +13,7 @@ import {
   cn
 } from "@/components/ui";
 import type { SeriesListItem } from "@/types";
-import { readJsonResponse } from "@/lib/shared";
+import { readJsonResponse } from "@/lib/helpers";
 import { PageHero } from "@/components/page-hero";
 import { appPageTitles } from "@/lib/navigation";
 

@@ -1,0 +1,1 @@
+CREATE INDEX "books_publisher_id_idx" ON "books" USING btree ("publisher_id");

@@ -5,7 +5,7 @@ import type {
   AuthorResolutionResponse
 } from "@/types";
 import { authorAliases, authors, createDb } from "@/db";
-import { buildUniqueSlug, normalizeText } from "@/lib/shared";
+import { buildUniqueSlug, normalizeText } from "@/lib/helpers";
 import { ApiError } from "@/server/api";
 
 type DbClient = ReturnType<typeof createDb>;

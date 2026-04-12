@@ -1,6 +1,6 @@
 import { apiSuccess, withApiHandler } from "@/server/api";
 import { assertCronAuthorized } from "@/server/cron-auth";
-import { getCuratorInstance } from "@/server/curator-factory";
+import { getCuratorInstance } from "@/server/ai/curator-factory";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes for report generation

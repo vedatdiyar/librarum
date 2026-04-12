@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { apiSuccess, withApiHandler, ApiError } from "@/server/api";
 import { requireSession } from "@/server/auth";
-import { getCuratorInstance } from "@/server/curator-factory";
-import { getLatestReport, getReportById } from "@/server/report-service";
+import { getCuratorInstance } from "@/server/ai/curator-factory";
+import { getLatestReport, getReportById } from "@/server/ai/report-service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -59,4 +59,3 @@ export const POST = withApiHandler(async () => {
 
   }
 });
-

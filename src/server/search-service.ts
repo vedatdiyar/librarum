@@ -10,7 +10,7 @@ import {
   series
 } from "@/db";
 import type { BookStatus, SearchResultItem } from "@/types";
-import { normalizeText } from "@/lib/shared";
+import { normalizeText } from "@/lib/helpers";
 import { toCoverDeliveryUrl } from "@/server/r2";
 
 type ParsedSearchQuery = {
@@ -28,7 +28,6 @@ type BookRow = {
   title: string;
   subtitle: string | null;
   isbn: string | null;
-  publisher: string | null;
   publisherName: string | null;
   locationName: string | null;
   shelfRow: string | null;
@@ -167,6 +166,10 @@ function buildSearchTerms(parsed: ParsedSearchQuery) {
   return uniqueTokens([parsed.normalizedQuery, ...parsed.tokens]);
 }
 
+function escapeLikePattern(value: string) {
+  return value.replace(/[%_\\]/g, "\\$&");
+}
+
 function buildTermConditions(term: string): SQL[] {
   const normalizedTerm = normalizeText(term);
 
@@ -174,12 +177,12 @@ function buildTermConditions(term: string): SQL[] {
     return [];
   }
 
-  const pattern = `%${normalizedTerm}%`;
+  const pattern = `%${escapeLikePattern(normalizedTerm)}%`;
 
   return [
     sql`${normalizeSqlText(books.title)} like ${pattern}`,
     sql`${normalizeSqlText(books.subtitle)} like ${pattern}`,
-    sql`${normalizeSqlText(books.publisher)} like ${pattern}`,
+
     sql`${normalizeSqlText(books.locationName)} like ${pattern}`,
     sql`${normalizeSqlText(books.shelfRow)} like ${pattern}`,
     sql`${normalizeSqlText(categories.name)} like ${pattern}`,
@@ -221,7 +224,7 @@ function buildSearchPredicate(parsed: ParsedSearchQuery): SQL | undefined {
   const freeTextConditions = freeTextTerms.flatMap((term) => buildTermConditions(term));
 
   if (parsed.isbnQuery) {
-    freeTextConditions.push(sql`${normalizeSqlIsbn(books.isbn)} like ${`%${parsed.isbnQuery}%`}`);
+    freeTextConditions.push(sql`${normalizeSqlIsbn(books.isbn)} like ${`%${escapeLikePattern(parsed.isbnQuery)}%`}`);
   }
 
   if (structuredConditions.length === 0 && freeTextConditions.length === 0) {
@@ -267,7 +270,7 @@ function scoreBookRow(row: SearchCandidateRow, authorsForBook: string[], parsed:
   const normalizedQuery = parsed.normalizedQuery;
   const normalizedTitle = normalizeText(row.title);
   const normalizedSubtitle = normalizeText(row.subtitle ?? "");
-  const normalizedPublisher = normalizeText(row.publisherName ?? row.publisher ?? "");
+  const normalizedPublisher = normalizeText(row.publisherName ?? "");
   const normalizedLocation = normalizeText([row.locationName, row.shelfRow].filter(Boolean).join(" "));
   const normalizedCategory = normalizeText(row.categoryName ?? "");
   const normalizedSeries = normalizeText(row.seriesName ?? "");
@@ -277,7 +280,7 @@ function scoreBookRow(row: SearchCandidateRow, authorsForBook: string[], parsed:
       row.title,
       row.subtitle,
       row.isbn,
-      row.publisher,
+
       row.publisherName,
       row.locationName,
       row.shelfRow,
@@ -381,7 +384,7 @@ async function searchCandidateResults(parsed: ParsedSearchQuery): Promise<Search
       title: books.title,
       subtitle: books.subtitle,
       isbn: books.isbn,
-      publisher: books.publisher,
+
       publisherName: publishers.name,
       locationName: books.locationName,
       shelfRow: books.shelfRow,

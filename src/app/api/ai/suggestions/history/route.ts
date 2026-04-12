@@ -1,6 +1,6 @@
 import { apiSuccess, withApiHandler } from "@/server/api";
 import { requireSession } from "@/server/auth";
-import { listReports } from "@/server/report-service";
+import { listReports } from "@/server/ai/report-service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

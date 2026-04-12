@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import type { BookFormMode, BookDetail, CoverUploadResponse } from "@/types";
-import { readJsonResponse } from "@/lib/shared";
+import { readJsonResponse } from "@/lib/helpers";
 
 export function useCoverUpload(options: {
   mode: BookFormMode;
