@@ -21,7 +21,55 @@ import type { AuthorListItem } from "@/types";
 import { readJsonResponse } from "@/lib/helpers";
 import { PageHero } from "@/components/page-hero";
 import { appPageTitles } from "@/lib/navigation";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+
+export function AuthorsSkeleton() {
+  return (
+    <section className="space-y-10 pb-20">
+      {/* Hero Skeleton */}
+      <div className="space-y-8 py-10">
+        <div className="space-y-4">
+          <Skeleton className="h-4 w-32 rounded-full" />
+          <Skeleton className="h-16 w-3/4 rounded-2xl" />
+          <Skeleton className="h-20 w-full rounded-2xl" />
+        </div>
+      </div>
+
+      {/* Table Container Skeleton */}
+      <div className="glass-panel overflow-hidden rounded-3xl border border-white/5 bg-white/2">
+          <div className="flex flex-col items-start justify-between gap-6 border-b border-white/3 bg-white/3 px-8 py-6 md:flex-row md:items-center">
+              <div>
+                  <Skeleton className="h-7 w-48 rounded-lg" />
+                  <Skeleton className="mt-2 h-4 w-80 rounded-full" />
+              </div>
+              <div className="flex items-center gap-6">
+                  <div className="hidden h-10 w-px bg-white/5 md:block" />
+                  <div className="flex flex-col items-end gap-1">
+                      <div className="flex items-center gap-3">
+                          <Skeleton className="h-8 w-12 rounded-lg" />
+                          <Skeleton className="h-9 w-9 rounded-xl" />
+                      </div>
+                      <Skeleton className="h-3 w-20 rounded-full" />
+                  </div>
+              </div>
+          </div>
+
+          <div className="space-y-4 px-4 py-8">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div className="flex h-16 items-center gap-4 rounded-xl border border-white/2 bg-white/2 px-4 shadow-sm" key={`author-skeleton-client-row-${i}`}>
+                 <Skeleton className="h-10 w-10 shrink-0 rounded-xl" />
+                 <div className="flex-1 space-y-2">
+                    <Skeleton className="h-5 w-48 rounded-lg" />
+                 </div>
+                 <Skeleton className="h-4 w-12 rounded-full" />
+                 <Skeleton className="ml-8 h-6 w-16 rounded-lg" />
+              </div>
+            ))}
+          </div>
+      </div>
+    </section>
+  );
+}
 
 interface AuthorsResponse {
   items: AuthorListItem[];
@@ -39,11 +87,22 @@ function formatAverageRating(value: number | null) {
   return value == null ? "—" : value.toFixed(2);
 }
 
-export function AuthorsPageClient() {
+export function AuthorsPageClient({ searchParams }: { searchParams: Record<string, string | string[] | undefined> }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   
-  const currentPage = parsePage(searchParams);
+  const searchParamsObject = useMemo(() => {
+    const params = new URLSearchParams();
+    Object.entries(searchParams).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach((v) => params.append(key, v));
+      } else if (value !== undefined) {
+        params.set(key, value);
+      }
+    });
+    return params;
+  }, [searchParams]);
+
+  const currentPage = parsePage(searchParamsObject);
   const currentLimit = 50;
 
   const authorsQuery = useQuery({
@@ -52,58 +111,14 @@ export function AuthorsPageClient() {
   });
 
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParamsObject.toString());
     params.set("page", String(page));
     router.replace(`/authors?${params.toString()}`, { scroll: false });
   };
 
 
   if (authorsQuery.isLoading) {
-    return (
-      <section className="space-y-10 pb-20">
-        {/* Hero Skeleton */}
-        <div className="space-y-8 py-10">
-          <div className="space-y-4">
-            <Skeleton className="h-4 w-32 rounded-full" />
-            <Skeleton className="h-16 w-3/4 rounded-2xl" />
-            <Skeleton className="h-20 w-full rounded-2xl" />
-          </div>
-        </div>
-
-        {/* Table Container Skeleton */}
-        <div className="glass-panel overflow-hidden rounded-3xl border border-white/5 bg-white/2">
-            <div className="flex flex-col items-start justify-between gap-6 border-b border-white/3 bg-white/3 px-8 py-6 md:flex-row md:items-center">
-                <div>
-                    <Skeleton className="h-7 w-48 rounded-lg" />
-                    <Skeleton className="mt-2 h-4 w-80 rounded-full" />
-                </div>
-                <div className="flex items-center gap-6">
-                    <div className="hidden h-10 w-px bg-white/5 md:block" />
-                    <div className="flex flex-col items-end gap-1">
-                        <div className="flex items-center gap-3">
-                            <Skeleton className="h-8 w-12 rounded-lg" />
-                            <Skeleton className="h-9 w-9 rounded-xl" />
-                        </div>
-                        <Skeleton className="h-3 w-20 rounded-full" />
-                    </div>
-                </div>
-            </div>
-
-            <div className="space-y-4 px-4 py-8">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <div className="flex h-16 items-center gap-4 rounded-xl border border-white/2 bg-white/2 px-4 shadow-sm" key={`author-skeleton-client-row-${i}`}>
-                   <Skeleton className="h-10 w-10 shrink-0 rounded-xl" />
-                   <div className="flex-1 space-y-2">
-                      <Skeleton className="h-5 w-48 rounded-lg" />
-                   </div>
-                   <Skeleton className="h-4 w-12 rounded-full" />
-                   <Skeleton className="ml-8 h-6 w-16 rounded-lg" />
-                </div>
-              ))}
-            </div>
-        </div>
-      </section>
-    );
+    return <AuthorsSkeleton />;
   }
 
   if (authorsQuery.isError) {
