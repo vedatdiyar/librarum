@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
  */
 export const GET = withApiHandler(async (request: Request) => {
   assertCronAuthorized(request);
-  
+
   const db = createDb();
   const systemUser = await db.query.users.findFirst();
 
@@ -23,7 +23,13 @@ export const GET = withApiHandler(async (request: Request) => {
   }
 
   const curator = getCuratorInstance();
-  const result = await curator.generateMonthlyReport(systemUser.id);
+  const controller = new AbortController();
+  
+  request.signal.addEventListener('abort', () => {
+    controller.abort();
+  });
+
+  const result = await curator.generateMonthlyReport(systemUser.id, controller.signal);
 
   if (!result.success) {
     // Treat "too recently" errors as 429 Too Many Requests

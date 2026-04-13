@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings, User as UserIcon, X } from "lucide-react";
+import { LogOut, Menu, Settings, User as UserIcon, X } from "lucide-react";
 import * as React from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useIsMobile } from "@/hooks/use-is-mobile";
@@ -102,33 +102,6 @@ export function AppDesktopSidebar() {
           <NavContent isCollapsed={isCollapsed} />
         </div>
 
-        {/* Toggle Button at the bottom */}
-        <div className="mt-auto border-t border-white/5 px-3 py-4">
-          <button
-            onClick={toggleSidebar}
-            className={cn(
-              "group relative flex w-full flex-nowrap items-center justify-start gap-1 overflow-hidden rounded-xl px-3 py-2.5 text-foreground transition-all duration-500 hover:bg-white/2 hover:text-white",
-              isCollapsed && "justify-center px-0"
-            )}
-            title={isCollapsed ? "Genişlet" : "Daralt"}
-          >
-            <span className={cn(
-                "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-transparent text-foreground transition-all duration-500 group-hover:scale-110 group-hover:text-primary",
-                isCollapsed && "group-hover:bg-white/5"
-            )}>
-              {isCollapsed ? (
-                <PanelLeftOpen className="h-5 w-5" />
-              ) : (
-                <PanelLeftClose className="h-5 w-5" />
-              )}
-            </span>
-            {!isCollapsed && (
-              <div className="min-w-0 duration-500 animate-in fade-in slide-in-from-left-2">
-                <span className="block truncate text-sm font-bold whitespace-nowrap text-foreground">{isCollapsed ? "Genişlet" : "Daralt"}</span>
-              </div>
-            )}
-          </button>
-        </div>
       </div>
     </aside>
   );

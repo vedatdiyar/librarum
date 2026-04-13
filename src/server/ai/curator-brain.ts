@@ -26,9 +26,12 @@ import { z } from "zod";
 // Model Configuration
 // ============================================================
 
+// Models: Research needs Google Search, Formatter needs structured JSON
+// Fallback: gemini-2.0-flash daha stabil, high demand'de devreye girer
 const RESEARCH_MODEL = "gemma-4-31b-it";
 const FORMATTER_MODEL = "gemini-3.1-flash-lite-preview";
-const DEFAULT_THINKING_MODE = "high";
+const RESEARCH_THINKING_MODE = "high";
+const FORMATTER_THINKING_MODE = "low";
 const GEMINI_TEMPERATURE = 1.0;
 
 type CuratorThinkingMode = "minimal" | "low" | "medium" | "high";
@@ -59,24 +62,33 @@ async function runWithRetry<T>(
   fn: (modelName: string) => Promise<T>,
   primaryModel: string,
   fallbackModel?: string,
-  maxRetries: number = 3
+  signal?: AbortSignal
 ): Promise<T> {
-  let lastError: unknown;
-  let currentModel = primaryModel;
+  const models = [primaryModel];
+  if (fallbackModel) {
+    models.push(fallbackModel);
+  }
 
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  for (let attempt = 0; attempt < models.length; attempt++) {
+    if (signal?.aborted) {
+      throw new DOMException("Request aborted", "AbortError");
+    }
+
+    const currentModel = models[attempt];
+
     try {
       if (attempt > 0) {
-        const delay = Math.pow(2, attempt) * 1000;
         console.log(
-          `[Curator Brain] ${currentModel} için ${attempt}. tekrar denemesi ${delay}ms sonra yapılacak...`
+          `[Curator Brain] ${primaryModel} başarısız, ${currentModel} ile deneniyor...`
         );
-        await new Promise((resolve) => setTimeout(resolve, delay));
       }
 
       return await fn(currentModel);
     } catch (error) {
-      lastError = error;
+      if (signal?.aborted) {
+        throw new DOMException("Request aborted", "AbortError");
+      }
+
       if (!isRetryableGeminiError(error)) {
         throw error;
       }
@@ -86,18 +98,13 @@ async function runWithRetry<T>(
         error instanceof Error ? error.message : String(error)
       );
 
-      if (
-        attempt >= Math.floor(maxRetries / 2) &&
-        fallbackModel &&
-        currentModel !== fallbackModel
-      ) {
-        console.warn(`[Curator Brain] Yedek modele geçiliyor: ${fallbackModel}`);
-        currentModel = fallbackModel;
+      if (attempt === models.length - 1) {
+        throw error;
       }
     }
   }
 
-  throw lastError;
+  throw new Error("Tüm modeller başarısız oldu");
 }
 
 function getResponseText(response: GenerateContentResponse): string {
@@ -105,7 +112,7 @@ function getResponseText(response: GenerateContentResponse): string {
 }
 
 function buildGeminiThinkingConfig(modelName: string, thinkingMode: CuratorThinkingMode) {
-  if (modelName.includes("gemini-3")) {
+  if (modelName.includes("gemini-3") || modelName.includes("gemma-4")) {
     const level =
       thinkingMode === "minimal"
         ? ThinkingLevel.MINIMAL
@@ -342,38 +349,29 @@ Seri Tamamlanma:
 `;
 }
 
-function createGemmaResearchSystemPrompt(
+function createResearchSystemPrompt(
   libraryDNA: LibraryDNA,
   thinkingMode: CuratorThinkingMode
 ): string {
-  const thinkingPrefix = thinkingMode === "minimal" ? "" : "<|think|>\n";
-
-  return `${thinkingPrefix}
+  return `
 Rol: Sen, disiplinli bir araştırmacı küratörsün.
 Görevin, bu kütüphane için doğrulanmış ve JSON'a dönüştürülebilir bir araştırma notu hazırlamaktır.
 
 ${createCuratorPromptContext(libraryDNA)}
 
-Araştırma ilkeleri:
-- Google Search kullanmak zorundasın.
-- Kitap adı, yazar adı ve kitap-yazar eşleşmesini doğrulamadan spesifik öneri verme.
-- Doğrulayamıyorsan genel öneri ver.
-- Gerçek olmayan bibliyografik bilgi uydurma.
-- Kütüphane içgörüsü ile dış dünya bulgularını açık biçimde ayır.
-- Yanıtın yalnızca araştırma notu olsun; JSON üretme.
+KESİN KURALLAR:
+1. Google Search kullanmak ZORUNDASIN - her kitap/yazar bilgisini doğrula
+2. Google'da bulamadığın kitabı/yazarı ASLA öneri olarak yazma
+3. Emin olmadığında genel öneri ver
+4. Gerçek olmayan kitap, yazar, ödül, seri veya yayın bilgisi UYDURMA
+5. Kütüphane verisi ile dış dünya bilgisini birbirine karıştırma
+6. Çıktı JSON değil, araştırma notu olsun
 
 Çıktı bölümleri:
 1. Mevcut Durum Analizi
 2. İlgi Alanı ve Yazar Profili
-3. Öneriler
+3. Öneriler (her öneri için: Kitap Adı, Yazar, Neden Önerildi, Kategori Mantığı, Puan Mantığı)
 4. Genel Değerlendirme
-
-Öneriler bölümünde her öneri için:
-- Kitap Adı
-- Yazar
-- Neden Önerildi
-- Kategori Mantığı
-- Puan Mantığı
 `;
 }
 
@@ -387,14 +385,18 @@ ${createCuratorPromptContext(libraryDNA)}
 
 Thinking modu: ${thinkingMode}.
 
-Kurallar:
-- Yeni araştırma yapma.
-- Yalnızca verilen araştırma notunu kullan.
+KESİN KURALLAR:
+- YENİ ARAŞTIRMA YAPMA - sadece verilen araştırma notunu kullan.
 - Citation, dipnot, kaynak listesi, markdown ve arama önerilerini içerik olarak alma.
 - Şemada olmayan alan üretme.
-- Desteklenmeyen spesifik bilgi uydurma.
-- Çıktın yalnızca geçerli JSON olsun.
 - Sayısal alanları yeniden tahmin etmeye çalışma; yalnızca anlatısal alanları doldur.
+- Çıktın yalnızca geçerli JSON olsun.
+
+ÖNEMLİ - KİTAP VE YAZAR ADLARI:
+- "Belirtilmemiş", "Unknown", "N/A", "[Title]", "[Author]" gibi placeholder KULLANMA.
+- Araştırma notunda gerçek kitap adı yoksa, kategorik öneri yap (örn: "Türkiye Tarihi üzerine bir eser").
+- Her öneride MUTLAKA gerçek bir kitap adı ve yazar adı olmalı.
+- Araştırma notunda olmayan kitap/yazar UYDURMA - sadece nottaki bilgileri kullan.
 `;
 }
 
@@ -558,9 +560,9 @@ async function mergeNarrativeWithDeterministicFields(
   };
 }
 
-export async function runGemmaResearch(libraryDNA: LibraryDNA): Promise<string> {
+export async function runResearchPhase(libraryDNA: LibraryDNA, signal?: AbortSignal): Promise<string> {
   const client = initializeGeminiClient();
-  const systemPrompt = createGemmaResearchSystemPrompt(libraryDNA, DEFAULT_THINKING_MODE);
+  const systemPrompt = createResearchSystemPrompt(libraryDNA, RESEARCH_THINKING_MODE);
   const researchPrompt = `
 Türkçe yaz.
 
@@ -581,7 +583,7 @@ Kütüphane verisi:
 ${createCuratorPromptContext(libraryDNA)}
 `;
 
-  console.log("[Curator Brain] Hybrid Stage 1 başladı: Gemma research üretiliyor...");
+  console.log(`[Curator Brain] Hybrid Stage 1 başladı: ${RESEARCH_MODEL} research üretiliyor...`);
   const response = await runWithRetry(
     (modelName) =>
       client.models.generateContent({
@@ -590,20 +592,28 @@ ${createCuratorPromptContext(libraryDNA)}
         config: {
           systemInstruction: systemPrompt,
           temperature: GEMINI_TEMPERATURE,
+          thinkingConfig: buildGeminiThinkingConfig(modelName, RESEARCH_THINKING_MODE),
           tools: [{ googleSearch: {} }],
         },
       }),
-    RESEARCH_MODEL
+    RESEARCH_MODEL,
+    undefined,
+    signal
   );
 
   const rawText = getResponseText(response);
   if (!rawText) {
-    throw new Error("Gemma research aşamasında geçerli araştırma notu alınamadı.");
+    throw new Error(`${RESEARCH_MODEL} research aşamasında geçerli araştırma notu alınamadı.`);
   }
 
   const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
   if (!hasGroundingEvidence(groundingMetadata)) {
-    throw new Error("Gemma research aşaması doğrulanmış Google Search kanıtı üretmedi.");
+    console.error(
+      `[Curator Brain] ${RESEARCH_MODEL} Google Search kullanmadı. Bu rapor güvenilmez.`
+    );
+    throw new Error(
+      `${RESEARCH_MODEL} Google Search kullanmadı ve araştırma güvenilir değil. Lütfen tekrar deneyin.`
+    );
   }
 
   console.log("[Curator Brain] Hybrid Stage 1 tamamlandı.", {
@@ -616,10 +626,11 @@ ${createCuratorPromptContext(libraryDNA)}
 
 export async function runGeminiFormatter(
   sanitizedResearchNote: string,
-  libraryDNA: LibraryDNA
+  libraryDNA: LibraryDNA,
+  signal?: AbortSignal
 ): Promise<NarrativeReport> {
   const client = initializeGeminiClient();
-  const systemPrompt = createGeminiFormatterSystemPrompt(libraryDNA, DEFAULT_THINKING_MODE);
+  const systemPrompt = createGeminiFormatterSystemPrompt(libraryDNA, FORMATTER_THINKING_MODE);
   const formatterPrompt = `
 Türkçe yaz.
 
@@ -651,12 +662,14 @@ ${sanitizedResearchNote}
         config: {
           systemInstruction: systemPrompt,
           temperature: GEMINI_TEMPERATURE,
-          thinkingConfig: buildGeminiThinkingConfig(modelName, DEFAULT_THINKING_MODE),
+          thinkingConfig: buildGeminiThinkingConfig(modelName, FORMATTER_THINKING_MODE),
           responseMimeType: "application/json",
           responseJsonSchema: CURATOR_NARRATIVE_RESPONSE_SCHEMA as unknown,
         },
       }),
-    FORMATTER_MODEL
+    FORMATTER_MODEL,
+    undefined,
+    signal
   );
 
   const rawJson = getResponseText(response);
@@ -675,36 +688,55 @@ ${sanitizedResearchNote}
 // ============================================================
 
 export async function generateCuratorResearchMarkdown(libraryDNA: LibraryDNA): Promise<string> {
-  return runGemmaResearch(libraryDNA);
+  return runResearchPhase(libraryDNA);
 }
 
 export async function structureCuratorReportFromResearch(
   researchMarkdown: string,
-  libraryDNA: LibraryDNA
+  libraryDNA: LibraryDNA,
+  signal?: AbortSignal
 ): Promise<Omit<CuratorMonthlyReport, "generatedAt">> {
   const sanitizedResearch = sanitizeCuratorResearchNote(researchMarkdown);
-  const narrative = await runGeminiFormatter(sanitizedResearch, libraryDNA);
+  const narrative = await runGeminiFormatter(sanitizedResearch, libraryDNA, signal);
   const mergedReport = await mergeNarrativeWithDeterministicFields(libraryDNA, narrative);
   return CuratorMonthlyReportSchema.parse(mergedReport);
 }
 
 export async function generateCuratorReport(
-  libraryDNA: LibraryDNA
+  libraryDNA: LibraryDNA,
+  signal?: AbortSignal
 ): Promise<CuratorMonthlyReport> {
+  const pipelineStart = Date.now();
   console.log("[Curator Brain] Rapor oluşturma başlatıldı. Pipeline: hybrid_v2");
 
-  const rawResearch = await runGemmaResearch(libraryDNA);
+  const researchStart = Date.now();
+  const rawResearch = await runResearchPhase(libraryDNA, signal);
+  const researchDuration = ((Date.now() - researchStart) / 1000).toFixed(2);
+  console.log(`[Curator Brain] Research tamamlandı. Süre: ${researchDuration}s`);
+
+  const sanitizeStart = Date.now();
   const sanitizedResearch = sanitizeCuratorResearchNote(rawResearch);
+  const sanitizeDuration = ((Date.now() - sanitizeStart) / 1000).toFixed(2);
   console.log("[Curator Brain] Research sanitize tamamlandı.", {
     rawLength: rawResearch.length,
     sanitizedLength: sanitizedResearch.length,
+    duration: `${sanitizeDuration}s`,
   });
 
-  const narrative = await runGeminiFormatter(sanitizedResearch, libraryDNA);
+  const geminiStart = Date.now();
+  const narrative = await runGeminiFormatter(sanitizedResearch, libraryDNA, signal);
+  const geminiDuration = ((Date.now() - geminiStart) / 1000).toFixed(2);
+  console.log(`[Curator Brain] Gemini formatter tamamlandı. Süre: ${geminiDuration}s`);
+
+  const mergeStart = Date.now();
   const mergedReport = await mergeNarrativeWithDeterministicFields(libraryDNA, narrative);
   const validatedReport = CuratorMonthlyReportSchema.parse(mergedReport);
+  const mergeDuration = ((Date.now() - mergeStart) / 1000).toFixed(2);
 
-  console.log("[Curator Brain] Hybrid final rapor başarıyla oluşturuldu ve doğrulandı.");
+  const totalDuration = ((Date.now() - pipelineStart) / 1000).toFixed(2);
+  console.log(`[Curator Brain] Hybrid final rapor başarıyla oluşturuldu ve doğrulandı. Toplam süre: ${totalDuration}s`);
+  console.log(`[Curator Brain] Aşama süreleri: Research=${researchDuration}s, Sanitize=${sanitizeDuration}s, Formatter=${geminiDuration}s, Merge=${mergeDuration}s`);
+
   return {
     ...validatedReport,
     generatedAt: new Date(),

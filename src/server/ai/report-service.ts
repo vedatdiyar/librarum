@@ -28,10 +28,13 @@ const db = createDb();
  */
 export async function generateNewReport(
   libraryDNA: LibraryDNA,
-  userId?: string
+  userId?: string,
+  signal?: AbortSignal
 ): Promise<ApiResponse<CuratorMonthlyReport>> {
   try {
+    // COOLDOWN DISABLED TEMPORARILY FOR TESTING
     // Check if report was recently generated (within 1 hour)
+    /*
     const lastReport = await db
       .select()
       .from(aiSuggestions)
@@ -59,9 +62,10 @@ export async function generateNewReport(
       }
 
     }
+    */
 
     // Generate new report via Gemini
-    const report = await generateCuratorReport(libraryDNA);
+    const report = await generateCuratorReport(libraryDNA, signal);
 
     // Validate
     const validated = CuratorMonthlyReportSchema.parse(report);
@@ -235,10 +239,11 @@ export async function listReports(
  */
 export async function orchestrateMonthlyReportGeneration(
   libraryDNA: LibraryDNA,
-  userId?: string
+  userId?: string,
+  signal?: AbortSignal
 ): Promise<{ success: boolean; reportId?: string; error?: string }> {
   try {
-    const result = await generateNewReport(libraryDNA, userId);
+    const result = await generateNewReport(libraryDNA, userId, signal);
 
     if (!result.success) {
       return {
@@ -249,7 +254,7 @@ export async function orchestrateMonthlyReportGeneration(
 
     return {
       success: true,
-      reportId: (await listReports(1, 0))[0]?.id, // Get just-created report ID
+      reportId: (await listReports(1, 0))[0]?.id,
     };
   } catch (error) {
     return {

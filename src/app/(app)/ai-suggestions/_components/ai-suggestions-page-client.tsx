@@ -304,8 +304,8 @@ function SuggestionsContent({
                   <stat.icon className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold tracking-widest text-foreground uppercase">{stat.label}</p>
-                  <p className="font-serif text-lg leading-tight font-bold text-white">{stat.value}</p>
+                  <p className="text-lg font-bold tracking-widest text-foreground uppercase">{stat.label}</p>
+                  <p className="font-serif text-base leading-normal text-white">{stat.value}</p>
                 </div>
               </div>
             ))}

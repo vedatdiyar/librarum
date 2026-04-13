@@ -39,23 +39,43 @@ export const GET = withApiHandler(async (req: NextRequest) => {
  * POST /api/ai/suggestions
  * Triggers manual monthly report regeneration (with 1-hour cooldown)
  */
-export const POST = withApiHandler(async () => {
+export const POST = withApiHandler(async (req: Request) => {
   const session = await requireSession();
   const curator = getCuratorInstance();
-  const result = await curator.generateMonthlyReport(session.user.id);
+  
+  // Create AbortController for request lifecycle
+  const controller = new AbortController();
+  
+  // Listen for client disconnection
+  req.signal.addEventListener('abort', () => {
+    controller.abort();
+  });
 
-  if (result.success) {
-    const report = await getLatestReport();
-    return apiSuccess({ report, regenerated: true });
-  } else {
-    // If it's a cooldown error (contains 'recently'), return 429
-    const errorLower = result.error?.toLowerCase() || "";
-    const isCooldown = errorLower.includes("recently");
-    const isQuota = errorLower.includes("quota") || errorLower.includes("429") || errorLower.includes("exhausted");
+  try {
+    const result = await curator.generateMonthlyReport(session.user.id, controller.signal);
 
-    const status = (isCooldown || isQuota) ? 429 : 500;
+    if (result.success) {
+      const report = await getLatestReport();
+      return apiSuccess({ report, regenerated: true });
+    } else {
+      // If it's a cooldown error (contains 'recently'), return 429
+      const errorLower = result.error?.toLowerCase() || "";
+      const isCooldown = errorLower.includes("recently");
+      const isQuota = errorLower.includes("quota") || errorLower.includes("429") || errorLower.includes("exhausted");
+      const isAborted = errorLower.includes("abort");
 
-    throw new ApiError(status, result.error || "Analiz raporu oluşturulamadı.");
+      if (isAborted) {
+        throw new ApiError(499, "İstek istemci tarafından iptal edildi");
+      }
 
+      const status = (isCooldown || isQuota) ? 429 : 500;
+      throw new ApiError(status, result.error || "Analiz raporu oluşturulamadı.");
+    }
+  } catch (error) {
+    // Clean up if client disconnected
+    if (!controller.signal.aborted) {
+      controller.abort();
+    }
+    throw error;
   }
 });

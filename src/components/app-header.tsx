@@ -1,16 +1,31 @@
 "use client";
 
-import { LogOut, Settings, User } from "lucide-react";
-import { Button } from "@/components/ui";
+import { LogOut, PanelLeftClose, PanelLeftOpen, Settings, User } from "lucide-react";
+import { Button, cn } from "@/components/ui";
 import { GlobalSearch } from "./global-search";
 import { useSession, signOut } from "next-auth/react";
+import { useUIStore } from "@/stores/ui-store";
  
 export function AppDesktopHeader() {
   const { data: session } = useSession();
+  const { isSidebarCollapsed: isCollapsed, toggleSidebar } = useUIStore();
 
   return (
-    <header className="sticky top-0 z-40 hidden h-[72px] items-center border-b border-white/5 bg-background/50 px-8 backdrop-blur-xl lg:flex">
-      <div className="flex w-full items-center justify-end">
+    <header className="sticky top-0 z-40 hidden h-[72px] items-center border-b border-white/5 bg-background/50 pr-8 pl-2 backdrop-blur-xl lg:flex">
+      <div className="flex w-full items-center justify-between">
+        <button
+          onClick={toggleSidebar}
+          className="group relative flex items-center justify-center rounded-xl p-2 text-foreground transition-all duration-500 hover:bg-white/2 hover:text-white"
+          title={isCollapsed ? "Genişlet" : "Daralt"}
+        >
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-transparent text-foreground transition-all duration-500 group-hover:scale-110 group-hover:bg-white/5 group-hover:text-primary">
+            {isCollapsed ? (
+              <PanelLeftOpen className="h-5 w-5" />
+            ) : (
+              <PanelLeftClose className="h-5 w-5" />
+            )}
+          </span>
+        </button>
         <div className="flex items-center gap-2">
           <GlobalSearch expandable />
           <div className="flex items-center gap-2">
