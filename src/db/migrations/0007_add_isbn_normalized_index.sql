@@ -1,0 +1,1 @@
+CREATE INDEX "books_isbn_normalized_idx" ON "books" USING btree (regexp_replace(upper(coalesce("isbn", '')), '[^0-9X]', '', 'g'));

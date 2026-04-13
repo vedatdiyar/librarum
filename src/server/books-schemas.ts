@@ -92,7 +92,7 @@ export const locationInputSchema = z
   .strict();
 
 export const listBooksQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
+  page: z.coerce.number().int().min(1).max(10000).default(1),
   limit: z.coerce.number().int().min(1).max(25).default(25),
   sort: z.enum(["created_at"]).default("created_at"),
   status: z.enum(bookStatusValues).nullable().optional().catch(undefined),

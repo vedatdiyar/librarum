@@ -82,6 +82,9 @@ export const books = pgTable(
     index("books_publisher_id_idx").on(table.publisherId),
     index("books_read_year_idx").on(table.readYear),
     index("books_read_month_idx").on(table.readMonth),
+    index("books_isbn_normalized_idx").on(
+      sql`regexp_replace(upper(coalesce(${table.isbn}, '')), '[^0-9X]', '', 'g')`
+    ),
     check("books_copy_count_positive_check", sql`${table.copyCount} >= 1`),
     check(
       "books_publication_year_positive_check",

@@ -169,6 +169,101 @@ function mapBookDetail(book: BookRow, relations: BookRelations): BookDetail {
   };
 }
 
+/**
+ * Build a BookRelations map from a single book row with eager-loaded relations.
+ * Extracted to avoid duplication across createBook, updateBook, exportAllBooks, etc.
+ */
+function buildRelationsFromSingleBookWithRels(
+  book: BookRow & {
+    category?: CategoryRow | null;
+    publisher?: PublisherOption | null;
+    authors?: Array<{ author: AuthorOption }>;
+    series?: { series: BookSeriesReference; seriesOrder: number | null } | null;
+  }
+): BookRelations {
+  const relations: BookRelations = {
+    authorsByBookId: new Map(),
+    seriesByBookId: new Map(),
+    categoriesById: new Map(),
+    publishersById: new Map()
+  };
+
+  if (book.category) {
+    relations.categoriesById.set(book.category.id, book.category);
+  }
+  if (book.publisher) {
+    relations.publishersById.set(book.publisher.id, {
+      id: book.publisher.id,
+      name: book.publisher.name,
+      slug: book.publisher.slug
+    });
+  }
+  if (book.authors) {
+    relations.authorsByBookId.set(
+      book.id,
+      book.authors.map((ba) => ({
+        id: ba.author.id,
+        name: ba.author.name,
+        slug: ba.author.slug
+      }))
+    );
+  }
+  if (book.series) {
+    relations.seriesByBookId.set(book.id, {
+      id: book.series.series.id,
+      name: book.series.series.name,
+      slug: book.series.series.slug,
+      totalVolumes: book.series.series.totalVolumes,
+      seriesOrder: book.series.seriesOrder
+    });
+  }
+
+  return relations;
+}
+
+/**
+ * Merge relations from a single book into an existing BookRelations map.
+ */
+function mergeBookRelations(
+  book: BookRow & {
+    category?: CategoryRow | null;
+    publisher?: PublisherOption | null;
+    authors?: Array<{ author: AuthorOption }>;
+    series?: { series: BookSeriesReference; seriesOrder: number | null } | null;
+  },
+  relations: BookRelations
+): void {
+  if (book.category) {
+    relations.categoriesById.set(book.category.id, book.category);
+  }
+  if (book.publisher) {
+    relations.publishersById.set(book.publisher.id, {
+      id: book.publisher.id,
+      name: book.publisher.name,
+      slug: book.publisher.slug
+    });
+  }
+  if (book.authors) {
+    relations.authorsByBookId.set(
+      book.id,
+      book.authors.map((ba) => ({
+        id: ba.author.id,
+        name: ba.author.name,
+        slug: ba.author.slug
+      }))
+    );
+  }
+  if (book.series) {
+    relations.seriesByBookId.set(book.id, {
+      id: book.series.series.id,
+      name: book.series.series.name,
+      slug: book.series.series.slug,
+      totalVolumes: book.series.series.totalVolumes,
+      seriesOrder: book.series.seriesOrder
+    });
+  }
+}
+
 async function loadBookRelations(
   db: DbExecutor,
   bookRows: BookRow[]
@@ -922,40 +1017,7 @@ export async function getBookDetail(bookId: string) {
     throw new ApiError(404, "Book not found.");
   }
 
-  const relations: BookRelations = {
-    authorsByBookId: new Map(),
-    seriesByBookId: new Map(),
-    categoriesById: new Map(),
-    publishersById: new Map()
-  };
-
-  if (book.category) relations.categoriesById.set(book.category.id, book.category);
-  if (book.publisher) {
-    relations.publishersById.set(book.publisher.id, {
-      id: book.publisher.id,
-      name: book.publisher.name,
-      slug: book.publisher.slug
-    });
-  }
-  if (book.authors) {
-    relations.authorsByBookId.set(
-      book.id,
-      book.authors.map((ba) => ({
-        id: ba.author.id,
-        name: ba.author.name,
-        slug: ba.author.slug
-      }))
-    );
-  }
-  if (book.series) {
-    relations.seriesByBookId.set(book.id, {
-      id: book.series.series.id,
-      name: book.series.series.name,
-      slug: book.series.series.slug,
-      totalVolumes: book.series.series.totalVolumes,
-      seriesOrder: book.series.seriesOrder
-    });
-  }
+  const relations = buildRelationsFromSingleBookWithRels(book as any);
 
   return mapBookDetail(book as any as BookRow, relations);
 }
@@ -1006,42 +1068,7 @@ export async function createBook(input: CreateBookInput): Promise<CreateBookResp
           throw new ApiError(500, "Failed to retrieve updated book.");
         }
 
-        const relations: BookRelations = {
-          authorsByBookId: new Map(),
-          seriesByBookId: new Map(),
-          categoriesById: new Map(),
-          publishersById: new Map()
-        };
-
-        if (increasedBookWithRels.category) {
-          relations.categoriesById.set(increasedBookWithRels.category.id, increasedBookWithRels.category);
-        }
-        if (increasedBookWithRels.publisher) {
-          relations.publishersById.set(increasedBookWithRels.publisher.id, {
-            id: increasedBookWithRels.publisher.id,
-            name: increasedBookWithRels.publisher.name,
-            slug: increasedBookWithRels.publisher.slug
-          });
-        }
-        if (increasedBookWithRels.authors) {
-          relations.authorsByBookId.set(
-            increasedBookWithRels.id,
-            increasedBookWithRels.authors.map((ba) => ({
-              id: ba.author.id,
-              name: ba.author.name,
-              slug: ba.author.slug
-            }))
-          );
-        }
-        if (increasedBookWithRels.series) {
-          relations.seriesByBookId.set(increasedBookWithRels.id, {
-            id: increasedBookWithRels.series.series.id,
-            name: increasedBookWithRels.series.series.name,
-            slug: increasedBookWithRels.series.series.slug,
-            totalVolumes: increasedBookWithRels.series.series.totalVolumes,
-            seriesOrder: increasedBookWithRels.series.seriesOrder
-          });
-        }
+        const relations = buildRelationsFromSingleBookWithRels(increasedBookWithRels as any);
 
         return normalizeCreateBookResult(
           "increase_copy",
@@ -1095,42 +1122,7 @@ export async function createBook(input: CreateBookInput): Promise<CreateBookResp
       throw new ApiError(500, "Failed to retrieve created book.");
     }
 
-    const relations: BookRelations = {
-      authorsByBookId: new Map(),
-      seriesByBookId: new Map(),
-      categoriesById: new Map(),
-      publishersById: new Map()
-    };
-
-    if (createdBookWithRels.category) {
-      relations.categoriesById.set(createdBookWithRels.category.id, createdBookWithRels.category);
-    }
-    if (createdBookWithRels.publisher) {
-      relations.publishersById.set(createdBookWithRels.publisher.id, {
-        id: createdBookWithRels.publisher.id,
-        name: createdBookWithRels.publisher.name,
-        slug: createdBookWithRels.publisher.slug
-      });
-    }
-    if (createdBookWithRels.authors) {
-      relations.authorsByBookId.set(
-        createdBookWithRels.id,
-        createdBookWithRels.authors.map((ba) => ({
-          id: ba.author.id,
-          name: ba.author.name,
-          slug: ba.author.slug
-        }))
-      );
-    }
-    if (createdBookWithRels.series) {
-      relations.seriesByBookId.set(createdBookWithRels.id, {
-        id: createdBookWithRels.series.series.id,
-        name: createdBookWithRels.series.series.name,
-        slug: createdBookWithRels.series.series.slug,
-        totalVolumes: createdBookWithRels.series.series.totalVolumes,
-        seriesOrder: createdBookWithRels.series.seriesOrder
-      });
-    }
+    const relations = buildRelationsFromSingleBookWithRels(createdBookWithRels as any);
 
     return normalizeCreateBookResult("created", mapBookDetail(createdBookWithRels as any as BookRow, relations));
   });
@@ -1225,42 +1217,7 @@ export async function updateBook(bookId: string, input: UpdateBookInput) {
       throw new ApiError(500, "Failed to retrieve updated book.");
     }
 
-    const relations: BookRelations = {
-      authorsByBookId: new Map(),
-      seriesByBookId: new Map(),
-      categoriesById: new Map(),
-      publishersById: new Map()
-    };
-
-    if (refreshedBookWithRels.category) {
-      relations.categoriesById.set(refreshedBookWithRels.category.id, refreshedBookWithRels.category);
-    }
-    if (refreshedBookWithRels.publisher) {
-      relations.publishersById.set(refreshedBookWithRels.publisher.id, {
-        id: refreshedBookWithRels.publisher.id,
-        name: refreshedBookWithRels.publisher.name,
-        slug: refreshedBookWithRels.publisher.slug
-      });
-    }
-    if (refreshedBookWithRels.authors) {
-      relations.authorsByBookId.set(
-        refreshedBookWithRels.id,
-        refreshedBookWithRels.authors.map((ba) => ({
-          id: ba.author.id,
-          name: ba.author.name,
-          slug: ba.author.slug
-        }))
-      );
-    }
-    if (refreshedBookWithRels.series) {
-      relations.seriesByBookId.set(refreshedBookWithRels.id, {
-        id: refreshedBookWithRels.series.series.id,
-        name: refreshedBookWithRels.series.series.name,
-        slug: refreshedBookWithRels.series.series.slug,
-        totalVolumes: refreshedBookWithRels.series.series.totalVolumes,
-        seriesOrder: refreshedBookWithRels.series.seriesOrder
-      });
-    }
+    const relations = buildRelationsFromSingleBookWithRels(refreshedBookWithRels as any);
 
     return mapBookDetail(refreshedBookWithRels as any as BookRow, relations);
   });
@@ -1391,35 +1348,7 @@ export async function exportAllBooks(): Promise<BookDetail[]> {
     publishersById: new Map()
   };
 
-  bookRows.forEach((row) => {
-    if (row.category) relations.categoriesById.set(row.category.id, row.category);
-    if (row.publisher) {
-      relations.publishersById.set(row.publisher.id, {
-        id: row.publisher.id,
-        name: row.publisher.name,
-        slug: row.publisher.slug
-      });
-    }
-    if (row.authors) {
-      relations.authorsByBookId.set(
-        row.id,
-        row.authors.map((ba) => ({
-          id: ba.author.id,
-          name: ba.author.name,
-          slug: ba.author.slug
-        }))
-      );
-    }
-    if (row.series) {
-      relations.seriesByBookId.set(row.id, {
-        id: row.series.series.id,
-        name: row.series.series.name,
-        slug: row.series.series.slug,
-        totalVolumes: row.series.series.totalVolumes,
-        seriesOrder: row.series.seriesOrder
-      });
-    }
-  });
+  bookRows.forEach((row) => mergeBookRelations(row as any, relations));
 
   return bookRows.map((book) => mapBookDetail(book as any as BookRow, relations));
 }

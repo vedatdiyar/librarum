@@ -50,6 +50,13 @@
       "when": 1776030898456,
       "tag": "0006_amused_mattie_franklin",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1776089575348,
+      "tag": "0007_add_isbn_normalized_index",
+      "breakpoints": true
     }
   ]
 }

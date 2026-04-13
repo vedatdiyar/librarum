@@ -9,8 +9,9 @@ export const GET = withApiHandler(
     const keyParts = Array.isArray(rawKeyParts) ? rawKeyParts : [];
     const key = keyParts.map((segment) => decodeURIComponent(segment)).join("/");
 
-    // Path traversal protection
-    if (key.includes("..") || key.includes("//")) {
+    // Strict cover key validation: only allow expected pattern
+    const coverKeyPattern = /^books\/covers\/[a-f0-9-]+\.(jpg|png|webp)$/i;
+    if (!coverKeyPattern.test(key)) {
       throw new ApiError(400, "Invalid cover key.");
     }
 

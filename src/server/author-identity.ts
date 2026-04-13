@@ -6,6 +6,7 @@ import type {
 } from "@/types";
 import { authorAliases, authors, createDb } from "@/db";
 import { buildUniqueSlug, normalizeText } from "@/lib/helpers";
+import { levenshteinDistance } from "@/lib/string-utils";
 import { ApiError } from "@/server/api";
 
 type DbClient = ReturnType<typeof createDb>;
@@ -90,33 +91,6 @@ function buildCompactAuthorName(name: string) {
   }
 
   return `${parts[0]} ${parts[parts.length - 1]}`;
-}
-
-function levenshteinDistance(left: string, right: string) {
-  const rows = left.length + 1;
-  const cols = right.length + 1;
-  const matrix = Array.from({ length: rows }, () => Array<number>(cols).fill(0));
-
-  for (let row = 0; row < rows; row += 1) {
-    matrix[row][0] = row;
-  }
-
-  for (let col = 0; col < cols; col += 1) {
-    matrix[0][col] = col;
-  }
-
-  for (let row = 1; row < rows; row += 1) {
-    for (let col = 1; col < cols; col += 1) {
-      const substitutionCost = left[row - 1] === right[col - 1] ? 0 : 1;
-      matrix[row][col] = Math.min(
-        matrix[row - 1][col] + 1,
-        matrix[row][col - 1] + 1,
-        matrix[row - 1][col - 1] + substitutionCost
-      );
-    }
-  }
-
-  return matrix[rows - 1][cols - 1];
 }
 
 function countSharedTokens(leftTokens: string[], rightTokens: string[]) {

@@ -69,7 +69,7 @@ function parseCsv(csvText: string) {
       currentField = "";
 
       if (character === "\r" && nextCharacter === "\n") {
-        index += 1;
+        index += 1; // Skip \n; for-loop header adds 1 for \r → total +2 for \r\n
       }
 
       continue;

@@ -1,5 +1,5 @@
 /**
- * A simple in-memory cache with TTL and size limits.
+ * A simple in-memory LRU cache with TTL and size limits.
  * Suitable for catalog data that doesn't change frequently.
  */
 export class MemoryCache<K, V> {
@@ -21,15 +21,24 @@ export class MemoryCache<K, V> {
       return undefined;
     }
 
+    // Refresh TTL and move to end (most recently used)
+    entry.expires = Date.now() + this.ttl;
+    this.cache.delete(key);
+    this.cache.set(key, entry);
+
     return entry.value;
   }
 
   set(key: K, value: V): void {
-    if (this.cache.size >= this.maxSize) {
-      // Very naive eviction: clear oldest entries if full
-      // In a real LRU this would be more sophisticated
+    // Evict least recently used entries if cache is full
+    while (this.cache.size >= this.maxSize) {
+      // Map preserves insertion order; first key is the LRU
       const firstKey = this.cache.keys().next().value;
-      if (firstKey !== undefined) this.cache.delete(firstKey);
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      } else {
+        break;
+      }
     }
 
     this.cache.set(key, {

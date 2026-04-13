@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "crypto";
 import { ApiError } from "@/server/api";
 
 export function assertCronAuthorized(request: Request) {
@@ -19,7 +20,20 @@ export function assertCronAuthorized(request: Request) {
   const authorization = request.headers.get("authorization");
   const token = authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
 
-  if (!token || token !== expectedSecret) {
+  if (!token) {
+    throw new ApiError(401, "Unauthorized cron request.");
+  }
+
+  // Use constant-time comparison to prevent timing attacks
+  const tokenBuffer = Buffer.from(token, "utf8");
+  const secretBuffer = Buffer.from(expectedSecret, "utf8");
+
+  // Pad to same length if different (will always fail for mismatched lengths, but safely)
+  if (tokenBuffer.length !== secretBuffer.length) {
+    throw new ApiError(401, "Unauthorized cron request.");
+  }
+
+  if (!timingSafeEqual(tokenBuffer, secretBuffer)) {
     throw new ApiError(401, "Unauthorized cron request.");
   }
 }
